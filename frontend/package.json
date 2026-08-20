@@ -1,0 +1,26 @@
+{
+    "name": "frontend",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "web"
+    ],
+    "scripts": {
+        "test": "bun run test:backend",
+        "test:backend": "(cd ../backend && php artisan test)",
+        "lint": "bun run lint:frontend && bun run lint:backend",
+        "lint:frontend": "oxlint",
+        "lint:backend": "php ../backend/vendor/bin/pint --test --config ../backend/pint.json ../backend",
+        "format": "bun run format:backend && bun run format:frontend",
+        "format:frontend": "prettier --write .. --ignore-path .prettierignore",
+        "format:backend": "php ../backend/vendor/bin/pint --config ../backend/pint.json ../backend && prettier --write .. --ignore-path .prettierignore",
+        "build": "bun run --filter web build",
+        "check": "rm -f web/.vite-errors.log && bun run format && bun run lint && bun run build && bun scripts/assert-no-browser-errors.js",
+        "dev": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others \"bun run dev\" \"bun run serve\" \"php ../../backend/artisan queue:work\" \"php ../../backend/artisan reverb:start\""
+    },
+    "devDependencies": {
+        "concurrently": "^10.0.5",
+        "oxlint": "^1.86.0",
+        "prettier": "^3.9.9"
+    }
+}

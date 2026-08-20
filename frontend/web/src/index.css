@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+
+@theme {
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --color-primary: #0f4c81;
+    --color-primary-dark: #003b73;
+    --color-primary-tint: #c7e5ff;
+    --color-footer-hover: #0d3e69;
+    --color-secondary: #2563eb;
+    --color-background: #f8fafc;
+    --color-surface: #ffffff;
+    --color-text: #1f2937;
+    --color-muted: #8e8e93;
+    --color-subtext: #a6a6a6;
+    --color-border-subtle: #cfd7e0;
+    --color-border-focus: #bbd7ee;
+    --color-border-sky: #91bde1;
+    --color-toast-welcome: #bbd7ee;
+    --color-border-divider: #e5e5ea;
+    --color-accent-subtle: #e5ebf2;
+    --color-surface-hover: #edf0f4;
+    --color-placeholder: #d9d9d9;
+    --color-icon-gray: #959595;
+    --color-icon-neutral: #828283;
+    --color-icon-subtle: #aeaeb2;
+    --color-disabled: #bababa;
+    --color-danger: #992c2c;
+    --color-danger-hover: #ef4444;
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-info: #3b82f6;
+    --color-badge-gold: #ba7d16;
+    --color-badge-blue: #256ba6;
+    --color-calendar-blue: #cfe2fe;
+    --color-calendar-amber: #fdc771;
+    --color-surface-muted: #f4f4f4;
+    --color-surface-dark: #1e1e1e;
+    --shadow-sm: 0 4px 2px rgba(0, 0, 0, 0.25);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-icon-neutral);
+}
+
+.hero-gradient {
+    background: linear-gradient(to bottom, #c7e5ff 37%, #ffffff 100%);
+}
+
+.features-gradient {
+    background: linear-gradient(to bottom, #ffffff 0%, #c7e5ff 50%, #ffffff 100%);
+}
+
+.teams-gradient {
+    background: linear-gradient(to bottom, #ffffff 0%, #c7e5ff 100%);
+}
+
+.shadow-procedure {
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.dim-screen {
+    background: rgba(0, 0, 0, 0.25);
+}
