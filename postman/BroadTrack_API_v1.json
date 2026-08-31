@@ -1,0 +1,384 @@
+{
+  "info": {
+    "_postman_id": "broadtrack-api-v1",
+    "name": "BroadTrack API (v1)",
+    "description": "Complete collection for testing BroadTrack API v1 endpoints with Laravel Sanctum authentication.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('Token saved to collection variable!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karladmin.test@laverdad.edu.ph\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{base_url}}/login"
+          }
+        },
+        {
+          "name": "Login (Borrower)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('Borrower Token saved!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{base_url}}/login"
+          }
+        },
+        {
+          "name": "Register (New Borrower)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"email\": \"janedoe.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"phone\": \"+639123456789\",\n  \"department\": \"BS Information Systems\"\n}"
+            },
+            "url": "{{base_url}}/register"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\"\n}"
+            },
+            "url": "{{base_url}}/forgot-password"
+          }
+        },
+        {
+          "name": "Resend Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\"\n}"
+            },
+            "url": "{{base_url}}/resend-verification"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Profile",
+      "item": [
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/me"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Karl Ashton\",\n  \"lastname\": \"Mahusay\",\n  \"department\": \"BS Information Systems\"\n}"
+            },
+            "url": "{{base_url}}/profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Equipment",
+      "item": [
+        {
+          "name": "List Equipment",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/equipment"
+          }
+        },
+        {
+          "name": "Create Equipment (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Sony Alpha A7 IV\",\n  \"brand\": \"Sony\",\n  \"model\": \"ILCE-7M4\",\n  \"description\": \"Full-frame hybrid mirrorless camera\",\n  \"status\": \"available\"\n}"
+            },
+            "url": "{{base_url}}/equipment"
+          }
+        },
+        {
+          "name": "Update Equipment (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sony Alpha A7 IV Updated\",\n  \"status\": \"available\"\n}"
+            },
+            "url": "{{base_url}}/equipment/1"
+          }
+        },
+        {
+          "name": "Delete Equipment (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/equipment/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Bookings",
+      "item": [
+        {
+          "name": "List Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "Get Single Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/1"
+          }
+        },
+        {
+          "name": "Create Booking (Borrower Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purpose\": \"Documentary Filming\",\n  \"start_date\": \"2026-10-10 09:00:00\",\n  \"end_date\": \"2026-10-12 17:00:00\",\n  \"notes\": \"Need tripods included\",\n  \"equipment_ids\": [1]\n}"
+            },
+            "url": "{{base_url}}/bookings"
+          }
+        },
+        {
+          "name": "Approve Booking (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approval_note\": \"Approved for lab use only.\"\n}"
+            },
+            "url": "{{base_url}}/bookings/1/approve"
+          }
+        },
+        {
+          "name": "Release Booking (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"release\": true\n}"
+            },
+            "url": "{{base_url}}/bookings/1/release"
+          }
+        },
+        {
+          "name": "Return Booking (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"return\": true\n}"
+            },
+            "url": "{{base_url}}/bookings/1/return"
+          }
+        },
+        {
+          "name": "Cancel Booking (Borrower Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/1/cancel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Users (Sysadmin Only)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"email\": \"alicesmith.test@laverdad.edu.ph\",\n  \"phone\": \"+639123456780\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
+            },
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Alice Updated\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
+            },
+            "url": "{{base_url}}/users/1"
+          }
+        }
+      ]
+    }
+  ]
+}

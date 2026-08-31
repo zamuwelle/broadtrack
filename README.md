@@ -29,7 +29,8 @@ Equipment booking and tracking system built with Laravel and React.
 - Borrower dashboard with calendar and booking slips
 - Admin dashboard for managing equipment inventory, categories, and approvals
 - Shared API and real-time Echo layer for web and future mobile (Expo) clients
-- RESTful API with Sanctum authentication
+- RESTful API versioned at `/api/v1/` with Sanctum authentication
+- Automated Feature Test Suite with Pest PHP (30/30 passing)
 
 ## Tech Stack
 
@@ -62,7 +63,7 @@ cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 cd ..
 
 # 3. Setup Frontend
@@ -71,9 +72,12 @@ bun install
 cp web/.env.example web/.env
 cd ..
 
-# 4. Run Both Servers (Vite + FrankenPHP Octane + Reverb + Queue)
+# 4. Run Development Servers
 cd frontend
-bun run dev
+bun run dev          # Runs both Frontend & Backend
+# Or run individually:
+# bun run dev:backend   (Backend only: Octane + Reverb + Queue)
+# bun run dev:frontend  (Frontend only: Vite)
 ```
 
 ### Windows (CMD / PowerShell)
@@ -88,7 +92,7 @@ cd backend
 composer install
 copy .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 cd ..
 
 # 3. Setup Frontend
@@ -97,14 +101,27 @@ bun install
 copy web\.env.example web\.env
 cd ..
 
-# 4. Run Both Servers (Vite + FrankenPHP Octane + Reverb + Queue)
+# 4. Run Development Servers
 cd frontend
-bun run dev
+bun run dev          # Runs both Frontend & Backend
+# Or run individually:
+# bun run dev:backend   (Backend only: Octane + Reverb + Queue)
+# bun run dev:frontend  (Frontend only: Vite)
 ```
 
 - Backend API: http://localhost:8000
 - Frontend Web: http://localhost:5173
 - Reverb WebSockets: ws://localhost:8080
+
+### Default Test Credentials (Local Only)
+
+All seeded test accounts use the password: `password123`
+
+| Role         | Email                                     | Name                |
+| :----------- | :---------------------------------------- | :------------------ |
+| **Admin**    | `karladmin.test@laverdad.edu.ph`          | Karl Ashton Mahusay |
+| **Sysadmin** | `karlsysadmin.test@laverdad.edu.ph`       | Karl Ashton Mahusay |
+| **Borrower** | `karlborrow.test@student.laverdad.edu.ph` | Karl Ashton Mahusay |
 
 ## Database Schema
 
@@ -120,45 +137,69 @@ bun run dev
 | Location  | Where equipment is stored                            |
 | Booking   | Equipment reservation with status workflow           |
 
-## API Reference
+## API Reference (v1)
 
-| Method | Endpoint                     | Description                    | Role     | Rate Limit |
-| ------ | ---------------------------- | ------------------------------ | -------- | ---------- |
-| POST   | `/api/register`              | Register new user              | Public   | 5/min      |
-| POST   | `/api/login`                 | Login with email/password      | Public   | 5/min      |
-| POST   | `/api/forgot-password`       | Request password reset         | Public   | 5/min      |
-| POST   | `/api/reset-password`        | Reset password with token      | Public   | 60/min     |
-| POST   | `/api/contact`               | Send contact message           | Public   | 60/min     |
-| GET    | `/api/me`                    | Get current user               | Auth     | 60/min     |
-| PATCH  | `/api/profile`               | Update user profile            | Auth     | 60/min     |
-| POST   | `/api/profile/picture`       | Upload user profile picture    | Auth     | 60/min     |
-| POST   | `/api/logout`                | Logout current user            | Auth     | 60/min     |
-| GET    | `/api/equipment`             | List all equipment             | Auth     | 60/min     |
-| POST   | `/api/equipment`             | Create equipment               | Admin    | 60/min     |
-| PUT    | `/api/equipment/{id}`        | Update equipment               | Admin    | 60/min     |
-| POST   | `/api/equipment/{id}/upload` | Upload equipment image         | Admin    | 60/min     |
-| DELETE | `/api/equipment/{id}`        | Delete equipment               | Admin    | 60/min     |
-| GET    | `/api/bookings`              | List bookings                  | Auth     | 60/min     |
-| GET    | `/api/bookings/{id}`         | Get booking details            | Auth     | 60/min     |
-| POST   | `/api/bookings`              | Create new booking             | Borrower | 60/min     |
-| PATCH  | `/api/bookings/{id}/read`    | Mark booking notification read | Borrower | 60/min     |
-| PUT    | `/api/bookings/{id}/cancel`  | Cancel pending booking         | Borrower | 60/min     |
-| PUT    | `/api/bookings/{id}/approve` | Approve booking                | Admin    | 60/min     |
-| PUT    | `/api/bookings/{id}/reject`  | Reject booking                 | Admin    | 60/min     |
-| PUT    | `/api/bookings/{id}/release` | Release equipment              | Admin    | 60/min     |
-| PUT    | `/api/bookings/{id}/return`  | Return equipment               | Admin    | 60/min     |
-| POST   | `/api/bookings/{id}/remind`  | Send return reminder email     | Admin    | 60/min     |
-| GET    | `/api/users`                 | List users                     | Sysadmin | 60/min     |
-| POST   | `/api/users`                 | Create user                    | Sysadmin | 60/min     |
-| PATCH  | `/api/users/{id}`            | Update user                    | Sysadmin | 60/min     |
-| DELETE | `/api/users/{id}`            | Delete user                    | Sysadmin | 60/min     |
+All API endpoints are versioned under the `/api/v1/` prefix.
 
-## Testing & Linting
+| Method | Endpoint                        | Description                    | Role     | Rate Limit |
+| ------ | ------------------------------- | ------------------------------ | -------- | ---------- |
+| POST   | `/api/v1/register`              | Register new user              | Public   | 5/min      |
+| POST   | `/api/v1/login`                 | Login with email/password      | Public   | 5/min      |
+| POST   | `/api/v1/forgot-password`       | Request password reset         | Public   | 5/min      |
+| POST   | `/api/v1/reset-password`        | Reset password with token      | Public   | 60/min     |
+| POST   | `/api/v1/resend-verification`   | Resend email verification      | Public   | 5/min      |
+| POST   | `/api/v1/contact`               | Send contact message           | Public   | 60/min     |
+| GET    | `/api/v1/me`                    | Get current user profile       | Auth     | 60/min     |
+| PUT    | `/api/v1/profile`               | Update user profile            | Auth     | 60/min     |
+| POST   | `/api/v1/profile/picture`       | Upload user profile picture    | Auth     | 60/min     |
+| POST   | `/api/v1/logout`                | Logout current user            | Auth     | 60/min     |
+| GET    | `/api/v1/equipment`             | List all equipment             | Auth     | 60/min     |
+| POST   | `/api/v1/equipment`             | Create equipment               | Admin    | 60/min     |
+| PUT    | `/api/v1/equipment/{id}`        | Update equipment               | Admin    | 60/min     |
+| POST   | `/api/v1/equipment/{id}/upload` | Upload equipment image         | Admin    | 60/min     |
+| DELETE | `/api/v1/equipment/{id}`        | Delete equipment               | Admin    | 60/min     |
+| GET    | `/api/v1/bookings`              | List bookings                  | Auth     | 60/min     |
+| GET    | `/api/v1/bookings/{id}`         | Get booking details            | Auth     | 60/min     |
+| POST   | `/api/v1/bookings`              | Create new booking             | Borrower | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/read`    | Mark booking notification read | Borrower | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/cancel`  | Cancel pending booking         | Borrower | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/approve` | Approve booking                | Admin    | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/reject`  | Reject booking                 | Admin    | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/release` | Release equipment              | Admin    | 60/min     |
+| PUT    | `/api/v1/bookings/{id}/return`  | Return equipment               | Admin    | 60/min     |
+| POST   | `/api/v1/bookings/{id}/remind`  | Send return reminder email     | Admin    | 60/min     |
+| GET    | `/api/v1/users`                 | List users                     | Sysadmin | 60/min     |
+| POST   | `/api/v1/users`                 | Create user                    | Sysadmin | 60/min     |
+| PUT    | `/api/v1/users/{id}`            | Update user                    | Sysadmin | 60/min     |
+| DELETE | `/api/v1/users/{id}`            | Delete user                    | Sysadmin | 60/min     |
+
+### Postman Collection
+
+A complete, pre-configured Postman collection with automatic Sanctum token handling is provided in:
+
+```text
+postman/BroadTrack_API_v1.json
+```
+
+Import it into Postman to test all endpoints out-of-the-box.
+
+## Testing & Code Quality
 
 ```bash
 cd frontend
-bun run lint
-bun run format
+
+# Run Pest automated feature test suite (30 tests)
+bun run test:backend
+
+# Linting
+bun run lint            # Lints ALL (Frontend + Backend)
+bun run lint:frontend   # Lints Frontend only (Oxlint)
+bun run lint:backend    # Lints Backend only (Laravel Pint)
+
+# Formatting
+bun run format          # Formats ALL (Frontend + Backend)
+bun run format:frontend # Formats Frontend only (Prettier)
+bun run format:backend  # Formats Backend only (Laravel Pint + Prettier)
 ```
 
 ## Deployment
