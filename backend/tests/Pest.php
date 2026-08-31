@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 /*
@@ -15,7 +16,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
-    // ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -42,4 +43,9 @@ expect()->extend('toBeOne', fn () => $this->toBe(1));
 |
 */
 
-function something() {}
+function fakeImage(string $filename = 'test.png'): UploadedFile
+{
+    $pngHeader = "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\rIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82";
+
+    return UploadedFile::fake()->createWithContent($filename, $pngHeader);
+}

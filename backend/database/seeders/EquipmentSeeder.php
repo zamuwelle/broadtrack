@@ -80,17 +80,19 @@ class EquipmentSeeder extends Seeder
             ['category' => 'Lighting', 'name' => 'Laser Light', 'brand' => null, 'quantity' => 1, 'description' => 'Laser effect light for stage visuals during events', 'specs' => ['Type: Laser effect projector', 'Modes: Auto and sound-active', 'Power: AC 100 - 240V']],
         ];
 
-        foreach ($equipment as $item) {
-            $unitsCount = $item['quantity'] ?? 1;
-            for ($unitIndex = 0; $unitIndex < $unitsCount; $unitIndex++) {
-                Equipment::create([
-                    'category_id' => $categories[$item['category']],
-                    'name' => $item['name'],
-                    'brand' => $item['brand'],
-                    'description' => $item['description'],
-                    'specs' => implode("\n", $item['specs']),
-                ]);
+        Equipment::withoutEvents(function () use ($equipment, $categories) {
+            foreach ($equipment as $item) {
+                $unitsCount = $item['quantity'] ?? 1;
+                for ($unitIndex = 0; $unitIndex < $unitsCount; $unitIndex++) {
+                    Equipment::create([
+                        'category_id' => $categories[$item['category']],
+                        'name' => $item['name'],
+                        'brand' => $item['brand'],
+                        'description' => $item['description'],
+                        'specs' => implode("\n", $item['specs']),
+                    ]);
+                }
             }
-        }
+        });
     }
 }

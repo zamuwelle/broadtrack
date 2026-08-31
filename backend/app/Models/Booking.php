@@ -3,14 +3,21 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Observers\BookingObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['user_id', 'returned_by_user_id', 'ticket_id', 'purpose', 'start_date', 'end_date', 'return_date', 'status', 'notes', 'approval_note', 'rejection_reason', 'isRead'])]
+#[ObservedBy(BookingObserver::class)]
 class Booking extends Model
 {
     use HasFactory;
+
+    protected $attributes = [
+        'status' => 'pending',
+    ];
 
     protected function casts()
     {

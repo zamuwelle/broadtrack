@@ -22,7 +22,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'firstname' => $this->nameRules('sometimes'),
             'lastname' => $this->nameRules('sometimes'),
-            'email' => ['sometimes', 'email', Rule::unique('users')->ignore($this->route('id')), $this->schoolEmailRule()],
+            'email' => ['sometimes', 'email', Rule::unique('users')->ignore($this->route('user')), $this->schoolEmailRule()],
             'phone' => 'sometimes|string',
             'role' => ['sometimes', Rule::enum(UserRole::class)],
             'department' => ['sometimes', 'nullable', Rule::enum(Department::class)],

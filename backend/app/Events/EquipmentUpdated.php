@@ -10,14 +10,17 @@ class EquipmentUpdated implements ShouldBroadcastNow
 {
     use SerializesModels;
 
-    public function __construct(public $action = 'updated', public $equipmentId = null) {}
+    public function __construct(
+        public string $action = 'updated',
+        public ?int $equipmentId = null
+    ) {}
 
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
         return [new Channel('equipment')];
     }
 
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'equipment.changed';
     }

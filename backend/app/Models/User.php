@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\Department;
 use App\Enums\UserRole;
+use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,6 +17,7 @@ use Laravel\Sanctum\HasApiTokens;
 #[Appends(['full_name'])]
 #[Fillable(['firstname', 'lastname', 'email', 'phone', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_token', 'verification_sent_at'])]
 #[Hidden(['password', 'remember_token', 'verification_token'])]
+#[ObservedBy(UserObserver::class)]
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory;
@@ -23,6 +27,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'role' => UserRole::class,
+            'department' => Department::class,
             'email_verified_at' => 'datetime',
             'verification_sent_at' => 'datetime',
         ];

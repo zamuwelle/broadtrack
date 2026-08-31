@@ -1,51 +1,73 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\EquipmentController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Auth\VerificationController;
+use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\EquipmentController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('register', [AuthController::class, 'register'])->middleware('throttle:5,1');
-Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
-Route::post('reset-password', [AuthController::class, 'resetPassword']);
-Route::post('contact', [ContactController::class, 'send']);
+Route::prefix('v1')->group(function () {
+    // Auth routes
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:5,1');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+    Route::post('/resend-verification', [VerificationController::class, 'resend'])->middleware('throttle:5,1');
 
-Route::middleware('auth:sanctum')->group(static function () {
-    Route::get('me', [AuthController::class, 'me']);
-    Route::patch('profile', [AuthController::class, 'updateProfile']);
-    Route::post('profile/picture', [AuthController::class, 'uploadProfilePicture']);
-    Route::post('logout', [AuthController::class, 'logout']);
+    // Contact
+    Route::post('/contact', [ContactController::class, 'send']);
 
-    Route::get('equipment', [EquipmentController::class, 'index']);
-    Route::get('bookings', [BookingController::class, 'index']);
-    Route::get('bookings/{id}', [BookingController::class, 'show']);
-});
+    // Authenticated routes
+    Route::middleware('auth:sanctum')->group(function () {
+        // Auth
+        Route::post('/logout', [AuthController::class, 'logout']);
 
-Route::middleware(['auth:sanctum', 'role:borrower'])->group(static function () {
-    Route::post('bookings', [BookingController::class, 'store']);
-    Route::patch('bookings/{id}/read', [BookingController::class, 'isRead']);
-    Route::put('bookings/{id}/cancel', [BookingController::class, 'cancel']);
-});
+        // Profile
+        Route::get('/me', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update']);
+        Route::post('/profile/picture', [ProfileController::class, 'uploadPicture']);
 
-Route::middleware(['auth:sanctum', 'role:admin'])->group(static function () {
-    Route::post('equipment', [EquipmentController::class, 'store']);
-    Route::put('equipment/{id}', [EquipmentController::class, 'update']);
-    Route::post('equipment/{id}/upload', [EquipmentController::class, 'upload']);
-    Route::delete('equipment/{id}', [EquipmentController::class, 'destroy']);
+        // Equipment
+        Route::get('/equipment', [EquipmentController::class, 'index']);
 
-    Route::put('bookings/{id}/approve', [BookingController::class, 'approve']);
-    Route::put('bookings/{id}/reject', [BookingController::class, 'reject']);
-    Route::put('bookings/{id}/release', [BookingController::class, 'release']);
-    Route::put('bookings/{id}/return', [BookingController::class, 'return']);
-    Route::post('bookings/{id}/remind', [BookingController::class, 'remind']);
-});
+        // Equipment (admin & sysadmin)
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/equipment', [EquipmentController::class, 'store']);
+            Route::put('/equipment/{equipment}', [EquipmentController::class, 'update']);
+            Route::post('/equipment/{equipment}/upload', [EquipmentController::class, 'upload']);
+            Route::delete('/equipment/{equipment}', [EquipmentController::class, 'destroy']);
+        });
 
-Route::middleware(['auth:sanctum', 'role:sysadmin'])->group(static function () {
-    Route::get('users', [UserController::class, 'index']);
-    Route::post('users', [UserController::class, 'store']);
-    Route::patch('users/{id}', [UserController::class, 'update']);
-    Route::delete('users/{id}', [UserController::class, 'destroy']);
+        // Bookings
+        Route::get('/bookings', [BookingController::class, 'index']);
+        Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+
+        // Bookings (borrower only)
+        Route::middleware('role:borrower')->group(function () {
+            Route::post('/bookings', [BookingController::class, 'store']);
+            Route::put('/bookings/{booking}/read', [BookingController::class, 'isRead']);
+            Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+        });
+
+        // Bookings (admin & sysadmin)
+        Route::middleware('role:admin')->group(function () {
+            Route::put('/bookings/{booking}/approve', [BookingController::class, 'approve']);
+            Route::put('/bookings/{booking}/reject', [BookingController::class, 'reject']);
+            Route::put('/bookings/{booking}/release', [BookingController::class, 'release']);
+            Route::put('/bookings/{booking}/return', [BookingController::class, 'return']);
+            Route::post('/bookings/{booking}/remind', [BookingController::class, 'remind']);
+        });
+
+        // Users (sysadmin only)
+        Route::middleware('role:sysadmin')->group(function () {
+            Route::get('/users', [UserController::class, 'index']);
+            Route::post('/users', [UserController::class, 'store']);
+            Route::put('/users/{user}', [UserController::class, 'update']);
+            Route::delete('/users/{user}', [UserController::class, 'destroy']);
+        });
+    });
 });
