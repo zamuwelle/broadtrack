@@ -1,4 +1,4 @@
-import { departments } from '@shared/data/departments'
+import { DEPARTMENTS } from '@shared/constants'
 
 export const MAX_NAME_LENGTH = 30
 export const MAX_MESSAGE_LENGTH = 6000
@@ -129,7 +129,7 @@ export const getDepartmentError = (department) => {
     if (!value) {
         return VALIDATION_MESSAGES.REQUIRED
     }
-    if (departments.includes(value)) {
+    if (DEPARTMENTS.includes(value)) {
         return ''
     }
     return VALIDATION_MESSAGES.INVALID_DEPARTMENT

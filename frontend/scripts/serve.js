@@ -6,4 +6,7 @@ const artisanArguments = isWindowsPlatform
     ? ['../../backend/artisan', 'serve', '--port=8000']
     : ['../../backend/artisan', 'octane:start', '--server=frankenphp', '--watch', '--port=8000']
 
-spawn('php', artisanArguments, { stdio: 'inherit', shell: true })
+const child = spawn('php', artisanArguments, { stdio: ['inherit', 'pipe', 'pipe'], shell: true })
+
+child.stdout.pipe(process.stdout)
+child.stderr.pipe(process.stderr)

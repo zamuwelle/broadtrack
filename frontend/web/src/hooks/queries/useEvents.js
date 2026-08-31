@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { echo } from '@/echo'
+import { echo } from '@/lib/echo'
 import { useInvalidateBookings } from '@/hooks/queries/useInvalidateBookings'
 
 export const useEvents = ({ onBookingNotification } = {}) => {

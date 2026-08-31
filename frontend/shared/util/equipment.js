@@ -1,4 +1,4 @@
-import { equipmentCategories } from '@shared/data/equipmentCategories'
+import { EQUIPMENT_CATEGORIES } from '@shared/constants'
 
 export const getEquipmentTitle = (equipment = {}) => equipment.brand || equipment.name || 'Equipment'
 
@@ -22,6 +22,6 @@ export const getEquipmentCategory = (equipment = {}) => {
     } else if (typeof category === 'string') {
         categoryName = category
     }
-    const fallbackCategory = equipment.category_id ? equipmentCategories[equipment.category_id - 1] : null
+    const fallbackCategory = equipment.category_id ? EQUIPMENT_CATEGORIES[equipment.category_id - 1] : null
     return categoryName || fallbackCategory || 'Support'
 }

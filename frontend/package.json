@@ -16,11 +16,13 @@
         "format:backend": "php ../backend/vendor/bin/pint --config ../backend/pint.json ../backend && prettier --write .. --ignore-path .prettierignore",
         "build": "bun run --filter web build",
         "check": "rm -f web/.vite-errors.log && bun run format && bun run lint && bun run build && bun scripts/assert-no-browser-errors.js",
-        "dev": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others \"bun run dev\" \"bun run serve\" \"php ../../backend/artisan queue:work\" \"php ../../backend/artisan reverb:start\""
+        "dev": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others -p \"[{index}] [{name}]\" -n \"laravel,laravel queue,laravel reverb,vite\" \"bun run serve\" \"php ../../backend/artisan queue:work\" \"php ../../backend/artisan reverb:start\" \"bun run dev\"",
+        "dev:backend": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others -p \"[{index}] [{name}]\" -n \"laravel,laravel queue,laravel reverb\" \"bun run serve\" \"php ../../backend/artisan queue:work\" \"php ../../backend/artisan reverb:start\"",
+        "dev:frontend": "bun run --filter web dev"
     },
     "devDependencies": {
         "concurrently": "^10.0.5",
-        "oxlint": "^1.86.0",
+        "oxlint": "^1.87.0",
         "prettier": "^3.9.9"
     }
 }

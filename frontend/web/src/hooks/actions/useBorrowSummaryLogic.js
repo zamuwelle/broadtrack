@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getTodayDateString } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
-import { useUser } from '@/hooks/queries/useUser'
+import { useUser } from '@/lib/auth'
 import { useBasket } from '@/hooks/ui/useBasket'
-import { useBookings } from '@/hooks/queries/useBookings'
+import { useBookings } from '@/api/bookings/get-bookings'
+import { useCreateBooking } from '@/api/bookings/create-booking'
 import { useSetState } from '@shared/hooks/useSetState'
-import { useInvalidateBookings } from '@/hooks/queries/useInvalidateBookings'
-import { bookingService } from '@/api'
 
 const filterParams = Object.freeze({ all: 1 })
 
@@ -111,6 +110,7 @@ const initialSummaryState = Object.freeze({
 })
 
 const useBorrowSubmitHandler = ({
+    createBookingMutation,
     isSubmittable,
     isSubmitting,
     selectedItems,
@@ -121,24 +121,21 @@ const useBorrowSubmitHandler = ({
     updateSummaryState,
     clearBasket,
     setErrorMessage
-}) => {
-    const invalidateBookings = useInvalidateBookings()
-
-    return useCallback(async () => {
+}) =>
+    useCallback(async () => {
         if (!isSubmittable || isSubmitting) {
             return
         }
         setErrorMessage('')
         updateSummaryState({ isSubmitting: true })
         try {
-            await bookingService.create({
+            await createBookingMutation.mutateAsync({
                 equipment_ids: selectedItems.map((item) => item.id),
                 purpose,
                 start_date: startDate,
                 end_date: endDate,
                 notes: specialNotes || null
             })
-            invalidateBookings()
             updateSummaryState({
                 modalView: 'submitted',
                 startDate: '',
@@ -155,6 +152,7 @@ const useBorrowSubmitHandler = ({
             updateSummaryState({ isSubmitting: false })
         }
     }, [
+        createBookingMutation,
         isSubmittable,
         isSubmitting,
         updateSummaryState,
@@ -163,11 +161,9 @@ const useBorrowSubmitHandler = ({
         startDate,
         endDate,
         specialNotes,
-        invalidateBookings,
         clearBasket,
         setErrorMessage
     ])
-}
 
 const enforceSchoolHours = (dateString) => {
     if (!dateString) {
@@ -299,7 +295,8 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     const { data: activeUser } = useUser()
     const user = activeUser ?? propUser
     const { items: selectedItems, removeItem, clearBasket } = useBasket()
-    const { data: remoteBookings = [] } = useBookings(filterParams)
+    const { data: remoteBookings = [] } = useBookings({ params: filterParams })
+    const createBookingMutation = useCreateBooking()
     const [errorMessage, setErrorMessage] = useState('')
 
     const [summaryState, updateSummaryState] = useSetState({
@@ -372,6 +369,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     })
 
     const handleSubmit = useBorrowSubmitHandler({
+        createBookingMutation,
         isSubmittable,
         isSubmitting,
         selectedItems,

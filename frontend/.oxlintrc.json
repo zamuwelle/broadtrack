@@ -145,6 +145,8 @@
             }
         ],
         "no-unneeded-ternary": "warn",
+        "no-extra-boolean-cast": "warn",
+        "no-negated-condition": "warn",
         "no-lonely-if": "warn",
         "no-else-return": "warn",
         "no-nested-ternary": "warn",

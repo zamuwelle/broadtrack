@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { getNotificationConfig } from '@/components/borrow/notificationConfig'
+import { getNotificationConfig } from '@/features/borrow/components/notificationConfig'
 import { useEvents } from '@/hooks/queries/useEvents'
-import { useUser } from '@/hooks/queries/useUser'
+import { useUser } from '@/lib/auth'
 
 const noop = () => null
 
