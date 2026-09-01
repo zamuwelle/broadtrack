@@ -3,6 +3,9 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GoogleProvider;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 test('borrower can register with valid student email', function () {
     Mail::fake();
@@ -96,4 +99,46 @@ test('authenticated user can logout', function () {
 
     $response->assertOk()
         ->assertJsonPath('message', 'Logged out successfully.');
+});
+
+test('oauth callback redirects unverified user with error message', function () {
+    Mail::fake();
+
+    User::factory()->unverified()->create([
+        'email' => 'unverified.oauth@student.laverdad.edu.ph',
+    ]);
+
+    $socialiteUser = Mockery::mock(SocialiteUser::class);
+    $socialiteUser->shouldReceive('getEmail')->andReturn('unverified.oauth@student.laverdad.edu.ph');
+    $socialiteUser->shouldReceive('getAvatar')->andReturn(null);
+
+    $provider = Mockery::mock(GoogleProvider::class);
+    $provider->shouldReceive('stateless')->andReturnSelf();
+    $provider->shouldReceive('user')->andReturn($socialiteUser);
+
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $response = $this->get('/api/v1/auth/google/callback?code=mock-code');
+
+    $response->assertRedirect(config('app.frontend_url').'/?error='.urlencode('Please verify your email first. We sent you a link.'));
+});
+
+test('oauth callback redirects unregistered user to register tab', function () {
+    $socialiteUser = Mockery::mock(SocialiteUser::class);
+    $socialiteUser->shouldReceive('getEmail')->andReturn('new.oauth@student.laverdad.edu.ph');
+    $socialiteUser->shouldReceive('getAvatar')->andReturn(null);
+    $socialiteUser->shouldReceive('getName')->andReturn('New Student');
+    $socialiteUser->user = ['given_name' => 'New', 'family_name' => 'Student'];
+
+    $provider = Mockery::mock(GoogleProvider::class);
+    $provider->shouldReceive('stateless')->andReturnSelf();
+    $provider->shouldReceive('user')->andReturn($socialiteUser);
+
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $response = $this->get('/api/v1/auth/google/callback?code=mock-code');
+
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->toContain('tab=register');
+    expect($response->headers->get('Location'))->toContain('email=new.oauth%40student.laverdad.edu.ph');
 });

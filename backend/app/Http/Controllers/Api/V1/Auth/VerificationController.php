@@ -54,7 +54,7 @@ class VerificationController extends ApiController
 
         $user->update(['verification_token' => $token, 'verification_sent_at' => now()]);
 
-        $verifyUrl = config('app.url').'/api/verify-email?token='.$token;
+        $verifyUrl = config('app.url').'/api/v1/verify-email?token='.$token;
 
         Mail::to($user->email)->queue(new VerifyEmailMail($verifyUrl, $user->firstname));
     }

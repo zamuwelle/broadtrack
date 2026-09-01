@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { VALIDATION_MESSAGES, isValidEmail } from '@shared/schemas/common'
 import { useSend } from '@/hooks/actions/useSend'
-import { loginUser } from '@/api/auth/login'
-import { registerUser } from '@/api/auth/register'
-import { forgotPassword } from '@/api/auth/forgot-password'
-import { resetPassword } from '@/api/auth/reset-password'
+import { loginUser } from '@/features/auth/api/login'
+import { registerUser } from '@/features/auth/api/register'
+import { forgotPassword } from '@/features/auth/api/forgot-password'
+import { resetPassword } from '@/features/auth/api/reset-password'
 
 const hasRegisterMissing = (form) => {
     const fn = (form.firstname || '').trim()

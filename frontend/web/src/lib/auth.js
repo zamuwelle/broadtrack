@@ -8,7 +8,27 @@ export const isAdmin = (user) => user?.role === ROLES.ADMIN || user?.role === RO
 export const isSysAdmin = (user) => user?.role === ROLES.SYSADMIN
 export const isBorrower = (user) => user?.role === ROLES.BORROWER
 
+const syncTokenFromUrl = () => {
+    if (!globalThis.location?.search) {
+        return
+    }
+    const searchParams = new URLSearchParams(globalThis.location.search)
+    const token = searchParams.get('token')
+    const activeTab = searchParams.get('tab')
+
+    if (token && activeTab !== 'reset') {
+        globalThis.localStorage?.setItem('auth_token', token)
+        searchParams.delete('token')
+        const remainingQuery = searchParams.toString() ? `?${searchParams.toString()}` : ''
+        const cleanUrl = `${globalThis.location.pathname}${remainingQuery}${globalThis.location.hash}`
+        globalThis.history?.replaceState({}, '', cleanUrl)
+    }
+}
+
+syncTokenFromUrl()
+
 export const getUser = async () => {
+    syncTokenFromUrl()
     if (!globalThis.localStorage?.getItem('auth_token')) {
         return null
     }
@@ -21,6 +41,7 @@ export const getUser = async () => {
 }
 
 export const useUser = (options = {}) => {
+    syncTokenFromUrl()
     const hasToken = Boolean(globalThis.localStorage?.getItem('auth_token'))
 
     return useQuery({
