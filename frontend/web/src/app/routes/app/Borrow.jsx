@@ -11,4 +11,3 @@ export const BorrowRoute = () => (
         </BorrowLayout>
     </ProtectedRoute>
 )
-

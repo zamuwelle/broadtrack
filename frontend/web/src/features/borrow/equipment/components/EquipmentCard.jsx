@@ -15,7 +15,8 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
     const modelName = [equipment.brand, equipment.model].filter(Boolean).join(' ')
     const currentStatus = equipment.status || 'available'
     const isSelectable = currentStatus === 'available' || currentStatus === 'booked'
-    const categoryName = equipment.category?.name || 'Support'
+    const categoryName =
+        (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Support'
 
     const handleToggleSelect = useCallback(() => {
         toggleItem(equipment)
@@ -58,11 +59,7 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                 ) : null}
                 <StatusBadge status={equipment.status} className="relative" />
                 {isSelectable ? (
-                    <SelectButton
-                        selected={isSelected}
-                        onSelect={handleToggleSelect}
-                        className="relative"
-                    />
+                    <SelectButton selected={isSelected} onSelect={handleToggleSelect} className="relative" />
                 ) : null}
             </div>
             <div className="flex h-[221px] flex-col gap-[18px] px-4 py-5 lg:px-[26px] lg:py-[28px]">

@@ -11,4 +11,3 @@ export const AdminRoute = () => (
         </AdminLayout>
     </ProtectedRoute>
 )
-

@@ -6,12 +6,7 @@ import { errorLogPlugin } from './plugins/vite-error-logger.js'
 import { sharedDepsPlugin } from './plugins/vite-shared-deps.js'
 
 export default defineConfig({
-    plugins: [
-        react(),
-        tailwindcss(),
-        errorLogPlugin(),
-        sharedDepsPlugin()
-    ],
+    plugins: [react(), tailwindcss(), errorLogPlugin(), sharedDepsPlugin()],
     server: {
         forwardConsole: {
             unhandledErrors: true,

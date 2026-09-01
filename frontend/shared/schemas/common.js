@@ -112,7 +112,8 @@ export const validatePhone = (val) => validateField(phoneSchema, val)
 export const validatePassword = (val) => validateField(passwordSchema, val)
 export const validateDepartment = (val) => validateField(departmentSchema, val)
 export const validateMessage = (val) => validateField(messageSchema, val)
-export const validateConfirmPassword = (pw, confirm) => (confirm && pw !== confirm ? VALIDATION_MESSAGES.PASSWORD_MISMATCH : '')
+export const validateConfirmPassword = (pw, confirm) =>
+    confirm && pw !== confirm ? VALIDATION_MESSAGES.PASSWORD_MISMATCH : ''
 
 export const isValidName = (val) => nameSchema.safeParse(val).success
 export const isValidEmail = (val) => laVerdadEmailSchema.safeParse(val).success
@@ -121,5 +122,3 @@ export const isValidPhone = (val) => phoneSchema.safeParse(val).success
 export const isValidPassword = (val) => passwordSchema.safeParse(val).success
 export const isValidDepartment = (val) => departmentSchema.safeParse(val).success
 export const isValidMessage = (val) => messageSchema.safeParse(val).success
-
-

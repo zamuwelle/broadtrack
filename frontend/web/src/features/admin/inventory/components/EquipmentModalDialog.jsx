@@ -34,7 +34,7 @@ const createEquipmentPayload = (formValues, equipment, isEditMode) => {
         brand: formValues.equipmentName.trim(),
         model: formValues.modelCode.trim() || null,
         serial_no: isEditMode ? formValues.serialNumber.trim() || item.serial_no || null : null,
-        category_id: Number(formValues.categoryId),
+        category: formValues.categoryId,
         description: formValues.shortDescription.trim() || null,
         specs: formValues.technicalSpecs.trim() || null
     }
@@ -143,7 +143,7 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
             equipmentName: item.name || '',
             modelCode: item.model || '',
             serialNumber: item.serial_no || '',
-            categoryId: (item.category ? item.category.id : '') || '',
+            categoryId: (typeof item.category === 'string' ? item.category : item.category?.name) || '',
             shortDescription: item.description || '',
             technicalSpecs: item.specs || '',
             imageFile: null,

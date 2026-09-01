@@ -1,12 +1,6 @@
 import { z } from 'zod'
 import { ROLES } from '@shared/constants'
-import {
-    departmentSchema,
-    laVerdadEmailSchema,
-    nameSchema,
-    passwordSchema,
-    phoneSchema
-} from '@shared/schemas/common'
+import { departmentSchema, laVerdadEmailSchema, nameSchema, passwordSchema, phoneSchema } from '@shared/schemas/common'
 
 const roleEnumValues = [ROLES.BORROWER, ROLES.ADMIN, ROLES.SYSADMIN]
 

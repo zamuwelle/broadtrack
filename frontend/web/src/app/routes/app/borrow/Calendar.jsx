@@ -25,7 +25,8 @@ const normalizeBookingItem = (booking, equipment) => {
         bookingId: booking.id,
         equipmentId: equipment.id,
         equipmentName: [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name,
-        categoryName: (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Equipment',
+        categoryName:
+            (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Equipment',
         borrowerName,
         borrowerDepartment,
         periodText,

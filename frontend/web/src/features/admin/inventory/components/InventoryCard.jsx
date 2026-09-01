@@ -15,7 +15,8 @@ export const InventoryCard = ({
     const equipmentModel = equipment.model || 'N/A'
     const equipmentDescription = equipment.description || 'No description available'
     const serialNumber = equipment.serial_no || 'N/A'
-    const categoryName = equipment.category?.name || 'Support'
+    const categoryName =
+        (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Support'
 
     const handleEdit = useCallback(() => {
         onEdit(equipment)

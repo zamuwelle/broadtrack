@@ -75,8 +75,7 @@ export const BorrowLayout = ({ onReady, children }) => {
         return null
     }
 
-    const containerClass =
-        activeTab === 'Calendar' ? 'flex-1 flex flex-col p-4 lg:min-h-0 lg:p-8' : 'p-4 lg:p-8'
+    const containerClass = activeTab === 'Calendar' ? 'flex-1 flex flex-col p-4 lg:min-h-0 lg:p-8' : 'p-4 lg:p-8'
 
     return (
         <div className="h-screen flex flex-col font-['Poppins']">

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 
-export const updateProfile = (data) => api.patch('/profile', data)
+export const updateProfile = (data) => api.put('/profile', data)
 
 export const useUpdateProfile = ({ mutationConfig } = {}) => {
     const queryClient = useQueryClient()

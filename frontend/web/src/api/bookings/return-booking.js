@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 
-export const returnBooking = (bookingId) =>
-    api.put(`/bookings/${bookingId}/return`)
+export const returnBooking = (bookingId) => api.put(`/bookings/${bookingId}/return`)
 
 export const useReturnBooking = ({ mutationConfig } = {}) => {
     const queryClient = useQueryClient()

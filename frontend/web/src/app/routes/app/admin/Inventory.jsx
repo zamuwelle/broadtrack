@@ -12,9 +12,9 @@ import { matchesSearch } from '@shared/util/search'
 import { EQUIPMENT_CATEGORIES } from '@shared/constants'
 
 const CATEGORIES = Object.freeze(
-    EQUIPMENT_CATEGORIES.map((categoryName, categoryIndex) =>
+    EQUIPMENT_CATEGORIES.map((categoryName) =>
         Object.freeze({
-            id: categoryIndex + 1,
+            id: categoryName,
             name: categoryName
         })
     )
@@ -129,7 +129,8 @@ export const InventoryPage = (props) => {
     const filteredEquipment = useMemo(
         () =>
             equipmentList.filter((equipment) => {
-                const categoryName = equipment.category ? equipment.category.name : ''
+                const categoryName =
+                    typeof equipment.category === 'string' ? equipment.category : equipment.category?.name || ''
                 return (
                     (selectedCategory === 'All' || categoryName === selectedCategory) &&
                     matchesSearch(equipment, searchText)

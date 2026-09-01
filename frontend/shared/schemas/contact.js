@@ -7,4 +7,3 @@ export const contactSchema = z.object({
     email: anyEmailSchema,
     message: messageSchema
 })
-

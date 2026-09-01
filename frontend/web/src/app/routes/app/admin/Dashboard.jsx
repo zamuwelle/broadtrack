@@ -35,10 +35,7 @@ export const DashboardPage = (props) => {
         [bookings]
     )
 
-    const inMaintenance = useMemo(
-        () => equipment.filter((item) => item.status === 'maintenance').length,
-        [equipment]
-    )
+    const inMaintenance = useMemo(() => equipment.filter((item) => item.status === 'maintenance').length, [equipment])
 
     const overdueBookings = useMemo(() => bookings.filter((booking) => booking.is_overdue), [bookings])
 

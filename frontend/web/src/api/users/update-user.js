@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 
-export const updateUser = ({ userId, data }) => api.patch(`/users/${userId}`, data)
+export const updateUser = ({ userId, data }) => api.put(`/users/${userId}`, data)
 
 export const useUpdateUser = ({ mutationConfig } = {}) => {
     const queryClient = useQueryClient()

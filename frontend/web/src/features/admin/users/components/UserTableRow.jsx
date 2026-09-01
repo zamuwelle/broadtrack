@@ -28,9 +28,7 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
             <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">
                 {user.firstname}
             </td>
-            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">
-                {user.lastname}
-            </td>
+            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">{user.lastname}</td>
             <td className="px-3 py-2.5 text-xs text-slate-700 border-r border-slate-200">{user.email}</td>
             <td className="px-3 py-2.5 border-r border-slate-200">
                 <span className={`px-2.5 py-1 text-xs font-medium rounded-lg capitalize inline-block ${badgeClass}`}>

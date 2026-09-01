@@ -42,7 +42,9 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
                 ) : (
                     <div className="w-6 h-6 rounded-full bg-surface-hover shrink-0" />
                 )}
-                <span className="hidden lg:inline text-[16px] font-medium text-text min-w-[60px] capitalize">{firstName}</span>
+                <span className="hidden lg:inline text-[16px] font-medium text-text min-w-[60px] capitalize">
+                    {firstName}
+                </span>
                 <Icon name="chevron" className={`hidden lg:inline transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
             {open && (

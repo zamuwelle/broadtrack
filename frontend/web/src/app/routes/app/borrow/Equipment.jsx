@@ -69,7 +69,7 @@ export const EquipmentPage = () => {
     const filteredEquipment = useMemo(
         () =>
             equipment.filter((item) => {
-                const categoryName = item.category ? item.category.name : ''
+                const categoryName = typeof item.category === 'string' ? item.category : item.category?.name || ''
                 return (category === 'All' || categoryName === category) && matchesSearch(item, searchText)
             }),
         [category, equipment, searchText]
