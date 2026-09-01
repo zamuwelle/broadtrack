@@ -1,137 +1,96 @@
 import { useMemo } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { ADMIN_ROLES, BORROWER_ROLES } from '@shared/constants'
+import { ProtectedRoute } from '@/app/authorization'
 import { paths } from '@/config/paths'
-import { AppRoot } from '@/app/routes/root'
-
-const getBorrowChildren = () => [
-    {
-        index: true,
-        lazy: async () => {
-            const { BorrowIndexRoute } = await import('@/app/routes/app/borrow/index')
-            return { Component: BorrowIndexRoute }
-        }
-    },
-    {
-        path: 'equipment',
-        lazy: async () => {
-            const { EquipmentPage } = await import('@/app/routes/app/borrow/Equipment')
-            return { Component: EquipmentPage }
-        }
-    },
-    {
-        path: 'calendar',
-        lazy: async () => {
-            const { CalendarPage } = await import('@/app/routes/app/borrow/Calendar')
-            return { Component: CalendarPage }
-        }
-    },
-    {
-        path: 'slips',
-        lazy: async () => {
-            const { SlipsPage } = await import('@/app/routes/app/borrow/Slips')
-            return { Component: SlipsPage }
-        }
-    }
-]
-
-const getAdminChildren = () => [
-    {
-        index: true,
-        lazy: async () => {
-            const { AdminIndexRoute } = await import('@/app/routes/app/admin/index')
-            return { Component: AdminIndexRoute }
-        }
-    },
-    {
-        path: 'dashboard',
-        lazy: async () => {
-            const { DashboardPage } = await import('@/app/routes/app/admin/Dashboard')
-            return { Component: DashboardPage }
-        }
-    },
-    {
-        path: 'approvals',
-        lazy: async () => {
-            const { ApprovalsPage } = await import('@/app/routes/app/admin/Approvals')
-            return { Component: ApprovalsPage }
-        }
-    },
-    {
-        path: 'inventory',
-        lazy: async () => {
-            const { InventoryPage } = await import('@/app/routes/app/admin/Inventory')
-            return { Component: InventoryPage }
-        }
-    },
-    {
-        path: 'transactions',
-        lazy: async () => {
-            const { TransactionsPage } = await import('@/app/routes/app/admin/Transactions')
-            return { Component: TransactionsPage }
-        }
-    },
-    {
-        path: 'users',
-        lazy: async () => {
-            const { UserManagementPage } = await import('@/app/routes/app/admin/Users')
-            return { Component: UserManagementPage }
-        }
-    }
-]
-
-const getAppRoutes = () => [
-    {
-        path: paths.home,
-        lazy: async () => {
-            const { LandingRoute } = await import('@/app/routes/Landing')
-            return { Component: LandingRoute }
-        }
-    },
-    {
-        path: paths.terms,
-        lazy: async () => {
-            const { TermsRoute } = await import('@/app/routes/Terms')
-            return { Component: TermsRoute }
-        }
-    },
-    {
-        path: paths.privacy,
-        lazy: async () => {
-            const { PrivacyRoute } = await import('@/app/routes/Privacy')
-            return { Component: PrivacyRoute }
-        }
-    },
-    {
-        path: paths.app.borrow,
-        lazy: async () => {
-            const { BorrowRoute } = await import('@/app/routes/app/Borrow')
-            return { Component: BorrowRoute }
-        },
-        children: getBorrowChildren()
-    },
-    {
-        path: paths.app.admin,
-        lazy: async () => {
-            const { AdminRoute } = await import('@/app/routes/app/Admin')
-            return { Component: AdminRoute }
-        },
-        children: getAdminChildren()
-    },
-    {
-        path: '*',
-        lazy: async () => {
-            const { NotFoundRoute } = await import('@/app/routes/NotFound')
-            return { Component: NotFoundRoute }
-        }
-    }
-]
 
 const createAppRouter = () =>
     createBrowserRouter([
         {
-            element: <AppRoot />,
+            lazy: () => import('@/layouts/PublicLayout'),
             HydrateFallback: () => null,
-            children: getAppRoutes()
+            children: [
+                {
+                    path: paths.home,
+                    lazy: () => import('@/routes/Landing')
+                },
+                {
+                    path: paths.terms,
+                    lazy: () => import('@/routes/Terms')
+                },
+                {
+                    path: paths.privacy,
+                    lazy: () => import('@/routes/Privacy')
+                }
+            ]
+        },
+        {
+            path: paths.app.borrow,
+            element: <ProtectedRoute allowedRoles={BORROWER_ROLES} />,
+            children: [
+                {
+                    lazy: () => import('@/layouts/BorrowLayout'),
+                    HydrateFallback: () => null,
+                    children: [
+                        {
+                            index: true,
+                            lazy: () => import('@/routes/borrow/Equipment')
+                        },
+                        {
+                            path: 'equipment',
+                            lazy: () => import('@/routes/borrow/Equipment')
+                        },
+                        {
+                            path: 'calendar',
+                            lazy: () => import('@/routes/borrow/Calendar')
+                        },
+                        {
+                            path: 'slips',
+                            lazy: () => import('@/routes/borrow/Slips')
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            path: paths.app.admin,
+            element: <ProtectedRoute allowedRoles={ADMIN_ROLES} />,
+            children: [
+                {
+                    lazy: () => import('@/layouts/AdminLayout'),
+                    HydrateFallback: () => null,
+                    children: [
+                        {
+                            index: true,
+                            lazy: () => import('@/routes/admin/Dashboard')
+                        },
+                        {
+                            path: 'dashboard',
+                            lazy: () => import('@/routes/admin/Dashboard')
+                        },
+                        {
+                            path: 'approvals',
+                            lazy: () => import('@/routes/admin/Approvals')
+                        },
+                        {
+                            path: 'inventory',
+                            lazy: () => import('@/routes/admin/Inventory')
+                        },
+                        {
+                            path: 'transactions',
+                            lazy: () => import('@/routes/admin/Transactions')
+                        },
+                        {
+                            path: 'users',
+                            lazy: () => import('@/routes/admin/Users')
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            path: '*',
+            lazy: () => import('@/routes/NotFound')
         }
     ])
 

@@ -33,3 +33,6 @@ export const ROLES = Object.freeze({
     ADMIN: 'admin',
     SYSADMIN: 'sysadmin'
 })
+
+export const BORROWER_ROLES = Object.freeze([ROLES.BORROWER])
+export const ADMIN_ROLES = Object.freeze([ROLES.ADMIN, ROLES.SYSADMIN])
