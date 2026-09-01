@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
-import { getAnyEmailError, getMessageError, isValidName } from '@shared/util/validation'
+import { contactSchema } from '@shared/schemas/contact'
 import { useCreateContact } from '@/api/contact/create-contact'
 import { useSetState } from '@shared/hooks/useSetState'
-import { ContactSentView } from '@/features/landing/components/ContactSentView'
-import { ContactFormView } from '@/features/landing/components/ContactFormView'
+import { ContactSentView } from '@/features/landing/contact/ContactSentView'
+import { ContactFormView } from '@/features/landing/contact/ContactFormView'
 
 const initialForm = Object.freeze({
     firstname: '',
@@ -31,12 +31,7 @@ export const QuickContact = () => {
         }
     })
 
-    const isValid = Boolean(
-        isValidName(form.firstname) &&
-        isValidName(form.lastname) &&
-        !getAnyEmailError(form.email) &&
-        !getMessageError(form.message)
-    )
+    const isValid = contactSchema.safeParse(form).success
 
     const updateField = useCallback(
         (name, value) => {

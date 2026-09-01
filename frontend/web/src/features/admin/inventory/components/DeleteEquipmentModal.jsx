@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useSetState } from '@shared/hooks/useSetState'
-import { getEquipmentTitle } from '@shared/util/equipment'
 import { deleteEquipment } from '@/api/equipment/delete-equipment'
 
 const noop = () => null
@@ -42,7 +41,7 @@ export const DeleteEquipmentModal = ({ isOpen = false, onClose = noop, equipment
         return null
     }
 
-    const equipmentTitle = getEquipmentTitle(equipment)
+    const equipmentTitle = equipment.name || 'Equipment'
     const serialNumber = equipment.serial_no || 'N/A'
 
     return (

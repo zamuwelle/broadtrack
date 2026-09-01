@@ -6,8 +6,10 @@ export const useScrollDirection = () => {
         let last = globalThis.scrollY
         const onScroll = () => {
             const y = globalThis.scrollY
-            setScroll({ dir: y > last ? 'down' : 'up', top: y === 0 })
+            const dir = y > last ? 'down' : 'up'
+            const top = y === 0
             last = y
+            setScroll((prev) => (prev.dir === dir && prev.top === top ? prev : { dir, top }))
         }
         globalThis.addEventListener('scroll', onScroll)
         return () => globalThis.removeEventListener('scroll', onScroll)

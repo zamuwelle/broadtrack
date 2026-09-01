@@ -5,7 +5,7 @@ import { NotificationToggle } from '@/features/borrow/components/NotificationTog
 import { ProfileToggle } from '@/features/users/components/ProfileToggle'
 import { BorrowSummaryModal } from '@/features/borrow/components/BorrowSummaryModal'
 import { useUser } from '@/lib/auth'
-import { useBasket } from '@/hooks/ui/useBasket'
+import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { Icon } from '@/components/ui/Icon'
 
 const defaultBookings = Object.freeze([])
@@ -31,7 +31,7 @@ export const BorrowNavbar = ({
     activeTab = ''
 }) => {
     const { data: user } = useUser()
-    const { count } = useBasket()
+    const count = useBookingCartStore((state) => state.items.length)
     const [isSummaryOpen, setIsSummaryOpen] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 

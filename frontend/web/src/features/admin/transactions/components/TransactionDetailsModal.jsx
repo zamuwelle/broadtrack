@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 import { formatDate, getOverdueDuration } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
-import { getBookingStatus, isBookingOverdue } from '@shared/util/booking'
+import { getBookingStatus } from '@shared/util/booking'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
 import { SendReminderModal } from '@/features/admin/transactions/components/SendReminderModal'
@@ -23,7 +21,7 @@ const getTransactionVariant = (booking) => {
     if (status === 'returned') {
         return 'completed'
     }
-    return isBookingOverdue(booking) ? 'overdue' : 'active'
+    return booking.is_overdue ? 'overdue' : 'active'
 }
 
 const getEquipmentBadge = (variant) => {
@@ -138,6 +136,29 @@ const useTransactionModalState = (onClose, onReturnConfirmed) => {
     }
 }
 
+const getTransactionModalDetails = (booking) => {
+    const variant = getTransactionVariant(booking)
+    const equipments = booking.equipments || defaultList
+    const equipment = equipments[0] || defaultBooking
+    const user = booking.user || defaultBooking
+
+    return {
+        variant,
+        equipmentTitle: equipment.name || 'Equipment',
+        equipmentModel: equipment.model || 'N/A',
+        equipmentSerial: equipment.serial_no || 'N/A',
+        equipmentId: getEquipmentId(equipment, booking),
+        borrowerName: user.full_name || 'Borrower',
+        borrowerDepartment: user.department || 'BS Information Systems',
+        startDateFormatted: formatDate(booking.start_date),
+        endDateFormatted: formatDate(booking.end_date),
+        overdueDuration: getOverdueDuration(booking.end_date),
+        equipmentBadge: getEquipmentBadge(variant),
+        timelineColor: getTimelineColor(variant),
+        statusBadge: getStatusBadge(variant)
+    }
+}
+
 export const TransactionDetailsModal = (props) => {
     const isOpen = props.isOpen || false
     const onClose = props.onClose || noop
@@ -158,24 +179,21 @@ export const TransactionDetailsModal = (props) => {
         return null
     }
 
-    const variant = getTransactionVariant(booking)
-    const equipments = booking.equipments || defaultList
-    const equipment = equipments[0] || defaultBooking
-    const equipmentTitle = getEquipmentTitle(equipment)
-    const equipmentModel = equipment.model || 'N/A'
-    const equipmentSerial = equipment.serial_no || 'N/A'
-    const equipmentId = getEquipmentId(equipment, booking)
-
-    const user = booking.user || defaultBooking
-    const borrowerName = getFullName(user) || 'Borrower'
-    const borrowerDepartment = user.department || 'BS Information Systems'
-    const startDateFormatted = formatDate(booking.start_date)
-    const endDateFormatted = formatDate(booking.end_date)
-    const overdueDuration = getOverdueDuration(booking.end_date)
-
-    const equipmentBadge = getEquipmentBadge(variant)
-    const timelineColor = getTimelineColor(variant)
-    const statusBadge = getStatusBadge(variant)
+    const {
+        variant,
+        equipmentTitle,
+        equipmentModel,
+        equipmentSerial,
+        equipmentId,
+        borrowerName,
+        borrowerDepartment,
+        startDateFormatted,
+        endDateFormatted,
+        overdueDuration,
+        equipmentBadge,
+        timelineColor,
+        statusBadge
+    } = getTransactionModalDetails(booking)
 
     return (
         <>

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Category;
+use App\Enums\EquipmentCategory;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Services\CloudinaryService;
@@ -17,10 +17,9 @@ test('authenticated user can list equipment', function () {
 
 test('admin can create equipment', function () {
     $admin = User::factory()->admin()->create();
-    $category = Category::factory()->create();
 
     $response = $this->actingAs($admin)->postJson('/api/v1/equipment', [
-        'category_id' => $category->id,
+        'category' => EquipmentCategory::Camera->value,
         'name' => 'Canon EOS R5',
         'brand' => 'Canon',
         'model' => 'EOS-R5',
@@ -30,19 +29,20 @@ test('admin can create equipment', function () {
 
     $response->assertCreated()
         ->assertJsonPath('data.name', 'Canon EOS R5')
+        ->assertJsonPath('data.category', EquipmentCategory::Camera->value)
         ->assertJsonPath('data.status', 'available');
 
     $this->assertDatabaseHas('equipments', [
         'name' => 'Canon EOS R5',
+        'category' => EquipmentCategory::Camera->value,
     ]);
 });
 
 test('borrower cannot create equipment', function () {
     $borrower = User::factory()->borrower()->create();
-    $category = Category::factory()->create();
 
     $response = $this->actingAs($borrower)->postJson('/api/v1/equipment', [
-        'category_id' => $category->id,
+        'category' => EquipmentCategory::Camera->value,
         'name' => 'Forbidden Camera',
     ]);
 
@@ -97,4 +97,25 @@ test('admin can delete equipment', function () {
     $this->assertDatabaseMissing('equipments', [
         'id' => $equipment->id,
     ]);
+});
+
+test('equipment helper methods and scopes work correctly', function () {
+    $available = Equipment::factory()->available()->create([
+        'category' => EquipmentCategory::Camera->value,
+        'serial_no' => 'SN-CAM-00001',
+    ]);
+    $maintenance = Equipment::factory()->maintenance()->create([
+        'category' => EquipmentCategory::Audio->value,
+    ]);
+
+    expect($available->isAvailable())->toBeTrue();
+    expect($available->isUnderMaintenance())->toBeFalse();
+    expect($available->imagePublicId())->toBe('sn-cam-00001');
+
+    expect($maintenance->isAvailable())->toBeFalse();
+    expect($maintenance->isUnderMaintenance())->toBeTrue();
+
+    $cameras = Equipment::category(EquipmentCategory::Camera)->get();
+    expect($cameras)->toHaveCount(1);
+    expect($cameras->first()->id)->toBe($available->id);
 });

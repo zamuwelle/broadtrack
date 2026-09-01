@@ -130,3 +130,45 @@ test('admin sees all bookings', function () {
     $response->assertOk()
         ->assertJsonCount(2, 'data');
 });
+
+test('cannot book equipment with overlapping dates', function () {
+    $borrower = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $existingBooking = Booking::factory()->approved()->create([
+        'start_date' => now()->addDays(1),
+        'end_date' => now()->addDays(3),
+    ]);
+    $existingBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Conflicting shoot',
+        'start_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        'end_date' => now()->addDays(4)->format('Y-m-d H:i:s'),
+        'equipment_ids' => [$equipment->id],
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['equipment_ids']);
+});
+
+test('admin can reject pending booking', function () {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->pending()->create();
+    $booking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/reject", [
+        'rejection_reason' => 'Schedule conflict with production studio',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.status', 'rejected')
+        ->assertJsonPath('data.rejection_reason', 'Schedule conflict with production studio');
+
+    $this->assertDatabaseHas('bookings', [
+        'id' => $booking->id,
+        'status' => 'rejected',
+        'rejection_reason' => 'Schedule conflict with production studio',
+    ]);
+});

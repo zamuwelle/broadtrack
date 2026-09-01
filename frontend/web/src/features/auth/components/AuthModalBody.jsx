@@ -1,11 +1,10 @@
 import {
-    getDepartmentError,
-    getEmailError,
-    getFirstnameError,
-    getLastnameError,
-    getPasswordError,
-    getPhoneError
-} from '@shared/util/validation'
+    validateDepartment,
+    validateEmail,
+    validateName,
+    validatePassword,
+    validatePhone
+} from '@shared/schemas/common'
 import { ForgotForm } from '@/features/auth/components/ForgotForm'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
@@ -13,13 +12,22 @@ import { ResetForm } from '@/features/auth/components/ResetForm'
 
 const resolveFormErrors = (form, error, isCredentialError) => {
     const isPhoneError = error === 'Invalid phone number format' || Boolean(error?.toLowerCase().includes('phone'))
+    let emailError = form.email ? validateEmail(form.email) : ''
+    let passwordError = form.password ? validatePassword(form.password) : ''
+    if (isCredentialError) {
+        emailError = error
+        passwordError = error
+    } else if (!isPhoneError && error) {
+        emailError = error
+    }
+
     return {
-        firstnameError: form.firstname ? getFirstnameError(form.firstname) : '',
-        lastnameError: form.lastname ? getLastnameError(form.lastname) : '',
-        emailError: isCredentialError ? error : (isPhoneError ? '' : error) || getEmailError(form.email),
-        phoneError: (isPhoneError ? error : '') || (form.phone ? getPhoneError(form.phone) : ''),
-        passwordError: isCredentialError ? error : getPasswordError(form.password),
-        departmentError: form.department ? getDepartmentError(form.department) : ''
+        firstnameError: form.firstname ? validateName(form.firstname) : '',
+        lastnameError: form.lastname ? validateName(form.lastname) : '',
+        emailError,
+        phoneError: (isPhoneError ? error : '') || (form.phone ? validatePhone(form.phone) : ''),
+        passwordError,
+        departmentError: form.department ? validateDepartment(form.department) : ''
     }
 }
 

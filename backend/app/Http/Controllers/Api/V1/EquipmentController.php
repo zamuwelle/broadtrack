@@ -16,8 +16,7 @@ class EquipmentController extends ApiController
 {
     public function index(): JsonResponse
     {
-        $equipmentList = Equipment::with('category:id,name')
-            ->select('id', 'category_id', 'name', 'brand', 'model', 'serial_no', 'status', 'image', 'description', 'specs')
+        $equipmentList = Equipment::select('id', 'category', 'name', 'brand', 'model', 'serial_no', 'status', 'image', 'description', 'specs')
             ->get();
 
         return $this->success(EquipmentResource::collection(Equipment::resolveStatuses($equipmentList)));
@@ -48,8 +47,7 @@ class EquipmentController extends ApiController
     {
         $this->authorize('manage', Equipment::class);
 
-        $rawIdentifier = strtolower($equipment->serial_no ?: "equipment-{$equipment->id}");
-        $uploadResult = $cloudinary->upload($request->file('image'), $rawIdentifier);
+        $uploadResult = $cloudinary->upload($request->file('image'), $equipment->imagePublicId());
 
         if (! isset($uploadResult['secure_url'])) {
             return $this->error('Upload failed.', 500);
@@ -65,8 +63,7 @@ class EquipmentController extends ApiController
         $this->authorize('manage', Equipment::class);
 
         if ($equipment->image) {
-            $rawIdentifier = strtolower($equipment->serial_no ?: "equipment-{$equipment->id}");
-            $cloudinary->destroy($rawIdentifier);
+            $cloudinary->destroy($equipment->imagePublicId());
         }
 
         $equipment->delete();

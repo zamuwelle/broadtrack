@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { formatDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
-import { getEquipmentStatus } from '@shared/util/equipment'
 import { useBookings } from '@/api/bookings/get-bookings'
 
 const filterParams = Object.freeze({ all: 1 })
@@ -12,7 +11,7 @@ const isExcludedStatus = (status) =>
     status === 'cancelled' || status === 'canceled' || status === 'rejected' || status === 'returned'
 
 export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
-    const normalizedStatus = getEquipmentStatus(status)
+    const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : 'available'
     const { data: remoteBookings = [] } = useBookings({ params: filterParams })
     const equipmentId = equipment?.id ?? null
 

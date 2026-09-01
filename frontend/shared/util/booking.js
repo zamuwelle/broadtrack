@@ -10,15 +10,11 @@ export const getBookingStatus = (booking) => {
     return String(statusValue || '').toLowerCase()
 }
 
-export const isBookingOverdue = (booking = {}) => {
-    const status = getBookingStatus(booking)
-    const endDate = booking.end_date
-    return status === 'overdue' || (status === 'released' && Boolean(endDate) && new Date(endDate) < new Date())
-}
+export const isBookingOverdue = (booking = {}) => Boolean(booking?.is_overdue)
 
 export const getBookingStatusBadge = (booking = {}) => {
     const status = getBookingStatus(booking)
-    if (isBookingOverdue(booking)) {
+    if (booking.is_overdue) {
         return { label: 'Overdue', variant: 'overdue' }
     }
     if (status === 'returned') {

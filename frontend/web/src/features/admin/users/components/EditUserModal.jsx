@@ -2,21 +2,19 @@ import { useCallback, useEffect } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/api/users/update-user'
+import { formatPhone } from '@shared/util/phone'
 import {
     MAX_NAME_LENGTH,
-    formatPhone,
-    getDepartmentError,
-    getEmailError,
-    getFirstnameError,
-    getLastnameError,
-    getPasswordError,
-    getPhoneError,
     isValidEmail,
     isValidName,
     isValidPassword,
-    isValidPhone
-} from '@shared/util/validation'
-import { toTitleCase } from '@shared/util/name'
+    isValidPhone,
+    validateDepartment,
+    validateEmail,
+    validateName,
+    validatePassword,
+    validatePhone
+} from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { ModalShell } from '@/features/admin/users/components/UserModalShell'
 import { FormField as Field } from '@/components/ui/form/FormField'
@@ -119,14 +117,33 @@ const buildUpdatePayload = (form, isBorrower) => ({
     ...(form.password ? { password: form.password } : {})
 })
 
+const checkEditUserValid = (form, isBorrower) =>
+    Boolean(
+        isValidName(form.firstname) &&
+        isValidName(form.lastname) &&
+        isValidEmail(form.email) &&
+        isValidPhone(form.phone) &&
+        (!isBorrower || form.department) &&
+        (!form.password || isValidPassword(form.password))
+    )
+
+const getEditUserErrors = (form, isBorrower) => ({
+    firstname: form.firstname ? validateName(form.firstname) : '',
+    lastname: form.lastname ? validateName(form.lastname) : '',
+    email: form.error || (form.email ? validateEmail(form.email) : ''),
+    phone: form.phone ? validatePhone(form.phone) : '',
+    password: form.password ? validatePassword(form.password) : '',
+    department: isBorrower && form.department ? validateDepartment(form.department) : ''
+})
+
 const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
     const [form, setForm] = useSetState(INITIAL_FORM_STATE)
 
     useEffect(() => {
         if (isOpen && user) {
             setForm({
-                firstname: toTitleCase(user.firstname || ''),
-                lastname: toTitleCase(user.lastname || ''),
+                firstname: user.firstname || '',
+                lastname: user.lastname || '',
                 email: user.email || '',
                 phone: formatPhone(user.phone || ''),
                 role: user.role || 'borrower',
@@ -147,14 +164,7 @@ const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
     const updateUserMutation = useUpdateUser()
 
     const isBorrower = form.role === 'borrower'
-    const isValid = Boolean(
-        isValidName(form.firstname) &&
-        isValidName(form.lastname) &&
-        isValidEmail(form.email) &&
-        isValidPhone(form.phone) &&
-        (!isBorrower || form.department) &&
-        (!form.password || isValidPassword(form.password))
-    )
+    const isValid = checkEditUserValid(form, isBorrower)
 
     const handleSubmit = useCallback(
         async (event) => {
@@ -177,14 +187,7 @@ const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
         [form, isBorrower, isValid, onClose, onSuccess, setForm, updateUserMutation, user]
     )
 
-    const errors = {
-        firstname: form.firstname ? getFirstnameError(form.firstname) : '',
-        lastname: form.lastname ? getLastnameError(form.lastname) : '',
-        email: form.error || getEmailError(form.email),
-        phone: form.phone ? getPhoneError(form.phone) : '',
-        password: form.password ? getPasswordError(form.password) : '',
-        department: isBorrower && form.department ? getDepartmentError(form.department) : ''
-    }
+    const errors = getEditUserErrors(form, isBorrower)
 
     return {
         form,

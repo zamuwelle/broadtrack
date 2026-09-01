@@ -9,9 +9,7 @@ export const getUsers = async () => {
 export const getUsersQueryOptions = () =>
     queryOptions({
         queryKey: ['users'],
-        queryFn: getUsers,
-        staleTime: 30_000,
-        refetchInterval: 60_000
+        queryFn: getUsers
     })
 
 export const useUsers = ({ queryConfig } = {}) =>

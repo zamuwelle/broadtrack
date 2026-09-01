@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { formatPhone } from '@shared/util/validation'
+import { formatPhone } from '@shared/util/phone'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
 import { FormField as Field } from '@/components/ui/form/FormField'

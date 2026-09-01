@@ -2,11 +2,10 @@ import { useCallback } from 'react'
 import {
     MAX_MESSAGE_LENGTH,
     MAX_NAME_LENGTH,
-    getAnyEmailError,
-    getFirstnameError,
-    getLastnameError,
-    getMessageError
-} from '@shared/util/validation'
+    validateAnyEmail,
+    validateMessage,
+    validateName
+} from '@shared/schemas/common'
 
 const fieldClass =
     'w-full h-[44px] sm:h-[48px] rounded-[8px] bg-placeholder px-4 text-text placeholder:text-[14px] sm:placeholder:text-[15px] text-[14px] sm:text-[15px] outline-none border'
@@ -21,20 +20,20 @@ const inputDefs = Object.freeze([
         type: 'text',
         maxLength: MAX_NAME_LENGTH,
         placeholder: '* First Name',
-        getError: getFirstnameError
+        getError: validateName
     },
     {
         name: 'lastname',
         type: 'text',
         maxLength: MAX_NAME_LENGTH,
         placeholder: '* Last Name',
-        getError: getLastnameError
+        getError: validateName
     },
     {
         name: 'email',
         type: 'email',
         placeholder: '* Email',
-        getError: getAnyEmailError
+        getError: validateAnyEmail
     }
 ])
 
@@ -46,7 +45,7 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
         [onFieldChange]
     )
 
-    const messageError = touched.message ? getMessageError(form.message) : ''
+    const messageError = touched.message ? validateMessage(form.message) : ''
 
     return (
         <div className="w-full flex flex-col items-center my-auto">

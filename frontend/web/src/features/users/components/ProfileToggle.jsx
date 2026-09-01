@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { getFirstName } from '@shared/util/name'
 import { Icon } from '@/components/ui/Icon'
 import { ProfileMenu } from '@/features/users/components/ProfileMenu'
 import { WelcomeToast } from '@/components/ui/Toast'
@@ -25,7 +24,7 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
     }, [toast])
 
     const profilePicture = user?.profile_picture ?? null
-    const firstName = getFirstName(user)
+    const firstName = user?.firstname ?? ''
 
     return (
         <div className="relative font-['Poppins']" ref={boxRef}>
@@ -43,7 +42,7 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
                 ) : (
                     <div className="w-6 h-6 rounded-full bg-surface-hover shrink-0" />
                 )}
-                <span className="hidden lg:inline text-[16px] font-medium text-text min-w-[60px]">{firstName}</span>
+                <span className="hidden lg:inline text-[16px] font-medium text-text min-w-[60px] capitalize">{firstName}</span>
                 <Icon name="chevron" className={`hidden lg:inline transition-transform ${open ? 'rotate-180' : ''}`} />
             </button>
             {open && (

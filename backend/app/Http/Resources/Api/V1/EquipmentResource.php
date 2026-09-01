@@ -11,8 +11,7 @@ class EquipmentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'category_id' => $this->category_id,
-            'category' => new CategoryResource($this->whenLoaded('category')),
+            'category' => $this->category,
             'name' => $this->name,
             'brand' => $this->brand,
             'model' => $this->model,

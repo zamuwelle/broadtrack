@@ -9,9 +9,7 @@ export const getEquipment = async () => {
 export const getEquipmentQueryOptions = () =>
     queryOptions({
         queryKey: ['equipment'],
-        queryFn: getEquipment,
-        staleTime: 30_000,
-        refetchInterval: 60_000
+        queryFn: getEquipment
     })
 
 export const useEquipment = ({ queryConfig } = {}) =>

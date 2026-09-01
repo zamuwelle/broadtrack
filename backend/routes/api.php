@@ -49,7 +49,7 @@ Route::prefix('v1')->group(function () {
         // Bookings (borrower only)
         Route::middleware('role:borrower')->group(function () {
             Route::post('/bookings', [BookingController::class, 'store']);
-            Route::put('/bookings/{booking}/read', [BookingController::class, 'isRead']);
+            Route::put('/bookings/{booking}/read', [BookingController::class, 'markAsRead']);
             Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
         });
 
@@ -58,7 +58,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/bookings/{booking}/approve', [BookingController::class, 'approve']);
             Route::put('/bookings/{booking}/reject', [BookingController::class, 'reject']);
             Route::put('/bookings/{booking}/release', [BookingController::class, 'release']);
-            Route::put('/bookings/{booking}/return', [BookingController::class, 'return']);
+            Route::put('/bookings/{booking}/return', [BookingController::class, 'markAsReturned']);
             Route::post('/bookings/{booking}/remind', [BookingController::class, 'remind']);
         });
 

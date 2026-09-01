@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
-import { formatPhone } from '@shared/util/validation'
-import { toTitleCase } from '@shared/util/name'
+import { formatPhone } from '@shared/util/phone'
 import { Icon } from '@/components/ui/Icon'
 import { Select } from '@/components/ui/Select'
 import { DEPARTMENTS } from '@shared/constants'
 
 export const ProfileInputField = ({ field, value = '', error = '', card = false, onValueChange, onErrorChange }) => {
-    const { label, placeholder, icon, key, type, validate, titleCase, readOnly, maxLength } = field
+    const { label, placeholder, icon, key, type, validate, readOnly, maxLength } = field
 
     const handleBlur = useCallback(
         (event) => {
@@ -38,7 +37,6 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
         [onValueChange, onErrorChange]
     )
 
-    const displayValue = titleCase ? toTitleCase(value) : value
     const inputClass = card
         ? 'h-10 w-full rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] outline-slate-300'
         : 'mt-1.5 w-[401px] h-10 bg-gray-100 border border-border-subtle rounded-[8px] px-3'
@@ -71,7 +69,7 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
                         type={type}
                         name={key}
                         placeholder={placeholder}
-                        value={displayValue}
+                        value={value}
                         readOnly={readOnly}
                         maxLength={maxLength}
                         autoComplete="off"

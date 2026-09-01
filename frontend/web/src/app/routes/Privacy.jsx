@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router-dom'
-import { LandingFooter } from '@/features/landing/components/LandingFooter'
-import { LandingNavbar } from '@/features/landing/components/LandingNavbar'
+import { LandingFooter } from '@/features/landing/sections/LandingFooter'
+import { LandingNavbar } from '@/features/landing/nav/LandingNavbar'
 
 const sections = Object.freeze([
     Object.freeze({
@@ -22,11 +22,11 @@ const sections = Object.freeze([
 ])
 
 export const PrivacyRoute = () => {
-    const context = useOutletContext()
+    const { onOpenLogin, onOpenRegister } = useOutletContext()
 
     return (
         <div className="bg-bg">
-            <LandingNavbar onOpenLogin={context?.onOpenLogin} onOpenRegister={context?.onOpenRegister} />
+            <LandingNavbar onOpenLogin={onOpenLogin} onOpenRegister={onOpenRegister} />
             <section className="min-h-screen pt-32 pb-20">
                 <div className="max-w-7xl mx-auto px-8">
                     <h1 className="text-[40px] font-bold text-text mb-2">Privacy Policy</h1>

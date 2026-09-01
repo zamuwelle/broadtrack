@@ -22,6 +22,7 @@ class BookingResource extends JsonResource
             'end_date' => $this->end_date,
             'return_date' => $this->return_date,
             'status' => $this->status,
+            'is_overdue' => $this->is_overdue,
             'notes' => $this->notes,
             'approval_note' => $this->approval_note,
             'rejection_reason' => $this->rejection_reason,

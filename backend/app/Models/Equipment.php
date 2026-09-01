@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\BookingStatus;
+use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Observers\EquipmentObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -12,18 +12,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-#[Fillable(['category_id', 'location_id', 'name', 'brand', 'model', 'serial_no', 'status', 'description', 'specs', 'image'])]
+#[Fillable(['category', 'name', 'brand', 'model', 'serial_no', 'status', 'description', 'specs', 'image'])]
 #[ObservedBy(EquipmentObserver::class)]
 #[Table('equipments')]
 class Equipment extends Model
 {
     use HasFactory;
 
-    protected $with = ['category:id,name'];
-
     protected function casts()
     {
-        return ['status' => EquipmentStatus::class];
+        return [
+            'status' => EquipmentStatus::class,
+            'category' => EquipmentCategory::class,
+        ];
     }
 
     protected static function booted()
@@ -38,11 +39,6 @@ class Equipment extends Model
         $this->serial_no ??= 'SN-'.$code.'-'.str_pad((string)(static::max('id') + 1), 5, '0', STR_PAD_LEFT);
     }
 
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
     public function bookings()
     {
         return $this->belongsToMany(Booking::class)->withTimestamps();
@@ -50,8 +46,8 @@ class Equipment extends Model
 
     public static function resolveStatuses(Collection $equipmentItems): Collection
     {
-        $bookingsByEquipmentId = Booking::with('equipments:id')
-            ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+        $bookingsByEquipmentId = Booking::active()
+            ->with('equipments:id')
             ->get()
             ->flatMap(static fn (Booking $booking) => $booking->equipments
                 ->map(static fn (Equipment $equipment) => ['id' => $equipment->id, 'booking' => $booking]))
@@ -74,5 +70,32 @@ class Equipment extends Model
 
             return $item;
         });
+    }
+
+    public function imagePublicId(): string
+    {
+        return strtolower($this->serial_no ?: "equipment-{$this->id}");
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->status === EquipmentStatus::Available;
+    }
+
+    public function isUnderMaintenance(): bool
+    {
+        return $this->status === EquipmentStatus::Maintenance;
+    }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('status', EquipmentStatus::Available);
+    }
+
+    public function scopeCategory($query, EquipmentCategory|string $category)
+    {
+        $value = $category instanceof EquipmentCategory ? $category->value : $category;
+
+        return $query->where('category', $value);
     }
 }

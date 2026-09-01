@@ -1,6 +1,4 @@
 import { useCallback } from 'react'
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
 import { getBookingStatus, getBookingStatusBadge } from '@shared/util/booking'
 import { formatDateRange, formatSimpleDate } from '@shared/util/date'
 
@@ -26,9 +24,9 @@ export const TransactionTableRow = ({ booking = defaultBooking, onViewDetails = 
     }, [booking, onViewDetails])
 
     const equipment = booking.equipments ? booking.equipments[0] : null
-    const equipmentName = getEquipmentTitle(equipment)
+    const equipmentName = equipment ? equipment.name || 'Equipment' : 'Equipment'
     const equipmentModel = equipment ? equipment.model || '' : ''
-    const borrowerName = getFullName(booking.user) || 'Borrower'
+    const borrowerName = booking.user?.full_name || 'Borrower'
     const borrowerDepartment = booking.user ? booking.user.department || '' : ''
     const statusBadge = getBookingStatusBadge(booking)
     const borrowDateText = formatDateRange(booking.start_date, booking.end_date)

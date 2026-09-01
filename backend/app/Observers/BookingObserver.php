@@ -10,20 +10,26 @@ class BookingObserver
 {
     public function created(Booking $booking): void
     {
-        broadcast(new BookingUpdated('created', $booking->id, $booking));
-        broadcast(new EquipmentUpdated('updated'));
+        rescue(static function () use ($booking) {
+            broadcast(new BookingUpdated('created', $booking->id, $booking));
+            broadcast(new EquipmentUpdated('updated'));
+        }, report: false);
     }
 
     public function updated(Booking $booking): void
     {
-        $action = $booking->status?->value ?? 'updated';
-        broadcast(new BookingUpdated($action, $booking->id, $booking));
-        broadcast(new EquipmentUpdated('updated'));
+        rescue(static function () use ($booking) {
+            $action = $booking->status?->value ?? 'updated';
+            broadcast(new BookingUpdated($action, $booking->id, $booking));
+            broadcast(new EquipmentUpdated('updated'));
+        }, report: false);
     }
 
     public function deleted(Booking $booking): void
     {
-        broadcast(new BookingUpdated('deleted', $booking->id, $booking));
-        broadcast(new EquipmentUpdated('updated'));
+        rescue(static function () use ($booking) {
+            broadcast(new BookingUpdated('deleted', $booking->id, $booking));
+            broadcast(new EquipmentUpdated('updated'));
+        }, report: false);
     }
 }

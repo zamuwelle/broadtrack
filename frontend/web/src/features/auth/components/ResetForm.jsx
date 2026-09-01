@@ -1,22 +1,29 @@
 import { useCallback } from 'react'
-import { getConfirmPasswordError, getPasswordError } from '@shared/util/validation'
+import { validateConfirmPassword, validatePassword } from '@shared/schemas/common'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
 
-export const ResetForm = ({
-    form,
-    error = '',
-    showPass = false,
-    validReset = false,
-    isPending = false,
-    onFieldChange = noop,
-    onToggleShowPass = noop,
-    onSwitchTab = noop,
-    onSubmit = noop
-}) => {
+const getResetErrors = (form) => ({
+    passwordError: form.password ? validatePassword(form.password) : '',
+    confirmPasswordError: validateConfirmPassword(form.password, form.confirmPassword)
+})
+
+export const ResetForm = (props) => {
+    const {
+        form,
+        error = '',
+        showPass = false,
+        validReset = false,
+        isPending = false,
+        onFieldChange = noop,
+        onToggleShowPass = noop,
+        onSwitchTab = noop,
+        onSubmit = noop
+    } = props
+
     const handlePasswordChange = useCallback(
         (event) => {
             onFieldChange('password', event.target.value)
@@ -35,8 +42,7 @@ export const ResetForm = ({
         onSwitchTab('login')
     }, [onSwitchTab])
 
-    const passwordError = getPasswordError(form.password)
-    const confirmPasswordError = getConfirmPasswordError(form.password, form.confirmPassword)
+    const { passwordError, confirmPasswordError } = getResetErrors(form)
 
     return (
         <form noValidate className="flex flex-col gap-2.5" onSubmit={onSubmit}>

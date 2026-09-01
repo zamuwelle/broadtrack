@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { formatDateTime } from '@shared/util/date'
-import { toTitleCase } from '@shared/util/name'
 
 const defaultUser = Object.freeze({})
 const noop = () => null
@@ -26,11 +25,11 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
     return (
         <tr className="hover:bg-slate-50/70 transition-colors h-14">
             <td className="px-3 py-2.5 text-xs text-slate-700 border-r border-slate-200 text-center">{index}</td>
-            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200">
-                {toTitleCase(user.firstname)}
+            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">
+                {user.firstname}
             </td>
-            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200">
-                {toTitleCase(user.lastname)}
+            <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">
+                {user.lastname}
             </td>
             <td className="px-3 py-2.5 text-xs text-slate-700 border-r border-slate-200">{user.email}</td>
             <td className="px-3 py-2.5 border-r border-slate-200">

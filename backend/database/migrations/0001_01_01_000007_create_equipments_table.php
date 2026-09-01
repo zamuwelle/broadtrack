@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
@@ -10,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('equipments', static function ($table) {
             $table->id();
-            $table->foreignId('category_id')->constrained();
+            $table->string('category')->default(EquipmentCategory::Support->value)->index();
             // $table->foreignId('location_id')->nullable()->constrained();
             $table->string('name');
             $table->string('brand')->nullable();

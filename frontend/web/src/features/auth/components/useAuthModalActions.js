@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { VALIDATION_MESSAGES, isValidEmail } from '@shared/util/validation'
+import { VALIDATION_MESSAGES, isValidEmail } from '@shared/schemas/common'
 import { useSend } from '@/hooks/actions/useSend'
 import { loginUser } from '@/api/auth/login'
 import { registerUser } from '@/api/auth/register'

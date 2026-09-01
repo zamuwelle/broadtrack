@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
 use App\Models\Equipment;
 use Illuminate\Database\Seeder;
 
@@ -10,7 +9,6 @@ class EquipmentSeeder extends Seeder
 {
     public function run()
     {
-        $categories = Category::pluck('id', 'name');
 
         $equipment = [
             ['category' => 'Audio', 'name' => 'Speaker with Amplifier', 'brand' => 'Dai-chi (PR08)', 'quantity' => 1, 'description' => 'Portable powered speaker with built-in amplifier, ready to play without external gear', 'specs' => ['Type: Active speaker with built-in amplifier', 'Brand: Dai-ichi, Philippine-made since 1972', 'Power: AC mains']],
@@ -80,12 +78,12 @@ class EquipmentSeeder extends Seeder
             ['category' => 'Lighting', 'name' => 'Laser Light', 'brand' => null, 'quantity' => 1, 'description' => 'Laser effect light for stage visuals during events', 'specs' => ['Type: Laser effect projector', 'Modes: Auto and sound-active', 'Power: AC 100 - 240V']],
         ];
 
-        Equipment::withoutEvents(function () use ($equipment, $categories) {
+        Equipment::withoutEvents(function () use ($equipment) {
             foreach ($equipment as $item) {
                 $unitsCount = $item['quantity'] ?? 1;
                 for ($unitIndex = 0; $unitIndex < $unitsCount; $unitIndex++) {
                     Equipment::create([
-                        'category_id' => $categories[$item['category']],
+                        'category' => $item['category'],
                         'name' => $item['name'],
                         'brand' => $item['brand'],
                         'description' => $item['description'],

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { isValidForgotForm, isValidLoginForm, isValidRegisterForm, isValidResetForm } from '@shared/util/validation'
+import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@shared/schemas/auth'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
 import { useSetState } from '@shared/hooks/useSetState'
@@ -116,10 +116,10 @@ export const AuthModal = ({
         }
     }, [isOpen, initialError, showToast])
 
-    const validLogin = isValidLoginForm(form)
-    const validRegister = isValidRegisterForm(form)
-    const validForgot = isValidForgotForm(form)
-    const validReset = isValidResetForm(form)
+    const validLogin = loginSchema.safeParse(form).success
+    const validRegister = registerSchema.safeParse(form).success
+    const validForgot = forgotPasswordSchema.safeParse(form).success
+    const validReset = resetPasswordSchema.safeParse(form).success
 
     const actions = useAuthModalActions({
         form,

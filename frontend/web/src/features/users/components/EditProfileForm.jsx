@@ -2,15 +2,13 @@ import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUser } from '@/lib/auth'
 import { useUpdateForm } from '@/hooks/actions/useUpdateForm'
+import { formatPhone } from '@shared/util/phone'
 import {
     MAX_NAME_LENGTH,
-    formatPhone,
-    getDepartmentError,
-    getFirstnameError,
-    getLastnameError,
-    getPhoneError
-} from '@shared/util/validation'
-import { toTitleCase } from '@shared/util/name'
+    validateDepartment,
+    validateName,
+    validatePhone
+} from '@shared/schemas/common'
 import { updateProfile } from '@/api/users/update-profile'
 import { uploadProfilePicture } from '@/api/users/upload-picture'
 import { ProfileInputField } from '@/features/users/components/ProfileInputField'
@@ -22,8 +20,7 @@ const fields = Object.freeze([
         icon: 'person',
         key: 'firstname',
         type: 'text',
-        validate: getFirstnameError,
-        titleCase: true,
+        validate: validateName,
         maxLength: MAX_NAME_LENGTH
     },
     {
@@ -31,8 +28,7 @@ const fields = Object.freeze([
         icon: 'person',
         key: 'lastname',
         type: 'text',
-        validate: getLastnameError,
-        titleCase: true,
+        validate: validateName,
         maxLength: MAX_NAME_LENGTH
     },
     {
@@ -49,7 +45,7 @@ const fields = Object.freeze([
         key: 'phone',
         type: 'tel',
         maxLength: 20,
-        validate: getPhoneError
+        validate: validatePhone
     },
     {
         label: 'Department',
@@ -57,7 +53,7 @@ const fields = Object.freeze([
         icon: 'department',
         key: 'department',
         type: 'text',
-        validate: getDepartmentError
+        validate: validateDepartment
     }
 ])
 
@@ -69,8 +65,8 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
 
     const initial = useMemo(
         () => ({
-            firstname: toTitleCase(user?.firstname ?? ''),
-            lastname: toTitleCase(user?.lastname ?? ''),
+            firstname: user?.firstname ?? '',
+            lastname: user?.lastname ?? '',
             email: user?.email ?? '',
             phone: formatPhone(user?.phone ?? ''),
             department: user?.department ?? ''

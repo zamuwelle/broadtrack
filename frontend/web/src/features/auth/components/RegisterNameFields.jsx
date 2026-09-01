@@ -1,4 +1,4 @@
-import { MAX_NAME_LENGTH } from '@shared/util/validation'
+import { MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { inputClassSmall } from '@/features/auth/components/authStyles'
 

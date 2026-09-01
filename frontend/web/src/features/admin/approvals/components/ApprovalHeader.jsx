@@ -1,5 +1,4 @@
 import { formatShortDate } from '@shared/util/date'
-import { getEquipmentCategory, getEquipmentTitle } from '@shared/util/equipment'
 import { getBookingStatus } from '@shared/util/booking'
 
 const defaultBooking = Object.freeze({})
@@ -20,8 +19,8 @@ const getBadgeConfig = (status) => {
 export const ApprovalHeader = ({ booking = defaultBooking }) => {
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
-    const equipmentName = getEquipmentTitle(equipment)
-    const categoryName = getEquipmentCategory(equipment)
+    const equipmentName = equipment.name || 'Equipment'
+    const categoryName = equipment.category?.name || ''
     const requestDateText = formatShortDate(booking.created_at)
     const status = getBookingStatus(booking)
     const badgeConfig = getBadgeConfig(status)

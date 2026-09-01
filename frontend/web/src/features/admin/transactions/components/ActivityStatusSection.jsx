@@ -1,6 +1,5 @@
 import { Calendar } from 'lucide-react'
 import { formatDate } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
 
 const defaultBooking = Object.freeze({})
 
@@ -21,7 +20,7 @@ export const ActivityStatusSection = ({
                 <div className="border-t border-slate-200/80 pt-1.5 text-[10px] text-slate-500 font-medium">
                     Processed by:{' '}
                     <span className="text-slate-800 font-semibold">
-                        {booking.returned_by_user ? getFullName(booking.returned_by_user) : 'Mr. Linmark'}
+                        {booking.returned_by_user?.full_name || 'Mr. Linmark'}
                     </span>
                 </div>
             </div>

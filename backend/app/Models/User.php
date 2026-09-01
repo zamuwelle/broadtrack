@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use function Tamtamchik\NameCase\str_name_case;
 
 #[Appends(['full_name'])]
 #[Fillable(['firstname', 'lastname', 'email', 'phone', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_token', 'verification_sent_at'])]
@@ -60,7 +61,25 @@ class User extends Authenticatable
 
     protected function fullName(): Attribute
     {
-        return Attribute::make(get: fn () => "{$this->firstname} {$this->lastname}");
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => str_name_case(
+                trim(($attributes['firstname'] ?? '').' '.($attributes['lastname'] ?? ''))
+            ),
+        );
+    }
+
+    protected function firstname(): Attribute
+    {
+        return Attribute::make(
+            set: static fn ($value) => is_string($value) ? str_name_case(trim($value)) : $value,
+        );
+    }
+
+    protected function lastname(): Attribute
+    {
+        return Attribute::make(
+            set: static fn ($value) => is_string($value) ? str_name_case(trim($value)) : $value,
+        );
     }
 
     protected function phone(): Attribute

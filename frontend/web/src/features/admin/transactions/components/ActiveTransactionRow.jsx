@@ -1,7 +1,4 @@
 import { formatDateRange } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
-import { isBookingOverdue } from '@shared/util/booking'
-import { getEquipmentTitle } from '@shared/util/equipment'
 
 const defaultTransactions = Object.freeze([])
 const defaultBooking = Object.freeze({})
@@ -9,7 +6,7 @@ const defaultBooking = Object.freeze({})
 const getBorrowerInfo = (booking = defaultBooking) => {
     const user = booking.user || defaultBooking
     const department = user.department ? ` (${user.department})` : ''
-    return `Borrower: ${getFullName(user) || 'Unknown'}${department}`
+    return `Borrower: ${user.full_name || 'Unknown'}${department}`
 }
 
 const statusBadgeMap = Object.freeze({
@@ -28,7 +25,7 @@ const statusBadgeMap = Object.freeze({
 })
 
 const getStatusBadge = (booking = defaultBooking) => {
-    if (isBookingOverdue(booking)) {
+    if (booking.is_overdue) {
         return {
             label: 'Overdue Reminder',
             className: 'bg-orange-50 rounded-[10px] border border-orange-200 text-amber-500'
@@ -46,7 +43,7 @@ const getStatusBadge = (booking = defaultBooking) => {
 
 export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
     const equipments = booking.equipments || defaultTransactions
-    const equipmentTitle = getEquipmentTitle(equipments[0])
+    const equipmentTitle = equipments[0]?.name || 'Equipment'
     const borrowerInfo = getBorrowerInfo(booking)
     const statusBadge = getStatusBadge(booking)
     const timelineRange = formatDateRange(booking.start_date, booking.end_date)

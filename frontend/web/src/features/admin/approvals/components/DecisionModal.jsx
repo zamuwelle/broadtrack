@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 import { X } from 'lucide-react'
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useApproveBooking } from '@/api/bookings/approve-booking'
@@ -67,8 +65,8 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
 
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
-    const borrowerName = getFullName(booking.user) || 'Borrower'
-    const equipmentName = getEquipmentTitle(equipment)
+    const borrowerName = booking.user?.full_name || 'Borrower'
+    const equipmentName = equipment.name || 'Equipment'
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">

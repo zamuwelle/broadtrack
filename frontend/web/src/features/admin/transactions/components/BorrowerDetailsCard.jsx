@@ -1,4 +1,3 @@
-import { getFullName } from '@shared/util/name'
 import { Icon } from '@/components/ui/Icon'
 
 const noop = () => null
@@ -12,7 +11,7 @@ export const BorrowerDetailsCard = ({ user, onEdit = noop }) => (
             </button>
         </div>
         <div className="flex w-full flex-col items-start justify-start gap-1 text-xs font-normal text-text">
-            <div>Name: {getFullName(user) || user?.name || 'User Name'}</div>
+            <div>Name: {user?.full_name || user?.name || 'User Name'}</div>
             <div>Email: {user?.email || 'user.email@student.laverdad.edu.ph'}</div>
             <div>Phone: {user?.phone || '+63 9xx xxx xxxx'}</div>
             <div>Department: {user?.department || 'BS Information Systems'}</div>

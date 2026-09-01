@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { LiveStatusDropdown } from '@/features/admin/inventory/components/LiveStatusDropdown'
-import { getEquipmentCategory, getEquipmentTitle } from '@shared/util/equipment'
 
 const defaultEquipment = Object.freeze({})
 const noop = () => null
@@ -12,11 +11,11 @@ export const InventoryCard = ({
     onDelete = noop,
     onUpdateStatus = noop
 }) => {
-    const equipmentTitle = getEquipmentTitle(equipment)
+    const equipmentTitle = equipment.name || 'Equipment'
     const equipmentModel = equipment.model || 'N/A'
     const equipmentDescription = equipment.description || 'No description available'
     const serialNumber = equipment.serial_no || 'N/A'
-    const categoryName = getEquipmentCategory(equipment)
+    const categoryName = equipment.category?.name || 'Support'
 
     const handleEdit = useCallback(() => {
         onEdit(equipment)

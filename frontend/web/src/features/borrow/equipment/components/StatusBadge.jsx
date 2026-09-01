@@ -1,5 +1,3 @@
-import { getEquipmentStatus } from '@shared/util/equipment'
-
 const badgeConfigurations = Object.freeze({
     available: {
         style: 'bg-green-100 outline-green-500 text-green-500',
@@ -20,7 +18,7 @@ const badgeConfigurations = Object.freeze({
 })
 
 export const StatusBadge = ({ status, className = '' }) => {
-    const normalizedStatus = getEquipmentStatus(status)
+    const normalizedStatus = (typeof status === 'string' ? status : status?.status || 'available').toLowerCase()
     const badge = badgeConfigurations[normalizedStatus] ?? badgeConfigurations.available
 
     return (

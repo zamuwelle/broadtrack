@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import { getFullName } from '@shared/util/name'
 import { formatDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useEquipment } from '@/api/equipment/get-equipment'
@@ -11,11 +10,10 @@ import { CalendarBookingsModal } from '@/features/borrow/calendar/components/Cal
 import { FilterDropdown } from '@/components/ui/FilterDropdown'
 import { Icon } from '@/components/ui/Icon'
 
-const defaultBookingsQuery = Object.freeze({ all: 1 })
 const defaultEmptyArray = Object.freeze([])
 
 const normalizeBookingItem = (booking, equipment) => {
-    const borrowerName = getFullName(booking.user) || 'Borrower'
+    const borrowerName = booking.user?.full_name || 'Borrower'
     const borrowerDepartment = booking.user ? booking.user.department || '' : ''
     const startDate = booking.start_date ? String(booking.start_date).slice(0, 10) : ''
     const endDate = booking.end_date ? String(booking.end_date).slice(0, 10) : ''
@@ -27,7 +25,7 @@ const normalizeBookingItem = (booking, equipment) => {
         bookingId: booking.id,
         equipmentId: equipment.id,
         equipmentName: [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name,
-        categoryName: equipment.category ? equipment.category.name || 'Equipment' : 'Equipment',
+        categoryName: (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Equipment',
         borrowerName,
         borrowerDepartment,
         periodText,
@@ -98,7 +96,7 @@ const useCalendarPageLogic = () => {
     const { currentMonthDate, selectedDate, selectedEquipmentName } = calendarState
 
     const { data: equipmentList = defaultEmptyArray } = useEquipment()
-    const { data: remoteBookings = defaultEmptyArray } = useBookings({ params: defaultBookingsQuery })
+    const { data: remoteBookings = defaultEmptyArray } = useBookings()
 
     const normalizedBookings = useMemo(() => normalizeBookings(remoteBookings), [remoteBookings])
 

@@ -6,8 +6,7 @@ import { ActiveTransactionsCard } from '@/features/admin/transactions/components
 import { TransactionDetailsModal } from '@/features/admin/transactions/components/TransactionDetailsModal'
 import { useEquipment } from '@/api/equipment/get-equipment'
 import { useBookings } from '@/api/bookings/get-bookings'
-import { getBookingStatus, isBookingOverdue } from '@shared/util/booking'
-import { getEquipmentStatus } from '@shared/util/equipment'
+import { getBookingStatus } from '@shared/util/booking'
 import { ACTIVE_BOOKING_STATUSES } from '@shared/constants'
 import { paths } from '@/config/paths'
 
@@ -37,11 +36,11 @@ export const DashboardPage = (props) => {
     )
 
     const inMaintenance = useMemo(
-        () => equipment.filter((item) => getEquipmentStatus(item) === 'maintenance').length,
+        () => equipment.filter((item) => item.status === 'maintenance').length,
         [equipment]
     )
 
-    const overdueBookings = useMemo(() => bookings.filter((booking) => isBookingOverdue(booking)), [bookings])
+    const overdueBookings = useMemo(() => bookings.filter((booking) => booking.is_overdue), [bookings])
 
     const activeTransactions = useMemo(
         () => bookings.filter((booking) => ACTIVE_BOOKING_STATUSES.includes(getBookingStatus(booking))),

@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 import { formatDate } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useRemindBooking } from '@/api/bookings/remind-booking'
@@ -11,6 +9,19 @@ import { ReminderPromptView } from '@/features/admin/transactions/components/Rem
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
 const noop = () => null
+
+const getReminderModalDetails = (booking) => {
+    const borrower = booking.user || defaultBooking
+    const equipments = booking.equipments || defaultList
+    const equipment = equipments[0] || null
+    return {
+        borrowerName: borrower.full_name || 'Borrower',
+        borrowerDepartment: borrower.department || 'BSIS',
+        equipmentName: equipment?.name || 'Equipment',
+        dueDate: formatDate(booking.end_date),
+        recipientEmail: borrower.email || 'borrower@student.laverdad.edu.ph'
+    }
+}
 
 export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = defaultBooking }) => {
     const remindMutation = useRemindBooking()
@@ -50,14 +61,8 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
         return null
     }
 
-    const borrower = booking.user || defaultBooking
-    const borrowerName = getFullName(borrower) || 'Borrower'
-    const borrowerDepartment = borrower.department || 'BSIS'
-    const equipments = booking.equipments || defaultList
-    const equipment = equipments[0] || null
-    const equipmentName = getEquipmentTitle(equipment)
-    const dueDate = formatDate(booking.end_date)
-    const recipientEmail = borrower.email || 'borrower@student.laverdad.edu.ph'
+    const { borrowerName, borrowerDepartment, equipmentName, dueDate, recipientEmail } =
+        getReminderModalDetails(booking)
 
     if (sent) {
         return <ReminderSuccessView sentTimestamp={sentTimestamp} onClose={handleClose} />

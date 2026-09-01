@@ -2,12 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getTodayDateString } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useUser } from '@/lib/auth'
-import { useBasket } from '@/hooks/ui/useBasket'
+import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useCreateBooking } from '@/api/bookings/create-booking'
 import { useSetState } from '@shared/hooks/useSetState'
-
-const filterParams = Object.freeze({ all: 1 })
 
 const isExcludedStatus = (status) =>
     status === 'cancelled' || status === 'canceled' || status === 'rejected' || status === 'returned'
@@ -294,8 +292,10 @@ const useBorrowFieldHandlers = ({ updateSummaryState, removeItem, selectedItems,
 export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     const { data: activeUser } = useUser()
     const user = activeUser ?? propUser
-    const { items: selectedItems, removeItem, clearBasket } = useBasket()
-    const { data: remoteBookings = [] } = useBookings({ params: filterParams })
+    const selectedItems = useBookingCartStore((state) => state.items)
+    const removeItem = useBookingCartStore((state) => state.removeItem)
+    const clearCart = useBookingCartStore((state) => state.clearCart)
+    const { data: remoteBookings = [] } = useBookings()
     const createBookingMutation = useCreateBooking()
     const [errorMessage, setErrorMessage] = useState('')
 
@@ -378,7 +378,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         endDate,
         specialNotes,
         updateSummaryState,
-        clearBasket,
+        clearBasket: clearCart,
         setErrorMessage
     })
 

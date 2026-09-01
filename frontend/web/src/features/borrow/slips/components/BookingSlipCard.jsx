@@ -4,14 +4,13 @@ import { SlipEquipmentList } from '@/features/borrow/slips/components/SlipEquipm
 import { SlipDetailsGrid } from '@/features/borrow/slips/components/SlipDetailsGrid'
 import { SlipStatusNotices } from '@/features/borrow/slips/components/SlipStatusNotices'
 import { SlipFooter } from '@/features/borrow/slips/components/SlipFooter'
-import { getFullName } from '@shared/util/name'
 import { getBookingStatus } from '@shared/util/booking'
 
 const defaultBooking = Object.freeze({})
 const defaultEquipments = Object.freeze([])
 const noop = () => null
 
-const getBorrowerName = (borrower) => getFullName(borrower) || (borrower ? borrower.name || borrower.email : '') || ''
+const getBorrowerName = (borrower) => borrower?.full_name || borrower?.name || borrower?.email || ''
 
 export const BookingSlipCard = ({ booking = defaultBooking, currentUser, onCancel = noop }) => {
     const cardRef = useRef(null)

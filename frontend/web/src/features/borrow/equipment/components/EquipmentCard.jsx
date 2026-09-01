@@ -2,20 +2,20 @@ import { useCallback, useState } from 'react'
 import { StatusBadge } from '@/features/borrow/equipment/components/StatusBadge'
 import { SelectButton } from '@/features/borrow/equipment/components/SelectButton'
 import { EquipmentExpandedCard } from '@/features/borrow/equipment/components/EquipmentExpandedCard'
-import { useBasket } from '@/hooks/ui/useBasket'
+import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { Icon } from '@/components/ui/Icon'
-import { getEquipmentCategory, getEquipmentStatus } from '@shared/util/equipment'
 
 const defaultEquipment = Object.freeze({})
 
 export const EquipmentCard = ({ equipment = defaultEquipment }) => {
     const [expanded, setExpanded] = useState(false)
-    const { isSelected, toggleItem } = useBasket()
+    const isSelected = useBookingCartStore((state) => state.items.some((item) => item.id === equipment.id))
+    const toggleItem = useBookingCartStore((state) => state.toggleItem)
 
     const modelName = [equipment.brand, equipment.model].filter(Boolean).join(' ')
-    const currentStatus = getEquipmentStatus(equipment)
+    const currentStatus = equipment.status || 'available'
     const isSelectable = currentStatus === 'available' || currentStatus === 'booked'
-    const categoryName = getEquipmentCategory(equipment)
+    const categoryName = equipment.category?.name || 'Support'
 
     const handleToggleSelect = useCallback(() => {
         toggleItem(equipment)
@@ -36,7 +36,7 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                 modelName={modelName}
                 categoryName={categoryName}
                 isSelectable={isSelectable}
-                isSelected={isSelected(equipment.id)}
+                isSelected={isSelected}
                 onToggleSelect={handleToggleSelect}
                 onCollapse={handleCollapse}
             />
@@ -59,7 +59,7 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                 <StatusBadge status={equipment.status} className="relative" />
                 {isSelectable ? (
                     <SelectButton
-                        selected={isSelected(equipment.id)}
+                        selected={isSelected}
                         onSelect={handleToggleSelect}
                         className="relative"
                     />

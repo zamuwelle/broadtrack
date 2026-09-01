@@ -1,20 +1,19 @@
 import { useCallback, useEffect } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateUser } from '@/api/users/create-user'
+import { formatPhone } from '@shared/util/phone'
 import {
     MAX_NAME_LENGTH,
-    formatPhone,
-    getDepartmentError,
-    getEmailError,
-    getFirstnameError,
-    getLastnameError,
-    getPasswordError,
-    getPhoneError,
     isValidEmail,
     isValidName,
     isValidPassword,
-    isValidPhone
-} from '@shared/util/validation'
+    isValidPhone,
+    validateDepartment,
+    validateEmail,
+    validateName,
+    validatePassword,
+    validatePhone
+} from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { ModalShell } from '@/features/admin/users/components/UserModalShell'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
@@ -137,12 +136,12 @@ const useAddUserForm = (role, isOpen, onClose, onSuccess) => {
     )
 
     const errors = {
-        firstname: form.firstname ? getFirstnameError(form.firstname) : '',
-        lastname: form.lastname ? getLastnameError(form.lastname) : '',
-        email: form.error || getEmailError(form.email),
-        phone: form.phone ? getPhoneError(form.phone) : '',
-        password: form.password ? getPasswordError(form.password) : '',
-        department: isBorrower && form.department ? getDepartmentError(form.department) : ''
+        firstname: form.firstname ? validateName(form.firstname) : '',
+        lastname: form.lastname ? validateName(form.lastname) : '',
+        email: form.error || (form.email ? validateEmail(form.email) : ''),
+        phone: form.phone ? validatePhone(form.phone) : '',
+        password: form.password ? validatePassword(form.password) : '',
+        department: isBorrower && form.department ? validateDepartment(form.department) : ''
     }
 
     return {

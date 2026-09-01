@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\BookingStatus;
-use App\Enums\EquipmentStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ApproveBookingRequest;
 use App\Http\Requests\Api\V1\RejectBookingRequest;
@@ -26,13 +24,13 @@ class BookingController extends ApiController
             : $user->bookings();
 
         return $this->success(BookingResource::collection(
-            $query->with(['user', 'equipments.category', 'returnedByUser'])->get()
+            $query->with(['user', 'equipments', 'returnedByUser'])->get()
         ));
     }
 
     public function show(Booking $booking): JsonResponse
     {
-        $booking->load(['user', 'equipments.category', 'returnedByUser']);
+        $booking->load(['user', 'equipments', 'returnedByUser']);
 
         $this->authorize('view', $booking);
 
@@ -57,14 +55,7 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
-        $validated = $request->validated();
-
-        $booking->update([
-            'status' => BookingStatus::Approved,
-            'approval_note' => $validated['approval_note'] ?? $booking->approval_note,
-            'isRead' => false,
-        ]);
-        $booking->equipments->each->update(['status' => EquipmentStatus::Booked]);
+        $booking->approve($request->validated('approval_note'));
 
         return $this->success(new BookingResource($booking), 'Booking approved');
     }
@@ -73,14 +64,7 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
-        $validated = $request->validated();
-
-        $booking->update([
-            'status' => BookingStatus::Rejected,
-            'rejection_reason' => $validated['rejection_reason'],
-            'isRead' => false,
-        ]);
-        $booking->equipments->each->update(['status' => EquipmentStatus::Available]);
+        $booking->reject($request->validated('rejection_reason'));
 
         return $this->success(new BookingResource($booking), 'Booking rejected');
     }
@@ -89,23 +73,16 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
-        $booking->update(['status' => BookingStatus::Released]);
-        $booking->equipments->each->update(['status' => EquipmentStatus::Borrowed]);
+        $booking->release();
 
         return $this->success(new BookingResource($booking), 'Booking released');
     }
 
-    public function return(Request $request, Booking $booking): JsonResponse
+    public function markAsReturned(Request $request, Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
 
-        $booking->update([
-            'status' => BookingStatus::Returned,
-            'return_date' => now(),
-            'returned_by_user_id' => $request->user()->id,
-            'isRead' => false,
-        ]);
-        $booking->equipments->each->update(['status' => EquipmentStatus::Available]);
+        $booking->markAsReturned($request->user()->id);
 
         return $this->success(new BookingResource($booking), 'Booking returned');
     }
@@ -114,20 +91,16 @@ class BookingController extends ApiController
     {
         $this->authorize('cancel', $booking);
 
-        $booking->equipments->each->update(['status' => EquipmentStatus::Available]);
-        $booking->update([
-            'status' => BookingStatus::Cancelled,
-            'isRead' => false,
-        ]);
+        $booking->cancel();
 
         return $this->success(new BookingResource($booking), 'Booking cancelled');
     }
 
-    public function isRead(Booking $booking): JsonResponse
+    public function markAsRead(Booking $booking): JsonResponse
     {
         $this->authorize('markAsRead', $booking);
 
-        $booking->update(['isRead' => true]);
+        $booking->markAsRead();
 
         return $this->success(new BookingResource($booking), 'Notification marked as read');
     }

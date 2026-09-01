@@ -1,6 +1,3 @@
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
-
 export const matchesSearch = (equipment = {}, query = '') => {
     const normalizedQuery = (query || '').trim().toLowerCase()
     if (!normalizedQuery) {
@@ -18,11 +15,11 @@ export const matchesBookingSearch = (booking = {}, query = '') => {
     }
     const equipment = booking.equipments ? booking.equipments[0] : null
     const fields = [
-        getEquipmentTitle(equipment),
+        equipment ? equipment.name : '',
         equipment ? equipment.model : '',
         booking.ticket_id,
         String(booking.id ?? ''),
-        getFullName(booking.user),
+        booking.user ? booking.user.full_name : '',
         booking.user ? booking.user.email : '',
         booking.purpose
     ]
@@ -35,7 +32,7 @@ export const matchesUserSearch = (user = {}, query = '') => {
         return true
     }
     return [
-        getFullName(user),
+        user ? user.full_name : '',
         user ? user.firstname : '',
         user ? user.lastname : '',
         user ? user.email : '',

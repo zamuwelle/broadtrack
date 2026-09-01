@@ -1,14 +1,24 @@
 import { useCallback, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import { formatDate } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
-import { getEquipmentTitle } from '@shared/util/equipment'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useReturnBooking } from '@/api/bookings/return-booking'
 
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
 const noop = () => null
+
+const getConfirmModalDetails = (booking) => {
+    const borrower = booking.user || defaultBooking
+    const equipments = booking.equipments || defaultList
+    const equipment = equipments[0] || null
+    return {
+        borrowerName: borrower.full_name || 'Borrower',
+        borrowerDepartment: borrower.department ? ` (${borrower.department})` : '',
+        equipmentName: equipment?.name || 'Equipment',
+        timelineText: `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
+    }
+}
 
 export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = defaultBooking, onSuccess = noop }) => {
     const returnMutation = useReturnBooking()
@@ -38,13 +48,7 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
         return null
     }
 
-    const borrower = booking.user || defaultBooking
-    const borrowerName = getFullName(borrower) || 'Borrower'
-    const borrowerDepartment = borrower.department ? ` (${borrower.department})` : ''
-    const equipments = booking.equipments || defaultList
-    const equipment = equipments[0] || null
-    const equipmentName = getEquipmentTitle(equipment)
-    const timelineText = `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
+    const { borrowerName, borrowerDepartment, equipmentName, timelineText } = getConfirmModalDetails(booking)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">

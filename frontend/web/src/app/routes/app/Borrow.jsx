@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { ProtectedRoute } from '@/lib/authorization'
-import { BorrowLayout } from '@/app/routes/app/borrow/borrow-layout'
+import { BorrowLayout } from '@/app/routes/app/borrow/BorrowLayout'
 
 const borrowerRoles = Object.freeze(['borrower'])
 

@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { landingLinks } from '@/features/landing/components/landingNavLinks'
+import { landingLinks } from '@/features/landing/nav/landingNavLinks'
 import { useActiveSection } from '@/hooks/ui/useActiveSection'
 
 export const LandingLinks = () => {

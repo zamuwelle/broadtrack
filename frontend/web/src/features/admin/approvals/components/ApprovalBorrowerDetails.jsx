@@ -1,12 +1,11 @@
 import { formatDate } from '@shared/util/date'
-import { getFullName } from '@shared/util/name'
 import { getBookingStatus } from '@shared/util/booking'
 
 const defaultBooking = Object.freeze({})
 
 const getProcessedByName = (booking) => {
     if (booking.returned_by_user) {
-        return getFullName(booking.returned_by_user)
+        return booking.returned_by_user.full_name || ''
     }
     if (booking.returned_by_user_id) {
         return 'Samuel Binos'
@@ -16,7 +15,7 @@ const getProcessedByName = (booking) => {
 
 export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
     const user = booking.user || defaultBooking
-    const borrowerName = getFullName(user) || 'Borrower'
+    const borrowerName = user.full_name || 'Borrower'
     const borrowerDepartment = user.department ? `(${user.department})` : ''
     const borrowerEmail = user.email || 'N/A'
     const borrowerPhone = user.phone || 'N/A'

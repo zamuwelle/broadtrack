@@ -28,21 +28,23 @@ class TestSeeder extends Seeder
             ['suffix' => 'sysadmin', 'role' => UserRole::Sysadmin, 'domain' => 'laverdad.edu.ph'],
         ];
 
-        foreach ($teamMembers as $member) {
-            foreach ($roleDefinitions as $roleDefinition) {
-                User::updateOrCreate(
-                    ['email' => "{$member['prefix']}{$roleDefinition['suffix']}.test@{$roleDefinition['domain']}"],
-                    [
-                        'firstname' => $member['firstname'],
-                        'lastname' => $member['lastname'],
-                        'phone' => '+639999999999',
-                        'password' => $defaultPassword,
-                        'role' => $roleDefinition['role'],
-                        'department' => Department::InformationSystems,
-                        'email_verified_at' => now(),
-                    ]
-                );
+        User::withoutEvents(function () use ($teamMembers, $roleDefinitions, $defaultPassword) {
+            foreach ($teamMembers as $member) {
+                foreach ($roleDefinitions as $roleDefinition) {
+                    User::updateOrCreate(
+                        ['email' => "{$member['prefix']}{$roleDefinition['suffix']}.test@{$roleDefinition['domain']}"],
+                        [
+                            'firstname' => $member['firstname'],
+                            'lastname' => $member['lastname'],
+                            'phone' => '+639999999999',
+                            'password' => $defaultPassword,
+                            'role' => $roleDefinition['role'],
+                            'department' => Department::InformationSystems,
+                            'email_verified_at' => now(),
+                        ]
+                    );
+                }
             }
-        }
+        });
     }
 }

@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { getFullName } from '@shared/util/name'
 import { useLogout } from '@/lib/auth'
 import { useSetState } from '@shared/hooks/useSetState'
 import { ProfileModal } from '@/features/users/components/ProfileModal'
@@ -34,7 +33,7 @@ export const ProfileMenu = ({ user = defaultUser, onUpdated = noop }) => {
         updateMenuState({ logoutOpen: false })
     }, [updateMenuState])
 
-    const fullName = getFullName(user)
+    const fullName = user?.full_name ?? ''
     const userEmail = user?.email ?? ''
 
     return (

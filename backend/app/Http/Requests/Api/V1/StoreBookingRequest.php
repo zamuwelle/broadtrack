@@ -39,7 +39,7 @@ class StoreBookingRequest extends FormRequest
             }
 
             $maintenance = Equipment::whereIn('id', $equipmentIds)
-                ->where('status', EquipmentStatus::Maintenance->value)
+                ->where('status', EquipmentStatus::Maintenance)
                 ->pluck('name');
 
             if ($maintenance->isNotEmpty()) {
@@ -49,14 +49,11 @@ class StoreBookingRequest extends FormRequest
                 );
             }
 
-            $overlapping = Booking::where(static function ($query) use ($startDate, $endDate) {
-                $query->where('start_date', '<', $endDate)
-                    ->where('end_date', '>', $startDate);
-            })
+            $overlapping = Booking::overlapping($startDate, $endDate)
                 ->whereNotIn('status', [
-                    BookingStatus::Cancelled->value,
-                    BookingStatus::Rejected->value,
-                    BookingStatus::Returned->value,
+                    BookingStatus::Cancelled,
+                    BookingStatus::Rejected,
+                    BookingStatus::Returned,
                 ])
                 ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();

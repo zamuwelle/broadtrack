@@ -1,20 +1,18 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 
-export const getBookings = async (params = {}) => {
+export const getBookings = async (params) => {
     const response = await api.get('/bookings', { params })
     return response?.data ?? []
 }
 
-export const getBookingsQueryOptions = (params = {}) =>
+export const getBookingsQueryOptions = (params) =>
     queryOptions({
-        queryKey: ['bookings', params],
-        queryFn: () => getBookings(params),
-        staleTime: 30_000,
-        refetchInterval: 60_000
+        queryKey: params && Object.keys(params).length > 0 ? ['bookings', params] : ['bookings'],
+        queryFn: () => getBookings(params)
     })
 
-export const useBookings = ({ params = {}, queryConfig } = {}) =>
+export const useBookings = ({ params, queryConfig } = {}) =>
     useQuery({
         ...getBookingsQueryOptions(params),
         ...queryConfig

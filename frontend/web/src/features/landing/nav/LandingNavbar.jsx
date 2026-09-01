@@ -1,15 +1,26 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
-import { LandingCta } from '@/features/landing/components/LandingCta'
-import { LandingLinks } from '@/features/landing/components/LandingLinks'
-import { landingLinks } from '@/features/landing/components/landingNavLinks'
-import { Button } from '@/components/ui/Button'
+import { LandingCta } from '@/features/landing/nav/LandingCta'
+import { LandingLinks } from '@/features/landing/nav/LandingLinks'
+import { landingLinks } from '@/features/landing/nav/landingNavLinks'
 import { Logo } from '@/components/ui/Logo'
+import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useScrollDirection } from '@/hooks/ui/useScrollDirection'
 
 export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { scrollDirection, isAtTop } = useScrollDirection()
+
+    useEffect(() => {
+        const mediaQuery = globalThis.matchMedia('(min-width: 768px)')
+        const handleMediaChange = (event) => {
+            if (event.matches) {
+                setIsMenuOpen(false)
+            }
+        }
+        mediaQuery.addEventListener('change', handleMediaChange)
+        return () => mediaQuery.removeEventListener('change', handleMediaChange)
+    }, [])
 
     const handleNavClick = useCallback(() => {
         setIsMenuOpen(false)
@@ -21,17 +32,15 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
 
     const handleRegisterClick = useCallback(() => {
         setIsMenuOpen(false)
-        if (onOpenRegister) {
-            onOpenRegister()
-        }
+        onOpenRegister()
     }, [onOpenRegister])
 
     const handleLoginClick = useCallback(() => {
         setIsMenuOpen(false)
-        if (onOpenLogin) {
-            onOpenLogin()
-        }
+        onOpenLogin()
     }, [onOpenLogin])
+
+    useEscapeKey(handleNavClick)
 
     return (
         <nav
@@ -78,17 +87,13 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
                             ))}
                         </div>
                         <div className="h-px bg-slate-100" />
-                        <div className="flex flex-col gap-2.5">
-                            <Button onClick={handleRegisterClick} className="w-full h-11">
-                                Sign Up
-                            </Button>
-                            <Button
-                                onClick={handleLoginClick}
-                                variant="secondary"
-                                className="w-full h-11 border border-border-subtle">
-                                Login
-                            </Button>
-                        </div>
+                        <LandingCta
+                            onOpenLogin={handleLoginClick}
+                            onOpenRegister={handleRegisterClick}
+                            className="flex flex-col gap-2.5"
+                            buttonClassName="w-full h-11"
+                            loginClassName="border border-border-subtle"
+                        />
                     </div>
                 </>
             )}

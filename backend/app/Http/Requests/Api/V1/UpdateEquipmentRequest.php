@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ class UpdateEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => ['sometimes', 'required', 'exists:categories,id'],
+            'category' => ['sometimes', 'required', Rule::enum(EquipmentCategory::class)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
