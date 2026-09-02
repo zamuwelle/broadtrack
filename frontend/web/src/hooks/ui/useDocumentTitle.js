@@ -1,7 +1,28 @@
 import { useEffect } from 'react'
 
-export const useDocumentTitle = (title) => {
+let globalUnreadCount = 0
+let currentTitle = ''
+
+const updateTitle = () => {
+    if (typeof globalThis.document === 'undefined') {
+        return
+    }
+    const prefix = globalUnreadCount > 0 ? `🔴 (${globalUnreadCount}) ` : ''
+    const baseTitle = currentTitle ? `${currentTitle} — Broadtrack` : 'Broadtrack — Streamline Your Equipment Logistics'
+    globalThis.document.title = `${prefix}${baseTitle}`
+}
+
+export const setGlobalUnreadCount = (count) => {
+    globalUnreadCount = Math.max(0, count || 0)
+    updateTitle()
+}
+
+export const useDocumentTitle = (title, count) => {
     useEffect(() => {
-        document.title = title ? `${title} — Broadtrack` : 'Broadtrack — Streamline Your Equipment Logistics'
-    }, [title])
+        if (typeof count === 'number') {
+            globalUnreadCount = Math.max(0, count)
+        }
+        currentTitle = title || ''
+        updateTitle()
+    }, [title, count])
 }

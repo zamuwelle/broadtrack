@@ -7,6 +7,7 @@ import { useEquipment } from '@/api/equipment/get-equipment'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useUsers } from '@/api/users/get-users'
 import { useBookingNotification } from '@/hooks/queries/useBookingNotification'
+import { setGlobalUnreadCount } from '@/hooks/ui/useDocumentTitle'
 import { useUser } from '@/lib/auth'
 import { ROLES } from '@shared/constants'
 import { paths } from '@/config/paths'
@@ -61,10 +62,22 @@ export const Component = ({ onReady, children }) => {
     const sidebarLinks = isSysAdmin ? sysadminLinks : baseSidebarLinks
 
     const { isLoading: isEquipmentLoading } = useEquipment()
-    const { isLoading: isBookingsLoading } = useBookings()
+    const { data: bookings = [], isLoading: isBookingsLoading } = useBookings()
     const usersOptions = useMemo(() => Object.freeze({ enabled: isSysAdmin }), [isSysAdmin])
     const { isLoading: isUsersLoading } = useUsers({ queryConfig: usersOptions })
     const isReady = !isEquipmentLoading && !isBookingsLoading && (!isSysAdmin || !isUsersLoading)
+
+    const pendingCount = useMemo(
+        () => bookings.filter((b) => (b.status || '').toLowerCase() === 'pending').length,
+        [bookings]
+    )
+
+    useEffect(() => {
+        setGlobalUnreadCount(pendingCount)
+        return () => {
+            setGlobalUnreadCount(0)
+        }
+    }, [pendingCount])
 
     useEffect(() => {
         if (isReady && typeof onReady === 'function') {

@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useEquipment } from '@/api/equipment/get-equipment'
 import { useBookingNotification } from '@/hooks/queries/useBookingNotification'
+import { getNotificationConfig } from '@/features/borrow/components/notificationConfig'
+import { setGlobalUnreadCount } from '@/hooks/ui/useDocumentTitle'
 import { BorrowNavbar } from '@/features/borrow/components/BorrowNavbar'
 import { Sidebar } from '@/components/ui/Sidebar'
 import { paths } from '@/config/paths'
@@ -44,6 +46,23 @@ export const Component = ({ onReady, children }) => {
     const { isLoading: isEquipmentLoading } = useEquipment()
     const { data: bookings = [], isLoading: isBookingsLoading } = useBookings()
     const isReady = !isEquipmentLoading && !isBookingsLoading
+
+    const unreadCount = useMemo(
+        () =>
+            bookings.filter((booking) => {
+                const hasUpdate = Boolean(getNotificationConfig(booking))
+                const isRead = Boolean(booking.isRead ?? booking.is_read)
+                return hasUpdate && !isRead
+            }).length,
+        [bookings]
+    )
+
+    useEffect(() => {
+        setGlobalUnreadCount(unreadCount)
+        return () => {
+            setGlobalUnreadCount(0)
+        }
+    }, [unreadCount])
 
     useEffect(() => {
         if (isReady && typeof onReady === 'function') {
