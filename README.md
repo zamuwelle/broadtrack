@@ -30,7 +30,7 @@ Equipment booking and tracking system built with Laravel and React.
 - Admin dashboard for managing equipment inventory, categories, and approvals
 - Shared API and real-time Echo layer for web and future mobile (Expo) clients
 - RESTful API versioned at `/api/v1/` with Sanctum authentication
-- Automated Feature Test Suite with Pest PHP (30/30 passing)
+- Automated Feature Test Suite with Pest PHP (40/40 passing)
 
 ## Tech Stack
 
@@ -188,7 +188,7 @@ Import it into Postman to test all endpoints out-of-the-box.
 ```bash
 cd frontend
 
-# Run Pest automated feature test suite (30 tests)
+# Run Pest automated feature test suite (40 tests)
 bun run test:backend
 
 # Linting
@@ -206,6 +206,10 @@ bun run format:backend  # Formats Backend only (Laravel Pint + Prettier)
 
 - **Frontend**: Firebase Hosting (automated via GitHub Actions on `main` and `dev`)
 - **Backend**: Render (FrankenPHP Octane + Reverb Caddy reverse proxy)
+
+## Documentation
+
+For architectural diagrams, workflows, and code conventions, see the [Developer Documentation](./docs/README.md).
 
 ## License
 
