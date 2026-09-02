@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
@@ -22,23 +22,6 @@ const CATEGORIES = Object.freeze(
 )
 
 const ALL_CATEGORIES = Object.freeze(['All', ...EQUIPMENT_CATEGORIES])
-
-const resolveColumnCount = () => {
-    if (!globalThis.window) {
-        return 1
-    }
-    const width = globalThis.window.innerWidth
-    if (width >= 2200) {
-        return 4
-    }
-    if (width >= 1536) {
-        return 3
-    }
-    if (width >= 640) {
-        return 2
-    }
-    return 1
-}
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -101,13 +84,6 @@ const useInventoryModals = (updatePageState, queryClient) => {
 export const InventoryPage = (props) => {
     useDocumentTitle('Inventory Management')
     const { equipment: propEquipment } = props
-    const [columnCount, setColumnCount] = useState(resolveColumnCount)
-
-    useEffect(() => {
-        const handleResize = () => setColumnCount(resolveColumnCount())
-        globalThis.window.addEventListener('resize', handleResize)
-        return () => globalThis.window.removeEventListener('resize', handleResize)
-    }, [])
 
     const queryClient = useQueryClient()
     const { data: hookEquipment = [] } = useEquipment()
@@ -139,15 +115,6 @@ export const InventoryPage = (props) => {
                 )
             }),
         [equipmentList, selectedCategory, searchText]
-    )
-
-    const columns = useMemo(
-        () =>
-            Array.from({ length: columnCount }, (_, index) => ({
-                id: `inventory-col-${index}`,
-                items: filteredEquipment.filter((equipmentItem, itemIndex) => itemIndex % columnCount === index)
-            })),
-        [columnCount, filteredEquipment]
     )
 
     const handleUpdateStatus = useCallback(
@@ -193,8 +160,7 @@ export const InventoryPage = (props) => {
 
             <div className="mt-8">
                 <InventoryGrid
-                    columns={columns}
-                    columnCount={columnCount}
+                    equipment={filteredEquipment}
                     onEdit={modals.handleEdit}
                     onDelete={modals.handleDelete}
                     onUpdateStatus={handleUpdateStatus}

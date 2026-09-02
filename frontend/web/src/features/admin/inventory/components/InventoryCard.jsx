@@ -36,8 +36,8 @@ export const InventoryCard = ({
     const optimizedImage = equipment.image ? equipment.image.replace('/upload/', '/upload/f_auto,q_auto/') : null
 
     return (
-        <div className="bg-white rounded-2xl border border-slate-300 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] flex flex-col font-['Poppins'] relative hover:z-20 focus-within:z-30">
-            <div className="relative h-44 bg-icon-gray border-b border-slate-200 overflow-hidden rounded-t-2xl">
+        <div className="bg-white rounded-2xl border border-slate-300 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] flex flex-col h-full font-['Poppins'] relative hover:z-20 focus-within:z-30">
+            <div className="relative h-44 bg-icon-gray border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0">
                 {optimizedImage && (
                     <div className="absolute inset-0">
                         <img
@@ -67,16 +67,16 @@ export const InventoryCard = ({
                 </div>
             </div>
 
-            <div className="p-4 sm:p-6 flex flex-col gap-3.5 flex-1 justify-between">
+            <div className="p-4 sm:p-6 flex flex-col flex-1 justify-between gap-3.5">
                 <div className="flex flex-col gap-1.5">
                     <h3 className="text-lg font-semibold text-slate-900 leading-tight">{equipmentTitle}</h3>
                     <p className="text-xs font-normal text-slate-500">{equipmentModel}</p>
-                    <p className="text-xs font-normal text-slate-500 line-clamp-2 leading-relaxed">
+                    <p className="text-xs font-normal text-slate-500 leading-relaxed">
                         {equipmentDescription}
                     </p>
                 </div>
 
-                <div className="flex flex-col gap-3.5 mt-2">
+                <div className="flex flex-col gap-3.5 mt-auto pt-2">
                     <div className="bg-slate-50 rounded-xl border border-slate-300 px-4 py-3 flex items-center justify-between">
                         <div className="flex flex-col">
                             <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">

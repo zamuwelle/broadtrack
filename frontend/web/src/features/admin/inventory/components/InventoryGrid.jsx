@@ -1,18 +1,16 @@
 import { InventoryCard } from '@/features/admin/inventory/components/InventoryCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-const gridClassMap = Object.freeze({
-    1: 'grid-cols-1',
-    2: 'grid-cols-2',
-    3: 'grid-cols-3',
-    4: 'grid-cols-4'
-})
+const defaultEquipment = Object.freeze([])
+const noop = () => null
 
-export const InventoryGrid = (props) => {
-    const { columns, columnCount, onEdit, onDelete, onUpdateStatus } = props
-
-    const hasItems = columns.some((column) => column.items.length > 0)
-    if (!hasItems) {
+export const InventoryGrid = ({
+    equipment = defaultEquipment,
+    onEdit = noop,
+    onDelete = noop,
+    onUpdateStatus = noop
+}) => {
+    if (equipment.length === 0) {
         return (
             <EmptyState
                 title="No matching equipment"
@@ -21,22 +19,16 @@ export const InventoryGrid = (props) => {
         )
     }
 
-    const gridClass = gridClassMap[columnCount] || 'grid-cols-1'
-
     return (
-        <div className={`grid ${gridClass} gap-6 items-start`}>
-            {columns.map((column) => (
-                <div key={column.id} className="flex flex-col gap-6">
-                    {column.items.map((equipment) => (
-                        <InventoryCard
-                            key={equipment.id}
-                            equipment={equipment}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            onUpdateStatus={onUpdateStatus}
-                        />
-                    ))}
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 min-[2200px]:grid-cols-4 gap-6 items-stretch">
+            {equipment.map((item) => (
+                <InventoryCard
+                    key={item.id}
+                    equipment={item}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onUpdateStatus={onUpdateStatus}
+                />
             ))}
         </div>
     )
