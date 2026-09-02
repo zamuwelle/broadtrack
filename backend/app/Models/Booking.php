@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Appends(['is_overdue'])]
-#[Fillable(['user_id', 'returned_by_user_id', 'ticket_id', 'purpose', 'start_date', 'end_date', 'return_date', 'status', 'notes', 'approval_note', 'rejection_reason', 'isRead'])]
+#[Fillable(['user_id', 'returned_by_user_id', 'ticket_id', 'purpose', 'start_date', 'end_date', 'return_date', 'status', 'approval_note', 'rejection_reason', 'isRead'])]
 #[ObservedBy(BookingObserver::class)]
 class Booking extends Model
 {

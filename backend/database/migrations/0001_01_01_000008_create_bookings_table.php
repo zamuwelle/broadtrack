@@ -18,7 +18,6 @@ return new class extends Migration
             $table->dateTime('end_date');
             $table->dateTime('return_date')->nullable();
             $table->string('status')->default(BookingStatus::Pending->value)->index();
-            $table->text('notes')->nullable();
             $table->text('approval_note')->nullable();
             $table->text('rejection_reason')->nullable();
             $table->boolean('isRead')->default(false);

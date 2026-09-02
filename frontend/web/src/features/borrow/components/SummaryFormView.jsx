@@ -11,7 +11,6 @@ export const SummaryFormView = (props) => {
         endDate,
         minStartDate,
         purpose,
-        specialNotes,
         isSubmittable,
         isSubmitting,
         errorMessage,
@@ -21,7 +20,6 @@ export const SummaryFormView = (props) => {
         onStartDateChange,
         onEndDateChange,
         onPurposeChange,
-        onSpecialNotesChange,
         onSubmit
     } = props
 
@@ -46,22 +44,12 @@ export const SummaryFormView = (props) => {
 
                 <div className="flex w-full flex-col items-start justify-start gap-1.5">
                     <div className="text-xs font-normal text-black font-['Poppins']">
-                        Purpose <span className="text-red-500">*</span>
+                        Purpose / Notes <span className="text-red-500">*</span>
                     </div>
                     <textarea
                         value={purpose}
                         onChange={onPurposeChange}
-                        placeholder="Type your purpose here... e.g., Thesis Project"
-                        rows={3}
-                        className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-400 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
-                    />
-                </div>
-                <div className="flex w-full flex-col items-start justify-start gap-1.5">
-                    <div className="text-xs font-normal text-black font-['Poppins']">Special Notes (Optional)</div>
-                    <textarea
-                        value={specialNotes}
-                        onChange={onSpecialNotesChange}
-                        placeholder="e.g., Additional cables requested"
+                        placeholder="Type your purpose or notes here... e.g., Thesis Project"
                         rows={3}
                         className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-400 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
                     />

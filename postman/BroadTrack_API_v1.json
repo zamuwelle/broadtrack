@@ -462,7 +462,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"purpose\": \"Documentary Production - Finals Project\",\n  \"start_date\": \"2026-10-15 09:00:00\",\n  \"end_date\": \"2026-10-17 17:00:00\",\n  \"notes\": \"Will be used inside LVCC Media Center Studio.\",\n  \"equipment_ids\": [1]\n}"
+              "raw": "{\n  \"purpose\": \"Documentary Production - Finals Project\",\n  \"start_date\": \"2026-10-15 09:00:00\",\n  \"end_date\": \"2026-10-17 17:00:00\",\n  \"equipment_ids\": [1]\n}"
             },
             "url": "{{base_url}}/bookings"
           }

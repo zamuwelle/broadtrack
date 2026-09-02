@@ -103,7 +103,6 @@ const initialSummaryState = Object.freeze({
     startDate: '',
     endDate: '',
     purpose: '',
-    specialNotes: '',
     isSubmitting: false
 })
 
@@ -115,7 +114,6 @@ const useBorrowSubmitHandler = ({
     purpose,
     startDate,
     endDate,
-    specialNotes,
     updateSummaryState,
     clearBasket,
     setErrorMessage
@@ -131,15 +129,13 @@ const useBorrowSubmitHandler = ({
                 equipment_ids: selectedItems.map((item) => item.id),
                 purpose,
                 start_date: startDate,
-                end_date: endDate,
-                notes: specialNotes || null
+                end_date: endDate
             })
             updateSummaryState({
                 modalView: 'submitted',
                 startDate: '',
                 endDate: '',
-                purpose: '',
-                specialNotes: ''
+                purpose: ''
             })
             clearBasket()
         } catch (submitError) {
@@ -158,7 +154,6 @@ const useBorrowSubmitHandler = ({
         purpose,
         startDate,
         endDate,
-        specialNotes,
         clearBasket,
         setErrorMessage
     ])
@@ -271,21 +266,13 @@ const useBorrowFieldHandlers = ({ updateSummaryState, removeItem, selectedItems,
         [updateSummaryState]
     )
 
-    const handleSpecialNotesChange = useCallback(
-        (event) => {
-            updateSummaryState({ specialNotes: event.target.value })
-        },
-        [updateSummaryState]
-    )
-
     return {
         handleStartDateChange,
         handleEndDateChange,
         handleRemoveItem,
         handleOpenEdit,
         handleCloseEdit,
-        handlePurposeChange,
-        handleSpecialNotesChange
+        handlePurposeChange
     }
 }
 
@@ -303,7 +290,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         ...initialSummaryState,
         modalView: selectedItems.length > 0 ? 'summary' : 'empty'
     })
-    const { modalView, startDate, endDate, purpose, specialNotes, isSubmitting } = summaryState
+    const { modalView, startDate, endDate, purpose, isSubmitting } = summaryState
 
     const todayDateString = getTodayDateString()
     const minStartDate = useMemo(
@@ -343,8 +330,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
                 modalView: selectedItems.length > 0 ? 'summary' : 'empty',
                 startDate: '',
                 endDate: '',
-                purpose: '',
-                specialNotes: ''
+                purpose: ''
             })
         }
     }, [isOpen, selectedItems.length, updateSummaryState])
@@ -376,7 +362,6 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         purpose,
         startDate,
         endDate,
-        specialNotes,
         updateSummaryState,
         clearBasket: clearCart,
         setErrorMessage
@@ -391,7 +376,6 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         minStartDate,
         excludeDateIntervals,
         purpose,
-        specialNotes,
         isSubmittable,
         isSubmitting,
         errorMessage,

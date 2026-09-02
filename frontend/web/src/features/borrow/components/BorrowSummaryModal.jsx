@@ -21,7 +21,6 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         minStartDate,
         hasScheduleConflict,
         purpose,
-        specialNotes,
         isSubmittable,
         isSubmitting,
         errorMessage,
@@ -31,7 +30,6 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         handleOpenEdit,
         handleCloseEdit,
         handlePurposeChange,
-        handleSpecialNotesChange,
         handleSubmit
     } = useBorrowSummaryLogic({ isOpen, propUser })
 
@@ -87,7 +85,6 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         minStartDate={minStartDate}
                         hasScheduleConflict={hasScheduleConflict}
                         purpose={purpose}
-                        specialNotes={specialNotes}
                         isSubmittable={isSubmittable}
                         isSubmitting={isSubmitting}
                         errorMessage={errorMessage}
@@ -97,7 +94,6 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         onStartDateChange={handleStartDateChange}
                         onEndDateChange={handleEndDateChange}
                         onPurposeChange={handlePurposeChange}
-                        onSpecialNotesChange={handleSpecialNotesChange}
                         onSubmit={handleSubmit}
                     />
                 ) : null}

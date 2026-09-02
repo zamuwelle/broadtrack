@@ -19,7 +19,6 @@ class BookingFactory extends Factory
             'start_date' => now()->addDays(1),
             'end_date' => now()->addDays(3),
             'status' => BookingStatus::Pending,
-            'notes' => fake()->sentence(),
             'isRead' => false,
         ];
     }

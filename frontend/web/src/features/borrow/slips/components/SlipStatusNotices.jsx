@@ -72,22 +72,11 @@ export const SlipStatusNotices = ({ booking, status }) => {
             {isReturned ? renderReturnNotice(booking) : null}
 
             <div className="self-stretch flex flex-col justify-start items-start">
-                <div className="self-stretch justify-start text-neutral-400 text-xs font-medium">PURPOSE:</div>
+                <div className="self-stretch justify-start text-neutral-400 text-xs font-medium">PURPOSE / NOTES:</div>
                 <div className="self-stretch justify-start text-slate-900 text-xs font-normal break-words">
                     {booking.purpose}
                 </div>
             </div>
-
-            {booking.notes ? (
-                <div className="w-full p-2.5 bg-slate-50 rounded-lg outline outline-[0.50px] outline-offset-[-0.50px] outline-slate-300 flex flex-col justify-start items-start">
-                    <div className="self-stretch justify-start text-slate-900 text-xs font-semibold">
-                        SPECIAL NOTES:
-                    </div>
-                    <div className="self-stretch justify-start text-slate-900 text-xs font-normal break-words">
-                        {booking.notes}
-                    </div>
-                </div>
-            ) : null}
 
             {showPickup ? renderPickupNotice(booking.approval_note) : null}
             {showRefusal ? renderRefusalNotice(booking.rejection_reason) : null}

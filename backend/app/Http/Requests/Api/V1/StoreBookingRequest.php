@@ -23,7 +23,6 @@ class StoreBookingRequest extends FormRequest
             'purpose' => 'required|string|max:255',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after:start_date',
-            'notes' => 'nullable|string',
         ];
     }
 
