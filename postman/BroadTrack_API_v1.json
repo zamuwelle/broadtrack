@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "broadtrack-api-v1",
     "name": "BroadTrack API (v1)",
-    "description": "Complete collection for testing BroadTrack API v1 endpoints with Laravel Sanctum authentication.",
+    "description": "Complete collection for BroadTrack API v1 with automatic Sanctum token and ID chaining for seamless live demos.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -15,24 +15,42 @@
       "key": "token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "equipment_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "1. Authentication",
+      "name": "1. Authentication & Roles",
       "item": [
         {
-          "name": "Login (Admin)",
+          "name": "Login as Admin",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.data && res.data.token) {",
-                  "    pm.collectionVariables.set('token', res.data.token);",
-                  "    console.log('Token saved to collection variable!');",
-                  "}"
+                  "pm.test(\"Admin login successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.token) {",
+                  "        pm.collectionVariables.set('token', res.data.token);",
+                  "        console.log('Admin token saved!');",
+                  "    }",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -52,17 +70,20 @@
           }
         },
         {
-          "name": "Login (Borrower)",
+          "name": "Login as Borrower (Student)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "const res = pm.response.json();",
-                  "if (res.data && res.data.token) {",
-                  "    pm.collectionVariables.set('token', res.data.token);",
-                  "    console.log('Borrower Token saved!');",
-                  "}"
+                  "pm.test(\"Borrower login successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.token) {",
+                  "        pm.collectionVariables.set('token', res.data.token);",
+                  "        console.log('Borrower token saved!');",
+                  "    }",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -82,7 +103,25 @@
           }
         },
         {
-          "name": "Register (New Borrower)",
+          "name": "Login as Sysadmin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Sysadmin login successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.token) {",
+                  "        pm.collectionVariables.set('token', res.data.token);",
+                  "        console.log('Sysadmin token saved!');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -91,9 +130,65 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"email\": \"janedoe.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"phone\": \"+639123456789\",\n  \"department\": \"BS Information Systems\"\n}"
+              "raw": "{\n  \"email\": \"karlsysadmin.test@laverdad.edu.ph\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{base_url}}/login"
+          }
+        },
+        {
+          "name": "Register New Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Registration received (201 Created)\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"email\": \"janedoe.demo@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"phone\": \"+639123456789\",\n  \"department\": \"BS Information Systems\"\n}"
             },
             "url": "{{base_url}}/register"
+          }
+        },
+        {
+          "name": "Resend Verification Link",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Verification resent\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"janedoe.demo@student.laverdad.edu.ph\"\n}"
+            },
+            "url": "{{base_url}}/resend-verification"
           }
         },
         {
@@ -112,22 +207,20 @@
           }
         },
         {
-          "name": "Resend Verification",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\"\n}"
-            },
-            "url": "{{base_url}}/resend-verification"
-          }
-        },
-        {
           "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Logout successful\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -140,10 +233,23 @@
       ]
     },
     {
-      "name": "2. Profile",
+      "name": "2. User Profile",
       "item": [
         {
-          "name": "Get Current User (Me)",
+          "name": "Get Current User Profile (me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Profile retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -155,6 +261,19 @@
         },
         {
           "name": "Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Profile updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -172,10 +291,23 @@
       ]
     },
     {
-      "name": "3. Equipment",
+      "name": "3. Equipment Inventory",
       "item": [
         {
-          "name": "List Equipment",
+          "name": "List All Equipment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Equipment catalog retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -187,6 +319,24 @@
         },
         {
           "name": "Create Equipment (Admin Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Equipment created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.id) {",
+                  "        pm.collectionVariables.set('equipment_id', res.data.id);",
+                  "        console.log('Created equipment ID saved:', res.data.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -196,13 +346,26 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Sony Alpha A7 IV\",\n  \"brand\": \"Sony\",\n  \"model\": \"ILCE-7M4\",\n  \"description\": \"Full-frame hybrid mirrorless camera\",\n  \"status\": \"available\"\n}"
+              "raw": "{\n  \"category\": \"Cameras\",\n  \"name\": \"Sony Alpha A7 IV\",\n  \"brand\": \"Sony\",\n  \"model\": \"ILCE-7M4\",\n  \"serial_no\": \"SN-SONY-A7IV-001\",\n  \"description\": \"Full-frame 33MP hybrid mirrorless camera with 4K60p video\",\n  \"specs\": \"33MP Exmor R CMOS, 4K 60p 10-bit 4:2:2, 5-axis IBIS\",\n  \"status\": \"available\"\n}"
             },
             "url": "{{base_url}}/equipment"
           }
         },
         {
           "name": "Update Equipment (Admin Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Equipment updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -212,29 +375,55 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sony Alpha A7 IV Updated\",\n  \"status\": \"available\"\n}"
+              "raw": "{\n  \"name\": \"Sony Alpha A7 IV (Studio Kit)\",\n  \"status\": \"available\"\n}"
             },
-            "url": "{{base_url}}/equipment/1"
+            "url": "{{base_url}}/equipment/{{equipment_id}}"
           }
         },
         {
           "name": "Delete Equipment (Admin Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Equipment deleted (204 No Content)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/equipment/1"
+            "url": "{{base_url}}/equipment/{{equipment_id}}"
           }
         }
       ]
     },
     {
-      "name": "4. Bookings",
+      "name": "4. Borrowing & Approval Workflow (Demo Flow)",
       "item": [
         {
-          "name": "List Bookings",
+          "name": "Step 1: List Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Bookings retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -245,18 +434,25 @@
           }
         },
         {
-          "name": "Get Single Booking",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "{{base_url}}/bookings/1"
-          }
-        },
-        {
-          "name": "Create Booking (Borrower Only)",
+          "name": "Step 2: Create Booking Request (Borrower)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Booking created successfully (201 Created)\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.id) {",
+                  "        pm.collectionVariables.set('booking_id', res.data.id);",
+                  "        console.log('Chained Booking ID:', res.data.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -266,13 +462,50 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"purpose\": \"Documentary Filming\",\n  \"start_date\": \"2026-10-10 09:00:00\",\n  \"end_date\": \"2026-10-12 17:00:00\",\n  \"notes\": \"Need tripods included\",\n  \"equipment_ids\": [1]\n}"
+              "raw": "{\n  \"purpose\": \"Documentary Production - Finals Project\",\n  \"start_date\": \"2026-10-15 09:00:00\",\n  \"end_date\": \"2026-10-17 17:00:00\",\n  \"notes\": \"Will be used inside LVCC Media Center Studio.\",\n  \"equipment_ids\": [1]\n}"
             },
             "url": "{{base_url}}/bookings"
           }
         },
         {
-          "name": "Approve Booking (Admin Only)",
+          "name": "Step 3: Get Booking Details & Slip",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Booking slip retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/{{booking_id}}"
+          }
+        },
+        {
+          "name": "Step 4: Approve Booking (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Booking approved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -282,13 +515,85 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"approval_note\": \"Approved for lab use only.\"\n}"
+              "raw": "{\n  \"approval_note\": \"Approved. Please bring student ID upon gear release.\"\n}"
             },
-            "url": "{{base_url}}/bookings/1/approve"
+            "url": "{{base_url}}/bookings/{{booking_id}}/approve"
           }
         },
         {
-          "name": "Release Booking (Admin Only)",
+          "name": "Step 5: Release Equipment to Borrower (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Equipment released\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/{{booking_id}}/release"
+          }
+        },
+        {
+          "name": "Step 6: Send Return Due Email Reminder (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Reminder queued successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/{{booking_id}}/remind"
+          }
+        },
+        {
+          "name": "Step 7: Confirm Equipment Return (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Booking marked as returned\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/{{booking_id}}/return"
+          }
+        },
+        {
+          "name": "Alternative: Reject Booking (Admin)",
           "request": {
             "method": "PUT",
             "header": [
@@ -298,45 +603,53 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"release\": true\n}"
+              "raw": "{\n  \"rejection_reason\": \"Equipment is reserved for official school event.\"\n}"
             },
-            "url": "{{base_url}}/bookings/1/release"
+            "url": "{{base_url}}/bookings/{{booking_id}}/reject"
           }
         },
         {
-          "name": "Return Booking (Admin Only)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"return\": true\n}"
-            },
-            "url": "{{base_url}}/bookings/1/return"
-          }
-        },
-        {
-          "name": "Cancel Booking (Borrower Only)",
+          "name": "Alternative: Cancel Booking (Borrower)",
           "request": {
             "method": "PUT",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/bookings/1/cancel"
+            "url": "{{base_url}}/bookings/{{booking_id}}/cancel"
+          }
+        },
+        {
+          "name": "Mark Booking Notification Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/bookings/{{booking_id}}/read"
           }
         }
       ]
     },
     {
-      "name": "5. Users (Sysadmin Only)",
+      "name": "5. User Management (Sysadmin Only)",
       "item": [
         {
-          "name": "List Users",
+          "name": "List All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Users retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -347,7 +660,25 @@
           }
         },
         {
-          "name": "Create User",
+          "name": "Create User Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"User created (201 Created)\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const res = pm.response.json();",
+                  "    if (res.data && res.data.id) {",
+                  "        pm.collectionVariables.set('user_id', res.data.id);",
+                  "        console.log('Saved user ID:', res.data.id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -357,13 +688,26 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"email\": \"alicesmith.test@laverdad.edu.ph\",\n  \"phone\": \"+639123456780\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
+              "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"email\": \"alicesmith.demo@laverdad.edu.ph\",\n  \"phone\": \"+639123456780\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
             },
             "url": "{{base_url}}/users"
           }
         },
         {
           "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"User updated\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -375,7 +719,64 @@
               "mode": "raw",
               "raw": "{\n  \"firstname\": \"Alice Updated\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
             },
-            "url": "{{base_url}}/users/1"
+            "url": "{{base_url}}/users/{{user_id}}"
+          }
+        },
+        {
+          "name": "Delete User Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"User deleted (204 No Content)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/users/{{user_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Contact Messages",
+      "item": [
+        {
+          "name": "Send Public Contact Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Contact message sent\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Juan\",\n  \"lastname\": \"Dela Cruz\",\n  \"email\": \"juandelacruz@gmail.com\",\n  \"message\": \"Inquiring regarding equipment availability for the upcoming graduation ceremony.\"\n}"
+            },
+            "url": "{{base_url}}/contact"
           }
         }
       ]
