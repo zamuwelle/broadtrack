@@ -9,8 +9,10 @@ import { useBookings } from '@/api/bookings/get-bookings'
 import { getBookingStatus } from '@shared/util/booking'
 import { ACTIVE_BOOKING_STATUSES } from '@shared/constants'
 import { paths } from '@/config/paths'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 export const DashboardPage = (props) => {
+    useDocumentTitle('Admin Dashboard')
     const { onNavigate, equipment: propEquipment, bookings: propBookings } = props
     const navigate = useNavigate()
     const { data: hookEquipment = [] } = useEquipment()

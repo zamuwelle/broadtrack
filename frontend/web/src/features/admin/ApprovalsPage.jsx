@@ -10,6 +10,7 @@ import { useSetState } from '@shared/hooks/useSetState'
 import { getBookingStatus } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
 import { APPROVAL_STATUSES } from '@shared/constants'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const resolveStatusPriority = (status) => {
     if (status === 'pending') {
@@ -90,6 +91,7 @@ const useApprovalModals = (updatePageState) => {
 }
 
 export const ApprovalsPage = (props) => {
+    useDocumentTitle('Booking Approvals')
     const { bookings: propBookings } = props
     const { data: hookBookings = [] } = useBookings()
     const bookings = propBookings ?? hookBookings

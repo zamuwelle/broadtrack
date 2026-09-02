@@ -65,7 +65,7 @@ class OAuthController extends ApiController
         }
 
         $user->tokens()->delete();
-        $target = $user->isAdmin() ? '/admin' : '/borrow';
+        $target = $user->isAdmin() ? '/dashboard' : '/equipment';
 
         return redirect($frontendUrl.$target.'?token='.$user->createToken('auth-token')->plainTextToken);
     }

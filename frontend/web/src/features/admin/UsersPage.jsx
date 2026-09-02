@@ -8,8 +8,10 @@ import { EditUserModal } from '@/features/admin/users/components/EditUserModal'
 import { RemoveUserModal } from '@/features/admin/users/components/RemoveUserModal'
 import { Icon } from '@/components/ui/Icon'
 import { matchesUserSearch } from '@shared/util/search'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 export const UsersPage = (props) => {
+    useDocumentTitle('User Management')
     const { users: propUsers } = props
     const queryClient = useQueryClient()
     const [search, setSearch] = useState('')

@@ -9,6 +9,7 @@ import { CalendarGrid } from '@/features/borrow/calendar/components/CalendarGrid
 import { CalendarBookingsModal } from '@/features/borrow/calendar/components/CalendarBookingsModal'
 import { FilterDropdown } from '@/components/ui/FilterDropdown'
 import { Icon } from '@/components/ui/Icon'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const defaultEmptyArray = Object.freeze([])
 
@@ -189,6 +190,7 @@ const useCalendarPageLogic = () => {
 }
 
 export const CalendarPage = () => {
+    useDocumentTitle('Scheduling Calendar')
     const {
         selectedEquipmentName,
         equipmentOptions,

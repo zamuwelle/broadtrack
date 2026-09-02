@@ -9,6 +9,7 @@ import { useSetState } from '@shared/hooks/useSetState'
 import { getBookingStatus, isBookingOverdue } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
 import { TRANSACTION_CATEGORIES } from '@shared/constants'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -17,6 +18,7 @@ const INITIAL_PAGE_STATE = Object.freeze({
 })
 
 export const TransactionsPage = (props) => {
+    useDocumentTitle('Transaction History')
     const { bookings: propBookings } = props
     const { data: hookBookings = [] } = useBookings()
     const bookings = propBookings ?? hookBookings

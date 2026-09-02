@@ -25,7 +25,6 @@ const createAppRouter = () =>
             ]
         },
         {
-            path: paths.app.borrow,
             element: <ProtectedRoute allowedRoles={BORROWER_ROLES} />,
             children: [
                 {
@@ -33,19 +32,15 @@ const createAppRouter = () =>
                     HydrateFallback: () => null,
                     children: [
                         {
-                            index: true,
+                            path: paths.app.borrowEquipment,
                             lazy: () => import('@/routes/borrow/Equipment')
                         },
                         {
-                            path: 'equipment',
-                            lazy: () => import('@/routes/borrow/Equipment')
-                        },
-                        {
-                            path: 'calendar',
+                            path: paths.app.borrowCalendar,
                             lazy: () => import('@/routes/borrow/Calendar')
                         },
                         {
-                            path: 'slips',
+                            path: paths.app.borrowSlips,
                             lazy: () => import('@/routes/borrow/Slips')
                         }
                     ]
@@ -53,7 +48,6 @@ const createAppRouter = () =>
             ]
         },
         {
-            path: paths.app.admin,
             element: <ProtectedRoute allowedRoles={ADMIN_ROLES} />,
             children: [
                 {
@@ -61,27 +55,23 @@ const createAppRouter = () =>
                     HydrateFallback: () => null,
                     children: [
                         {
-                            index: true,
+                            path: paths.app.adminDashboard,
                             lazy: () => import('@/routes/admin/Dashboard')
                         },
                         {
-                            path: 'dashboard',
-                            lazy: () => import('@/routes/admin/Dashboard')
-                        },
-                        {
-                            path: 'approvals',
+                            path: paths.app.adminApprovals,
                             lazy: () => import('@/routes/admin/Approvals')
                         },
                         {
-                            path: 'inventory',
+                            path: paths.app.adminInventory,
                             lazy: () => import('@/routes/admin/Inventory')
                         },
                         {
-                            path: 'transactions',
+                            path: paths.app.adminTransactions,
                             lazy: () => import('@/routes/admin/Transactions')
                         },
                         {
-                            path: 'users',
+                            path: paths.app.adminUsers,
                             lazy: () => import('@/routes/admin/Users')
                         }
                     ]

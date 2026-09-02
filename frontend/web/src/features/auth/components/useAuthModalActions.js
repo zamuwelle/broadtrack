@@ -7,6 +7,7 @@ import { loginUser } from '@/features/auth/api/login'
 import { registerUser } from '@/features/auth/api/register'
 import { forgotPassword } from '@/features/auth/api/forgot-password'
 import { resetPassword } from '@/features/auth/api/reset-password'
+import { paths } from '@/config/paths'
 
 const hasRegisterMissing = (form) => {
     const fn = (form.firstname || '').trim()
@@ -50,7 +51,7 @@ const useAuthLoginHandlers = ({
             onClose()
             const user = data.user || {}
             const { role } = user
-            navigate(role === 'admin' || role === 'sysadmin' ? '/admin' : '/borrow', {
+            navigate(role === 'admin' || role === 'sysadmin' ? paths.app.admin : paths.app.borrow, {
                 replace: true
             })
         },

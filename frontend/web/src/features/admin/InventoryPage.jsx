@@ -10,6 +10,7 @@ import { updateEquipment } from '@/api/equipment/update-equipment'
 import { useSetState } from '@shared/hooks/useSetState'
 import { matchesSearch } from '@shared/util/search'
 import { EQUIPMENT_CATEGORIES } from '@shared/constants'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const CATEGORIES = Object.freeze(
     EQUIPMENT_CATEGORIES.map((categoryName) =>
@@ -98,6 +99,7 @@ const useInventoryModals = (updatePageState, queryClient) => {
 }
 
 export const InventoryPage = (props) => {
+    useDocumentTitle('Inventory Management')
     const { equipment: propEquipment } = props
     const [columnCount, setColumnCount] = useState(resolveColumnCount)
 

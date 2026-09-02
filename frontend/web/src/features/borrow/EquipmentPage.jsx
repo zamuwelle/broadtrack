@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
 import { EquipmentCard } from '@/features/borrow/equipment/components/EquipmentCard'
 import { useEquipment } from '@/api/equipment/get-equipment'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 import { useSetState } from '@shared/hooks/useSetState'
 import { matchesSearch } from '@shared/util/search'
 import { EQUIPMENT_CATEGORIES } from '@shared/constants'
@@ -37,6 +38,7 @@ const GRID_CLASS_MAP = Object.freeze({
 })
 
 export const EquipmentPage = () => {
+    useDocumentTitle('Equipment Catalog')
     const [columnCount, setColumnCount] = useState(resolveColumnCount)
 
     useEffect(() => {

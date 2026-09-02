@@ -10,6 +10,7 @@ import { FilterDropdown } from '@/components/ui/FilterDropdown'
 import { CancelBookingModal } from '@/features/borrow/slips/components/CancelBookingModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { BOOKING_FILTER_OPTIONS } from '@shared/constants'
+import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const DEFAULT_BOOKINGS = Object.freeze([])
 const DEFAULT_EMPTY_USER = Object.freeze({})
@@ -35,6 +36,7 @@ const matchStatusFilter = (booking, selectedStatus) => {
 }
 
 export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetStatus }) => {
+    useDocumentTitle('My Booking Slips')
     const [searchParams, setSearchParams] = useSearchParams()
     const { data: user = DEFAULT_EMPTY_USER } = useUser()
     const { data: bookings = DEFAULT_BOOKINGS, isLoading } = useBookings()
