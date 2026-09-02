@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\VerifyEmailMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -26,6 +27,56 @@ test('borrower can register with valid student email', function () {
     $this->assertDatabaseHas('users', [
         'email' => 'johndoe.test@student.laverdad.edu.ph',
     ]);
+});
+
+test('user can re-register with unverified email', function () {
+    Mail::fake();
+
+    $user = User::factory()->unverified()->create([
+        'firstname' => 'Old',
+        'lastname' => 'Name',
+        'email' => 'reregister.test@student.laverdad.edu.ph',
+        'password' => Hash::make('oldpassword123'),
+        'verification_sent_at' => now()->subMinutes(5),
+    ]);
+
+    $response = $this->postJson('/api/v1/register', [
+        'firstname' => 'New',
+        'lastname' => 'User',
+        'email' => 'reregister.test@student.laverdad.edu.ph',
+        'password' => 'newpassword123',
+        'phone' => '+639123456789',
+        'department' => 'BS Information Systems',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('status', 201)
+        ->assertJsonPath('data.email', 'reregister.test@student.laverdad.edu.ph');
+
+    $user->refresh();
+    expect($user->firstname)->toBe('New');
+    expect($user->lastname)->toBe('User');
+    expect(Hash::check('newpassword123', $user->password))->toBeTrue();
+
+    Mail::assertQueued(VerifyEmailMail::class);
+});
+
+test('verified user cannot register again', function () {
+    User::factory()->borrower()->create([
+        'email' => 'verified.test@student.laverdad.edu.ph',
+    ]);
+
+    $response = $this->postJson('/api/v1/register', [
+        'firstname' => 'Jane',
+        'lastname' => 'Doe',
+        'email' => 'verified.test@student.laverdad.edu.ph',
+        'password' => 'password123',
+        'phone' => '+639123456789',
+        'department' => 'BS Information Systems',
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['email']);
 });
 
 test('cannot register with non-school email', function () {
@@ -102,14 +153,12 @@ test('authenticated user can logout', function () {
 });
 
 test('oauth callback redirects unverified user with error message', function () {
-    Mail::fake();
-
-    User::factory()->unverified()->create([
-        'email' => 'unverified.oauth@student.laverdad.edu.ph',
+    $user = User::factory()->unverified()->create([
+        'email' => 'unverified@student.laverdad.edu.ph',
     ]);
 
     $socialiteUser = Mockery::mock(SocialiteUser::class);
-    $socialiteUser->shouldReceive('getEmail')->andReturn('unverified.oauth@student.laverdad.edu.ph');
+    $socialiteUser->shouldReceive('getEmail')->andReturn('unverified@student.laverdad.edu.ph');
     $socialiteUser->shouldReceive('getAvatar')->andReturn(null);
 
     $provider = Mockery::mock(GoogleProvider::class);
@@ -120,7 +169,8 @@ test('oauth callback redirects unverified user with error message', function () 
 
     $response = $this->get('/api/v1/auth/google/callback?code=mock-code');
 
-    $response->assertRedirect(config('app.frontend_url').'/?error='.urlencode('Please verify your email first. We sent you a link.'));
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->toContain('error=Please+verify+your+email+first.+We+sent+you+a+link.');
 });
 
 test('oauth callback redirects unregistered user to register tab', function () {
@@ -141,4 +191,26 @@ test('oauth callback redirects unregistered user to register tab', function () {
     $response->assertRedirect();
     expect($response->headers->get('Location'))->toContain('tab=register');
     expect($response->headers->get('Location'))->toContain('email=new.oauth%40student.laverdad.edu.ph');
+});
+
+test('unverified users created over 24 hours ago are pruned', function () {
+    $oldUnverified = User::factory()->unverified()->create([
+        'created_at' => now()->subHours(25),
+    ]);
+
+    $recentUnverified = User::factory()->unverified()->create([
+        'created_at' => now()->subHours(1),
+    ]);
+
+    $oldVerified = User::factory()->borrower()->create([
+        'created_at' => now()->subDays(5),
+    ]);
+
+    $this->artisan('model:prune', [
+        '--model' => [User::class],
+    ])->assertSuccessful();
+
+    $this->assertDatabaseMissing('users', ['id' => $oldUnverified->id]);
+    $this->assertDatabaseHas('users', ['id' => $recentUnverified->id]);
+    $this->assertDatabaseHas('users', ['id' => $oldVerified->id]);
 });

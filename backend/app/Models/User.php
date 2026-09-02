@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use function Tamtamchik\NameCase\str_name_case;
@@ -21,7 +23,13 @@ use function Tamtamchik\NameCase\str_name_case;
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Prunable;
+
+    public function prunable(): Builder
+    {
+        return static::whereNull('email_verified_at')
+            ->where('created_at', '<=', now()->subHours(24));
+    }
 
     protected function casts()
     {

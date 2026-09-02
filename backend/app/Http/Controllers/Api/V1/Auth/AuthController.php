@@ -16,7 +16,15 @@ class AuthController extends ApiController
     {
         $validated = $request->validated();
 
-        $user = User::create($validated);
+        $user = User::where('email', $validated['email'])
+            ->whereNull('email_verified_at')
+            ->first();
+
+        if ($user) {
+            $user->update($validated);
+        } else {
+            $user = User::create($validated);
+        }
 
         VerificationController::sendVerification($user);
 

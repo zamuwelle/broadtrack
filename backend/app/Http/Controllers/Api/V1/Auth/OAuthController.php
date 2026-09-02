@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Throwable;
 
 class OAuthController extends ApiController
 {
@@ -16,58 +18,55 @@ class OAuthController extends ApiController
     public function callback()
     {
         $frontendUrl = config('app.frontend_url');
+        $fail = fn (string $msg) => redirect($frontendUrl.'/?error='.urlencode($msg));
+
+        if (request('error') === 'access_denied') {
+            return redirect($frontendUrl);
+        }
 
         if (request()->has('error') || ! request()->has('code')) {
-            $oauthError = request()->get('error');
-
-            return redirect($oauthError === 'access_denied'
-                ? $frontendUrl
-                : $frontendUrl.'/?error='.urlencode('Google authentication was cancelled'));
+            return $fail('Google authentication was cancelled');
         }
 
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
-        } catch (\Throwable) {
-            return redirect($frontendUrl.'/?error='.urlencode('Google authentication failed. Please try again'));
+        } catch (Throwable) {
+            return $fail('Google authentication failed. Please try again');
         }
 
         $email = $googleUser->getEmail();
 
-        if (! str_ends_with($email, '@student.laverdad.edu.ph') && ! str_ends_with($email, '@laverdad.edu.ph')) {
-            return redirect($frontendUrl.'/?error='.urlencode('Please use a valid La Verdad email address.'));
+        if (! Str::is(['*@student.laverdad.edu.ph', '*@laverdad.edu.ph'], $email)) {
+            return $fail('Please use a valid La Verdad email address.');
         }
 
-        $profilePictureUrl = $googleUser->getAvatar() ? preg_replace('/=s\d+(-c)?$/', '=s400-c', $googleUser->getAvatar()) : null;
+        $avatar = $googleUser->getAvatar();
+        $profilePicture = $avatar ? Str::replaceMatches('/=s\d+(-c)?$/', '=s400-c', $avatar) : null;
         $user = User::where('email', $email)->first();
 
         if (! $user) {
-            $firstname = $googleUser->user['given_name'] ?? explode(' ', $googleUser->getName() ?? '')[0] ?? '';
-            $lastname = $googleUser->user['family_name'] ?? explode(' ', $googleUser->getName() ?? '')[1] ?? '';
-            $queryParameters = http_build_query(array_filter([
+            return redirect($frontendUrl.'/?'.http_build_query(array_filter([
                 'tab' => 'register',
                 'email' => $email,
-                'firstname' => $firstname,
-                'lastname' => $lastname,
-                'profile_picture' => $profilePictureUrl,
-            ]));
-
-            return redirect($frontendUrl.'/?'.$queryParameters);
+                'firstname' => $googleUser->user['given_name'] ?? Str::before($googleUser->getName() ?? '', ' '),
+                'lastname' => $googleUser->user['family_name'] ?? Str::after($googleUser->getName() ?? '', ' '),
+                'profile_picture' => $profilePicture,
+            ])));
         }
 
         if (! $user->email_verified_at) {
             VerificationController::sendVerification($user);
 
-            return redirect($frontendUrl.'/?error='.urlencode('Please verify your email first. We sent you a link.'));
+            return $fail('Please verify your email first. We sent you a link.');
         }
 
-        if ($profilePictureUrl && $user->profile_picture !== $profilePictureUrl && (! $user->profile_picture || str_contains($user->profile_picture, 'googleusercontent.com'))) {
-            $user->update(['profile_picture' => $profilePictureUrl]);
+        if ($profilePicture && (! $user->profile_picture || str_contains($user->profile_picture, 'googleusercontent.com'))) {
+            $user->update(['profile_picture' => $profilePicture]);
         }
 
         $user->tokens()->delete();
-        $token = $user->createToken('auth-token')->plainTextToken;
-        $targetPath = $user->isAdmin() ? '/admin' : '/borrow';
+        $target = $user->isAdmin() ? '/admin' : '/borrow';
 
-        return redirect($frontendUrl.$targetPath.'?token='.$token);
+        return redirect($frontendUrl.$target.'?token='.$user->createToken('auth-token')->plainTextToken);
     }
 }

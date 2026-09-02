@@ -3,6 +3,7 @@
 use App\Enums\BookingStatus;
 use App\Mail\EquipmentReturnReminderMail;
 use App\Models\Booking;
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -68,3 +69,6 @@ Artisan::command('reminders:send-return-due', function () {
 
 Schedule::command('reminders:send-return-due')->dailyAt('08:00')->timezone('Asia/Manila');
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command('model:prune', [
+    '--model' => [User::class],
+])->daily();

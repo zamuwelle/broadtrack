@@ -21,7 +21,12 @@ class RegisterRequest extends FormRequest
         return [
             'firstname' => $this->nameRules(),
             'lastname' => $this->nameRules(),
-            'email' => ['required', 'email', 'unique:users', $this->schoolEmailRule()],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->whereNotNull('email_verified_at'),
+                $this->schoolEmailRule(),
+            ],
             'phone' => 'required|string',
             'password' => $this->passwordRules(),
             'department' => ['required', Rule::enum(Department::class)],
