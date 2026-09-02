@@ -10,4 +10,16 @@ enum Department: string
     case Accountancy = 'BS Accountancy';
     case AccountancyInformationSystems = 'BS Accountancy in Information Systems';
     case SocialWork = 'BS Social Work';
+
+    public function shorthand(): string
+    {
+        return match ($this) {
+            self::Broadcasting => 'BAB',
+            self::InformationSystems => 'BSIS',
+            self::ComputerTechnology => 'ACT',
+            self::Accountancy => 'BSA',
+            self::AccountancyInformationSystems => 'BSAIS',
+            self::SocialWork => 'BSSW',
+        };
+    }
 }

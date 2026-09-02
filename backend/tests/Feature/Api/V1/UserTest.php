@@ -2,14 +2,14 @@
 
 use App\Models\User;
 
-test('sysadmin can list all users', function () {
+test('sysadmin can list all users excluding sysadmins', function () {
     $sysadmin = User::factory()->sysadmin()->create();
-    User::factory()->count(2)->create();
+    User::factory()->count(2)->borrower()->create();
 
     $response = $this->actingAs($sysadmin)->getJson('/api/v1/users');
 
     $response->assertOk()
-        ->assertJsonCount(3, 'data');
+        ->assertJsonCount(2, 'data');
 });
 
 test('sysadmin can create new admin user', function () {

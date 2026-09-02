@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { formatDateTime } from '@shared/util/date'
+import { DEPARTMENT_SHORTHANDS } from '@shared/constants'
 
 const defaultUser = Object.freeze({})
 const noop = () => null
@@ -21,6 +22,7 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
     }, [user, onRemove])
 
     const badgeClass = roleBadge[user.role] || 'bg-slate-200 text-slate-700'
+    const deptShorthand = user.department_shorthand || DEPARTMENT_SHORTHANDS[user.department] || user.department
 
     return (
         <tr className="hover:bg-slate-50/70 transition-colors h-14">
@@ -30,17 +32,27 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
             </td>
             <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">{user.lastname}</td>
             <td className="px-3 py-2.5 text-xs text-slate-700 border-r border-slate-200">{user.email}</td>
-            <td className="px-3 py-2.5 border-r border-slate-200">
-                <span className={`px-2.5 py-1 text-xs font-medium rounded-lg capitalize inline-block ${badgeClass}`}>
+            <td className="px-3 py-2.5 border-r border-slate-200 text-center">
+                {deptShorthand ? (
+                    <span className="w-16 py-0.5 text-xs font-semibold bg-[#D3E8F8] text-[#144E75] rounded-md inline-block text-center">
+                        {deptShorthand}
+                    </span>
+                ) : (
+                    <span className="text-slate-500 font-medium">—</span>
+                )}
+            </td>
+            <td className="px-3 py-2.5 border-r border-slate-200 text-center">
+                <span
+                    className={`w-20 py-0.5 text-xs font-medium rounded-full capitalize inline-block text-center ${badgeClass}`}>
                     {user.role}
                 </span>
             </td>
-            <td className="px-3 py-2.5 border-r border-slate-200">
-                <span className="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-800 rounded-lg inline-block">
+            <td className="px-3 py-2.5 border-r border-slate-200 text-center">
+                <span className="px-2.5 py-0.5 text-xs font-normal bg-slate-100/90 text-slate-700 rounded-full inline-block border border-slate-200/60">
                     {formatDateTime(user.created_at)}
                 </span>
             </td>
-            <td className="px-3 py-2.5 flex items-center gap-2">
+            <td className="px-3 py-2.5 flex items-center justify-center gap-2">
                 <button
                     type="button"
                     onClick={handleEdit}

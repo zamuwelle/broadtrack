@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\StoreUserRequest;
 use App\Http\Requests\Api\V1\UpdateUserRequest;
@@ -15,7 +16,9 @@ class UserController extends ApiController
     {
         $this->authorize('viewAny', User::class);
 
-        $users = User::orderBy('id', 'asc')->get();
+        $users = User::where('role', '!=', UserRole::Sysadmin->value)
+            ->orderBy('id', 'asc')
+            ->get();
 
         return $this->success(UserResource::collection($users));
     }

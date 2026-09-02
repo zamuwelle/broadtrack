@@ -11,7 +11,7 @@ stateDiagram-v2
     [*] --> FormSubmitted: User Submits Register Form
     FormSubmitted --> UnverifiedCreated: Create Account (email_verified_at = NULL)
     UnverifiedCreated --> EmailDispatched: 15-Minute Verification Link Sent
-    
+
     state UnverifiedCreated {
         [*] --> WaitingForVerification
         WaitingForVerification --> ReRegistered: User Submits Form Again (within 24h)
@@ -29,6 +29,7 @@ stateDiagram-v2
 ## 1. Unverified Registration Handling
 
 In [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php):
+
 - Email uniqueness is enforced only against verified accounts:
   ```php
   Rule::unique('users')->whereNotNull('email_verified_at')
@@ -41,6 +42,7 @@ In [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requ
 ## 2. 24-Hour Model Pruning
 
 In [`User.php`](file:///home/sam/git/broadtrack/backend/app/Models/User.php):
+
 - Implements Laravel's `Prunable` trait:
   ```php
   public function prunable(): Builder
@@ -56,6 +58,7 @@ In [`User.php`](file:///home/sam/git/broadtrack/backend/app/Models/User.php):
 ## 3. Google OAuth Domain Verification
 
 In [`OAuthController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/OAuthController.php):
+
 - Domain Filter: Only accounts with `@student.laverdad.edu.ph` or `@laverdad.edu.ph` emails are allowed to authenticate.
 - Unverified Redirect: If an unverified user logs in via Google, they are redirected with a message to check their email for the verification link.
 - Role Redirect:

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Enums\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,6 +10,10 @@ class UserResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $departmentEnum = $this->department instanceof Department
+            ? $this->department
+            : Department::tryFrom((string)$this->department);
+
         return [
             'id' => $this->id,
             'firstname' => $this->firstname,
@@ -18,6 +23,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'role' => $this->role,
             'department' => $this->department,
+            'department_shorthand' => $departmentEnum?->shorthand(),
             'profile_picture' => $this->profile_picture,
             'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,

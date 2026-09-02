@@ -78,6 +78,7 @@ class User extends Authenticatable
 ## 4. Backed Enums for Domain Values
 
 Never use raw string literals (e.g., `'pending'`, `'admin'`) across models, queries, validation rules, or controllers. Always use backed Enums:
+
 - `BookingStatus` (`Pending`, `Approved`, `Released`, `Returned`, `Rejected`, `Cancelled`)
 - `EquipmentStatus` (`Available`, `UnderMaintenance`, `Retired`)
 - `UserRole` (`Borrower`, `Admin`, `SysAdmin`)
@@ -88,6 +89,7 @@ Never use raw string literals (e.g., `'pending'`, `'admin'`) across models, quer
 ## 5. Observers & Real-Time Broadcasting
 
 Model lifecycle side-effects (cache invalidation, WebSockets, notifications) are handled in dedicated Observers:
+
 - Attached via `#[ObservedBy(ModelObserver::class)]`.
 - Broadcast typed WebSocket events via Laravel Reverb on `created`, `updated`, and `deleted`.
 

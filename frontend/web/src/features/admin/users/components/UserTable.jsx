@@ -19,7 +19,7 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
     if (isLoading) {
         return (
             <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-xs text-slate-400">
+                <td colSpan={8} className="px-3 py-6 text-center text-xs text-slate-400">
                     Loading...
                 </td>
             </tr>
@@ -29,7 +29,7 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
     if (users.length === 0) {
         return (
             <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-xs text-slate-400">
+                <td colSpan={8} className="px-3 py-6 text-center text-xs text-slate-400">
                     No users found.
                 </td>
             </tr>
@@ -89,13 +89,18 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
                                 <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300">
                                     Email
                                 </th>
-                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300 w-28">
+                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300 w-32 text-center">
+                                    Department
+                                </th>
+                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300 w-28 text-center">
                                     Role
                                 </th>
-                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300 w-56">
+                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 border-r border-slate-300 w-56 text-center">
                                     Date Created
                                 </th>
-                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 w-28">Action</th>
+                                <th className="px-3 py-2.5 text-xs font-semibold text-slate-900 w-28 text-center">
+                                    Action
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">

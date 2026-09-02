@@ -10,13 +10,13 @@ BroadTrack's frontend is a React 19 Single Page Application built on Vite, adher
 - Every import must point directly to its exact file name:
   ```javascript
   // Bad (Barrel import)
-  import { Button, FormField } from '@/components/ui'
-  import { formatDate } from '@shared'
+  import { Button, FormField } from "@/components/ui";
+  import { formatDate } from "@shared";
 
   // Good (Direct file import)
-  import { Button } from '@/components/ui/Button'
-  import { FormField } from '@/components/ui/form/FormField'
-  import { formatDate } from '@shared/util/date'
+  import { Button } from "@/components/ui/Button";
+  import { FormField } from "@/components/ui/form/FormField";
+  import { formatDate } from "@shared/util/date";
   ```
 
 ---
@@ -63,9 +63,9 @@ All route files in `src/routes/` are 3-line adapters lazy-loaded by React Router
 
 ```jsx
 // src/routes/borrow/Equipment.jsx
-import { EquipmentPage } from '@/features/borrow/EquipmentPage'
+import { EquipmentPage } from "@/features/borrow/EquipmentPage";
 
-export const Component = () => <EquipmentPage />
+export const Component = () => <EquipmentPage />;
 ```
 
 ---
@@ -73,5 +73,6 @@ export const Component = () => <EquipmentPage />
 ## 5. Router-Level Protection
 
 Route access is guarded at the router level in `src/app/router.jsx` via `<ProtectedRoute allowedRoles={...} />`.
+
 - Intercepts unauthenticated or unauthorized users before layouts or data-fetching hooks ever mount.
 - Prevents unauthorized layout renders and eliminates N+1 flash redirects.
