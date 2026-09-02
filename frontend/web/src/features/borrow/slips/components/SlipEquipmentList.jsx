@@ -1,3 +1,5 @@
+import { getOptimizedImageUrl } from '@shared/util/image'
+
 const defaultEquipments = Object.freeze([])
 
 export const SlipEquipmentList = ({ equipments = defaultEquipments }) => (
@@ -7,12 +9,14 @@ export const SlipEquipmentList = ({ equipments = defaultEquipments }) => (
             <div
                 key={item.id}
                 className="w-full h-16 bg-white rounded-lg outline outline-[0.50px] outline-slate-300 flex items-center overflow-hidden shrink-0">
-                <div className="w-24 h-16 relative shrink-0 bg-icon-gray overflow-hidden">
+                <div className="w-24 h-16 relative shrink-0 bg-white border-r border-slate-200 overflow-hidden flex items-center justify-center">
                     {item.image ? (
                         <img
-                            className="w-24 h-16 left-0 top-0 absolute object-cover"
-                            src={item.image}
+                            className="w-24 h-16 left-0 top-0 absolute object-contain p-1"
+                            src={getOptimizedImageUrl(item.image, 200)}
                             alt={item.name}
+                            loading="eager"
+                            decoding="async"
                         />
                     ) : null}
                 </div>

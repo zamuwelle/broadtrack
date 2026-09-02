@@ -4,6 +4,7 @@ import { SelectButton } from '@/features/borrow/equipment/components/SelectButto
 import { EquipmentExpandedCard } from '@/features/borrow/equipment/components/EquipmentExpandedCard'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { Icon } from '@/components/ui/Icon'
+import { getOptimizedImageUrl } from '@shared/util/image'
 
 const defaultEquipment = Object.freeze({})
 
@@ -46,20 +47,22 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
 
     return (
         <div className="h-[371px] w-full overflow-hidden rounded-[8px] border border-border-subtle bg-surface shadow-[0px_4px_4px_rgba(0,0,0,0.05)]">
-            <div className="relative flex h-[150px] items-start justify-end gap-[14px] border-b border-border-subtle bg-icon-gray pr-[21px] pt-[22px]">
+            <div className={`relative flex h-[150px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[21px] pt-[22px]`}>
                 {equipment.image ? (
-                    <div className="absolute inset-0">
+                    <div className="absolute inset-0 flex items-center justify-center p-3 pointer-events-none">
                         <img
-                            src={equipment.image.replace('/upload/', '/upload/f_auto,q_auto/')}
+                            src={getOptimizedImageUrl(equipment.image, 600, 300)}
                             alt={equipment.name}
-                            className="h-full w-full object-cover"
-                            decoding="sync"
+                            className="h-full w-full object-contain"
+                            loading="eager"
+                            fetchPriority="high"
+                            decoding="async"
                         />
                     </div>
                 ) : null}
-                <StatusBadge status={equipment.status} className="relative" />
+                <StatusBadge status={equipment.status} className="relative z-10" />
                 {isSelectable ? (
-                    <SelectButton selected={isSelected} onSelect={handleToggleSelect} className="relative" />
+                    <SelectButton selected={isSelected} onSelect={handleToggleSelect} className="relative z-10" />
                 ) : null}
             </div>
             <div className="flex h-[221px] flex-col gap-[18px] px-4 py-5 lg:px-[26px] lg:py-[28px]">

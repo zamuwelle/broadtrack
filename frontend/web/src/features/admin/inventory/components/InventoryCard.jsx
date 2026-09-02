@@ -1,9 +1,13 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { LiveStatusDropdown } from '@/features/admin/inventory/components/LiveStatusDropdown'
+import { getOptimizedImageUrl } from '@shared/util/image'
 
 const defaultEquipment = Object.freeze({})
 const noop = () => null
+
+const resolveCategoryName = (category) =>
+    (typeof category === 'string' ? category : category?.name) || 'Support'
 
 export const InventoryCard = ({
     equipment = defaultEquipment,
@@ -15,8 +19,7 @@ export const InventoryCard = ({
     const equipmentModel = equipment.model || 'N/A'
     const equipmentDescription = equipment.description || 'No description available'
     const serialNumber = equipment.serial_no || 'N/A'
-    const categoryName =
-        (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Support'
+    const categoryName = resolveCategoryName(equipment.category)
 
     const handleEdit = useCallback(() => {
         onEdit(equipment)
@@ -33,18 +36,20 @@ export const InventoryCard = ({
         [equipment.id, onUpdateStatus]
     )
 
-    const optimizedImage = equipment.image ? equipment.image.replace('/upload/', '/upload/f_auto,q_auto/') : null
+    const optimizedImage = equipment.image ? getOptimizedImageUrl(equipment.image, 600, 300) : null
 
     return (
         <div className="bg-white rounded-2xl border border-slate-300 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] flex flex-col h-full font-['Poppins'] relative hover:z-20 focus-within:z-30">
-            <div className="relative h-44 bg-icon-gray border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0">
+            <div className={`relative h-44 ${optimizedImage ? 'bg-white' : 'bg-slate-100'} border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0`}>
                 {optimizedImage && (
-                    <div className="absolute inset-0">
+                    <div className="absolute inset-0 flex items-center justify-center p-3 pointer-events-none">
                         <img
                             src={optimizedImage}
                             alt={equipmentTitle}
-                            className="h-full w-full object-cover"
-                            decoding="sync"
+                            className="h-full w-full object-contain"
+                            loading="eager"
+                            fetchPriority="high"
+                            decoding="async"
                         />
                     </div>
                 )}

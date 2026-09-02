@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
+import { getOptimizedImageUrl } from '@shared/util/image'
 
 const noop = () => null
 const defaultSelectedItems = Object.freeze([])
@@ -28,9 +29,11 @@ export const SelectedEquipmentList = ({ selectedItems = defaultSelectedItems, on
                         <div className="inline-flex w-full items-center justify-start gap-4">
                             {item.image ? (
                                 <img
-                                    className="size-24 rounded-bl-lg rounded-tl-lg bg-slate-100 object-cover"
-                                    src={item.image}
+                                    className="size-24 rounded-bl-lg rounded-tl-lg bg-white border-r border-slate-200 object-contain p-1.5"
+                                    src={getOptimizedImageUrl(item.image, 200)}
                                     alt={item.name}
+                                    loading="eager"
+                                    decoding="async"
                                 />
                             ) : (
                                 <div className="size-24 rounded-bl-lg rounded-tl-lg bg-slate-100 shrink-0" />
