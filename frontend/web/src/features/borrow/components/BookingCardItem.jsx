@@ -1,4 +1,5 @@
 import { resolveBookingScheduleStatus } from '@shared/util/booking'
+import { getOptimizedImageUrl } from '@shared/util/image'
 
 const defaultBooking = Object.freeze({})
 
@@ -10,12 +11,14 @@ export const BookingCardItem = ({ booking = defaultBooking }) => {
     return (
         <div
             className={`w-full min-h-32 pr-3 lg:pr-9 bg-white rounded-xl border-l-[6px] border-r border-t border-b overflow-hidden flex items-stretch font-['Poppins'] ${cardBorderClass}`}>
-            <div className="w-20 lg:w-24 shrink-0 bg-icon-gray relative overflow-hidden self-stretch">
+            <div className="w-20 lg:w-28 shrink-0 bg-white border-r border-slate-200 p-2 flex items-center justify-center self-stretch">
                 {booking.equipmentImage ? (
                     <img
-                        src={booking.equipmentImage.replace('/upload/', '/upload/f_auto,q_auto/')}
+                        src={getOptimizedImageUrl(booking.equipmentImage, 200)}
                         alt={booking.equipmentName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
+                        loading="eager"
+                        decoding="async"
                     />
                 ) : null}
             </div>
