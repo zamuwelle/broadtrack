@@ -30,7 +30,7 @@ Equipment booking and tracking system built with Laravel and React.
 - Admin dashboard for managing equipment inventory, categories, and approvals
 - Shared API and real-time Echo layer for web and future mobile (Expo) clients
 - RESTful API versioned at `/api/v1/` with Sanctum authentication
-- Automated Feature Test Suite with Pest PHP (40/40 passing)
+- Automated Feature Test Suite with Pest PHP (52/52 passing)
 
 ## Tech Stack
 
@@ -146,9 +146,9 @@ All API endpoints are versioned under the `/api/v1/` prefix.
 | POST   | `/api/v1/register`              | Register new user              | Public   | 5/min      |
 | POST   | `/api/v1/login`                 | Login with email/password      | Public   | 5/min      |
 | POST   | `/api/v1/forgot-password`       | Request password reset         | Public   | 5/min      |
-| POST   | `/api/v1/reset-password`        | Reset password with token      | Public   | 60/min     |
+| POST   | `/api/v1/reset-password`        | Reset password with token      | Public   | 5/min      |
 | POST   | `/api/v1/resend-verification`   | Resend email verification      | Public   | 5/min      |
-| POST   | `/api/v1/contact`               | Send contact message           | Public   | 60/min     |
+| POST   | `/api/v1/contact`               | Send contact message           | Public   | 5/min      |
 | GET    | `/api/v1/me`                    | Get current user profile       | Auth     | 60/min     |
 | PUT    | `/api/v1/profile`               | Update user profile            | Auth     | 60/min     |
 | POST   | `/api/v1/profile/picture`       | Upload user profile picture    | Auth     | 60/min     |
@@ -188,7 +188,7 @@ Import it into Postman to test all endpoints out-of-the-box.
 ```bash
 cd frontend
 
-# Run Pest automated feature test suite (40 tests)
+# Run Pest automated feature test suite (52 tests)
 bun run test:backend
 
 # Linting

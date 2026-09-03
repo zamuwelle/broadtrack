@@ -211,3 +211,17 @@ test('returning booking preserves equipment under maintenance', function () {
     $response->assertOk();
     expect($brokenEquipment->fresh()->status)->toBe(EquipmentStatus::Maintenance);
 });
+
+test('borrower cannot submit booking with empty equipment list', function () {
+    $borrower = User::factory()->borrower()->create();
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'equipment_ids' => [],
+        'purpose' => 'Empty equipment test',
+        'start_date' => now()->addDay()->toDateString(),
+        'end_date' => now()->addDays(2)->toDateString(),
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['equipment_ids']);
+});

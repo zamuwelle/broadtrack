@@ -13,15 +13,15 @@ use App\Models\User;
 use Illuminate\Support\Facades\Schedule;
 
 // 1. Email Reminders (Due soon & Overdue notices)
-Schedule::command(SendReturnDueEmailRemindersCommand::class)->daily();
+Schedule::command(SendReturnDueEmailRemindersCommand::class)->daily()->timezone('Asia/Manila');
 
 // 2. Sanctum API Token Cleanup (Tokens expired >24h)
-Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command('sanctum:prune-expired --hours=24')->daily()->timezone('Asia/Manila');
 
 // 3. User Account Pruning (Unverified accounts >24h old)
 Schedule::command('model:prune', [
     '--model' => [User::class],
-])->daily();
+])->daily()->timezone('Asia/Manila');
 ```
 
 ---

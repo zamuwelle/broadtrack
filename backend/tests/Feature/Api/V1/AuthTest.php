@@ -262,3 +262,21 @@ test('password reset revokes existing sanctum tokens', function () {
     $response->assertOk();
     expect($user->tokens()->count())->toBe(0);
 });
+
+test('contact endpoint is throttled after five requests', function () {
+    for ($i = 0; $i < 5; $i++) {
+        $this->postJson('/api/v1/contact', [
+            'firstname' => 'John',
+            'lastname' => 'Doe',
+            'email' => 'john.doe@student.laverdad.edu.ph',
+            'message' => 'Hello there',
+        ])->assertOk();
+    }
+
+    $this->postJson('/api/v1/contact', [
+        'firstname' => 'John',
+        'lastname' => 'Doe',
+        'email' => 'john.doe@student.laverdad.edu.ph',
+        'message' => 'Hello there',
+    ])->assertStatus(429);
+});

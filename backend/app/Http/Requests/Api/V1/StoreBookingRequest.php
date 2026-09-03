@@ -18,7 +18,7 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'equipment_ids' => 'required|array',
+            'equipment_ids' => 'required|array|min:1',
             'equipment_ids.*' => 'exists:equipments,id',
             'purpose' => 'required|string|max:255',
             'start_date' => 'required|date|after_or_equal:today',

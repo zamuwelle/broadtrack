@@ -57,7 +57,7 @@ All test and lint tasks can be run directly from the `frontend` folder using `bu
 
 | Command                                  | Action                                      |
 | ---------------------------------------- | ------------------------------------------- |
-| `cd frontend && bun run test:backend`    | Run full Pest backend test suite (40 tests) |
+| `cd frontend && bun run test:backend`    | Run full Pest backend test suite (52 tests) |
 | `cd frontend && bun run lint:backend`    | Check PHP code style via Laravel Pint       |
 | `cd frontend && bun run lint:frontend`   | Lint all JavaScript/React files via Oxlint  |
 | `cd frontend && bun run format:backend`  | Automatically format PHP code with Pint     |

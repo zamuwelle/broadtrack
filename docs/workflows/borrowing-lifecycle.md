@@ -46,6 +46,14 @@ stateDiagram-v2
 
 In [`EquipmentStatus.php`](file:///home/sam/git/broadtrack/backend/app/Enums/EquipmentStatus.php):
 
-- **`Available`**: Ready to be borrowed.
-- **`Under Maintenance`**: Defective or undergoing repair. Cannot be booked.
-- **`Retired`**: Permanently decommissioned. Excluded from catalog views.
+- **`Available` (`available`)**: In stock and ready to be borrowed.
+- **`Booked` (`booked`)**: Reserved by an approved booking for an upcoming reservation window.
+- **`Borrowed` (`borrowed`)**: Currently released to a student and in active use.
+- **`Maintenance` (`maintenance`)**: Defective or undergoing repair. Excluded from booking availability checks.
+
+---
+
+## 3. Data Integrity & Validation Guards
+
+- **Cart Requirement (`min:1`):** In [`StoreBookingRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/StoreBookingRequest.php), booking requests require at least one equipment item (`equipment_ids: required|array|min:1`).
+- **Deletion Protection:** In [`EquipmentController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/EquipmentController.php), equipment cannot be deleted if it is currently booked/borrowed or has historical booking records (`422 Unprocessable Entity`), preserving transaction history and audit slips.

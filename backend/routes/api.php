@@ -15,11 +15,11 @@ Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:5,1');
-    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
     Route::post('/resend-verification', [VerificationController::class, 'resend'])->middleware('throttle:5,1');
 
     // Contact
-    Route::post('/contact', [ContactController::class, 'send']);
+    Route::post('/contact', [ContactController::class, 'send'])->middleware('throttle:5,1');
 
     // Authenticated routes
     Route::middleware('auth:sanctum')->group(function () {
