@@ -17,6 +17,7 @@ export const useUploadProfilePicture = ({ mutationConfig } = {}) => {
     return useMutation({
         mutationFn: uploadProfilePicture,
         onSuccess: (response, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ['me'] })
             queryClient.invalidateQueries({ queryKey: ['user'] })
             queryClient.invalidateQueries({ queryKey: ['users'] })
             onSuccess?.(response, variables, context)

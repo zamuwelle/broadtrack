@@ -14,7 +14,16 @@ class VerificationController extends ApiController
 {
     public function verify(Request $request)
     {
-        $user = User::where('verification_token', $request->query('token'))->first();
+        $token = $request->query('token');
+
+        if (empty($token) || ! is_string($token)) {
+            return view('emails.verify-result', [
+                'success' => false,
+                'frontendUrl' => config('app.frontend_url'),
+            ]);
+        }
+
+        $user = User::where('verification_token', $token)->first();
         $valid = $user && $user->verification_sent_at && ! $user->verification_sent_at->addMinutes(15)->isPast();
 
         if ($valid) {

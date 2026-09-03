@@ -16,6 +16,6 @@ trait HasUserRules
 
     protected function schoolEmailRule(): string
     {
-        return 'ends_with:student.laverdad.edu.ph,laverdad.edu.ph';
+        return 'ends_with:@student.laverdad.edu.ph,@laverdad.edu.ph';
     }
 }

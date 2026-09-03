@@ -2,6 +2,7 @@
 
 use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
+use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Services\CloudinaryService;
@@ -135,4 +136,17 @@ test('admin cannot delete equipment that is booked or borrowed', function () {
 
     $this->assertDatabaseHas('equipments', ['id' => $booked->id]);
     $this->assertDatabaseHas('equipments', ['id' => $borrowed->id]);
+});
+
+test('admin cannot delete equipment with historical bookings', function () {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->returned()->create();
+    $booking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->deleteJson("/api/v1/equipment/{$equipment->id}");
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Cannot delete equipment that has associated booking records.');
+
+    $this->assertDatabaseHas('equipments', ['id' => $equipment->id]);
 });

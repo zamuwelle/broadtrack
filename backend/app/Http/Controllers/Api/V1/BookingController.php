@@ -12,6 +12,7 @@ use App\Mail\EquipmentReturnReminderMail;
 use App\Models\Booking;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class BookingController extends ApiController
@@ -40,11 +41,17 @@ class BookingController extends ApiController
 
     public function store(StoreBookingRequest $request): JsonResponse
     {
-        $booking = $request->user()->bookings()->create(
-            $request->safe()->except('equipment_ids')
-        );
+        $equipmentIds = $request->validated('equipment_ids');
 
-        $booking->equipments()->attach($request->validated('equipment_ids'));
+        $booking = DB::transaction(function () use ($request, $equipmentIds) {
+            $booking = $request->user()->bookings()->create(
+                $request->safe()->except('equipment_ids')
+            );
+
+            $booking->equipments()->attach($equipmentIds);
+
+            return $booking;
+        });
 
         return $this->created(
             new BookingResource($booking->load('equipments')),

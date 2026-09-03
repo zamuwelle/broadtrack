@@ -61,6 +61,7 @@ class PasswordResetController extends ApiController
         }
 
         $user->update(['password' => $validated['password']]);
+        $user->tokens()->delete();
 
         DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
 

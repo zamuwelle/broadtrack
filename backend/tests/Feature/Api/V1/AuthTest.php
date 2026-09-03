@@ -2,6 +2,7 @@
 
 use App\Mail\VerifyEmailMail;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
@@ -213,4 +214,51 @@ test('unverified users created over 24 hours ago are pruned', function () {
     $this->assertDatabaseMissing('users', ['id' => $oldUnverified->id]);
     $this->assertDatabaseHas('users', ['id' => $recentUnverified->id]);
     $this->assertDatabaseHas('users', ['id' => $oldVerified->id]);
+});
+
+test('cannot register with spoofed domain without at symbol', function () {
+    $response = $this->postJson('/api/v1/register', [
+        'firstname' => 'Attacker',
+        'lastname' => 'User',
+        'email' => 'attacker@fake-student.laverdad.edu.ph',
+        'password' => 'password123',
+        'phone' => '+639123456789',
+        'department' => 'BS Information Systems',
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['email']);
+});
+
+test('verification with missing token renders failure view', function () {
+    $response = $this->get('/api/v1/verify-email');
+
+    $response->assertOk()
+        ->assertViewIs('emails.verify-result')
+        ->assertViewHas('success', false);
+});
+
+test('password reset revokes existing sanctum tokens', function () {
+    $user = User::factory()->borrower()->create([
+        'email' => 'reset.tokens@student.laverdad.edu.ph',
+        'password' => Hash::make('oldpassword123'),
+    ]);
+
+    $token = $user->createToken('test-token')->plainTextToken;
+    expect($user->tokens()->count())->toBe(1);
+
+    DB::table('password_reset_tokens')->insert([
+        'email' => $user->email,
+        'token' => 'valid-reset-token',
+        'created_at' => now(),
+    ]);
+
+    $response = $this->postJson('/api/v1/reset-password', [
+        'email' => $user->email,
+        'token' => 'valid-reset-token',
+        'password' => 'newpassword123',
+    ]);
+
+    $response->assertOk();
+    expect($user->tokens()->count())->toBe(0);
 });

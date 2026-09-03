@@ -4,8 +4,8 @@ use App\Console\Commands\SendReturnDueEmailRemindersCommand;
 use App\Models\User;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command(SendReturnDueEmailRemindersCommand::class)->daily();
-Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command(SendReturnDueEmailRemindersCommand::class)->daily()->timezone('Asia/Manila');
+Schedule::command('sanctum:prune-expired --hours=24')->daily()->timezone('Asia/Manila');
 Schedule::command('model:prune', [
     '--model' => [User::class],
-])->daily();
+])->daily()->timezone('Asia/Manila');

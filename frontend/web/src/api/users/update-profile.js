@@ -10,6 +10,7 @@ export const useUpdateProfile = ({ mutationConfig } = {}) => {
     return useMutation({
         mutationFn: updateProfile,
         onSuccess: (response, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ['me'] })
             queryClient.invalidateQueries({ queryKey: ['user'] })
             queryClient.invalidateQueries({ queryKey: ['users'] })
             onSuccess?.(response, variables, context)

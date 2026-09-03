@@ -66,6 +66,10 @@ class EquipmentController extends ApiController
             return $this->error('Cannot delete equipment that is currently booked or borrowed.', 422);
         }
 
+        if ($equipment->bookings()->exists()) {
+            return $this->error('Cannot delete equipment that has associated booking records.', 422);
+        }
+
         if ($equipment->image) {
             $cloudinary->destroy($equipment->imagePublicId());
         }
