@@ -172,3 +172,42 @@ test('admin can reject pending booking', function () {
         'rejection_reason' => 'Schedule conflict with production studio',
     ]);
 });
+
+test('admin cannot approve non-pending booking', function () {
+    $admin = User::factory()->admin()->create();
+    $booking = Booking::factory()->released()->create();
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/approve");
+
+    $response->assertStatus(422);
+});
+
+test('admin cannot release non-approved booking', function () {
+    $admin = User::factory()->admin()->create();
+    $booking = Booking::factory()->pending()->create();
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/release");
+
+    $response->assertStatus(422);
+});
+
+test('admin cannot return non-released booking', function () {
+    $admin = User::factory()->admin()->create();
+    $booking = Booking::factory()->approved()->create();
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");
+
+    $response->assertStatus(422);
+});
+
+test('returning booking preserves equipment under maintenance', function () {
+    $admin = User::factory()->admin()->create();
+    $brokenEquipment = Equipment::factory()->maintenance()->create();
+    $booking = Booking::factory()->released()->create();
+    $booking->equipments()->attach($brokenEquipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");
+
+    $response->assertOk();
+    expect($brokenEquipment->fresh()->status)->toBe(EquipmentStatus::Maintenance);
+});

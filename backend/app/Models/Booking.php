@@ -97,7 +97,7 @@ class Booking extends Model
             'isRead' => false,
         ]);
 
-        $this->equipments->each->update(['status' => EquipmentStatus::Available]);
+        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
 
         return $updated;
     }
@@ -120,14 +120,14 @@ class Booking extends Model
             'isRead' => false,
         ]);
 
-        $this->equipments->each->update(['status' => EquipmentStatus::Available]);
+        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
 
         return $updated;
     }
 
     public function cancel(): bool
     {
-        $this->equipments->each->update(['status' => EquipmentStatus::Available]);
+        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
 
         return $this->update([
             'status' => BookingStatus::Cancelled,

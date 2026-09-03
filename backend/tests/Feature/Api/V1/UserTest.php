@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\User;
 
 test('sysadmin can list all users excluding sysadmins', function () {
@@ -69,4 +70,17 @@ test('borrower cannot access users management', function () {
     $response = $this->actingAs($borrower)->getJson('/api/v1/users');
 
     $response->assertForbidden();
+});
+
+test('sysadmin cannot delete user with existing booking records', function () {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $borrower = User::factory()->borrower()->create();
+    Booking::factory()->create(['user_id' => $borrower->id]);
+
+    $response = $this->actingAs($admin = $sysadmin)->deleteJson("/api/v1/users/{$borrower->id}");
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Cannot delete a user with existing booking records.');
+
+    $this->assertDatabaseHas('users', ['id' => $borrower->id]);
 });

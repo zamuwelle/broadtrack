@@ -68,7 +68,7 @@ export const Component = ({ onReady, children }) => {
     const isReady = !isEquipmentLoading && !isBookingsLoading && (!isSysAdmin || !isUsersLoading)
 
     const pendingCount = useMemo(
-        () => bookings.filter((b) => (b.status || '').toLowerCase() === 'pending').length,
+        () => bookings.filter((booking) => (booking.status || '').toLowerCase() === 'pending').length,
         [bookings]
     )
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ApproveBookingRequest;
 use App\Http\Requests\Api\V1\RejectBookingRequest;
@@ -55,6 +56,10 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
+        if ($booking->status !== BookingStatus::Pending) {
+            return $this->error('Only pending bookings can be approved.', 422);
+        }
+
         $booking->approve($request->validated('approval_note'));
 
         return $this->success(new BookingResource($booking), 'Booking approved');
@@ -63,6 +68,10 @@ class BookingController extends ApiController
     public function reject(RejectBookingRequest $request, Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
+
+        if ($booking->status !== BookingStatus::Pending) {
+            return $this->error('Only pending bookings can be rejected.', 422);
+        }
 
         $booking->reject($request->validated('rejection_reason'));
 
@@ -73,6 +82,10 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
+        if ($booking->status !== BookingStatus::Approved) {
+            return $this->error('Only approved bookings can be released.', 422);
+        }
+
         $booking->release();
 
         return $this->success(new BookingResource($booking), 'Booking released');
@@ -81,6 +94,10 @@ class BookingController extends ApiController
     public function markAsReturned(Request $request, Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
+
+        if ($booking->status !== BookingStatus::Released) {
+            return $this->error('Only released bookings can be marked as returned.', 422);
+        }
 
         $booking->markAsReturned($request->user()->id);
 
@@ -108,6 +125,10 @@ class BookingController extends ApiController
     public function remind(Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
+
+        if ($booking->status !== BookingStatus::Released) {
+            return $this->error('Return reminders can only be sent for released bookings.', 422);
+        }
 
         $booking->load(['user', 'equipments']);
         $borrowerEmail = $booking->user?->email;

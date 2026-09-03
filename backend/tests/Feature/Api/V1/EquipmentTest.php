@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EquipmentCategory;
+use App\Enums\EquipmentStatus;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Services\CloudinaryService;
@@ -118,4 +119,20 @@ test('equipment helper methods and scopes work correctly', function () {
     $cameras = Equipment::category(EquipmentCategory::Camera)->get();
     expect($cameras)->toHaveCount(1);
     expect($cameras->first()->id)->toBe($available->id);
+});
+
+test('admin cannot delete equipment that is booked or borrowed', function () {
+    $admin = User::factory()->admin()->create();
+    $booked = Equipment::factory()->create(['status' => EquipmentStatus::Booked]);
+    $borrowed = Equipment::factory()->borrowed()->create();
+
+    $res1 = $this->actingAs($admin)->deleteJson("/api/v1/equipment/{$booked->id}");
+    $res1->assertStatus(422)
+        ->assertJsonPath('message', 'Cannot delete equipment that is currently booked or borrowed.');
+
+    $res2 = $this->actingAs($admin)->deleteJson("/api/v1/equipment/{$borrowed->id}");
+    $res2->assertStatus(422);
+
+    $this->assertDatabaseHas('equipments', ['id' => $booked->id]);
+    $this->assertDatabaseHas('equipments', ['id' => $borrowed->id]);
 });

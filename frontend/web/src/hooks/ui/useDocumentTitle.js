@@ -4,7 +4,7 @@ let globalUnreadCount = 0
 let currentTitle = ''
 
 const updateTitle = () => {
-    if (typeof globalThis.document === 'undefined') {
+    if (!globalThis.document) {
         return
     }
     const prefix = globalUnreadCount > 0 ? `🔴 (${globalUnreadCount}) ` : ''

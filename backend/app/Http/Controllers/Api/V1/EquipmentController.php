@@ -62,6 +62,10 @@ class EquipmentController extends ApiController
     {
         $this->authorize('manage', Equipment::class);
 
+        if ($equipment->status === EquipmentStatus::Booked || $equipment->status === EquipmentStatus::Borrowed) {
+            return $this->error('Cannot delete equipment that is currently booked or borrowed.', 422);
+        }
+
         if ($equipment->image) {
             $cloudinary->destroy($equipment->imagePublicId());
         }

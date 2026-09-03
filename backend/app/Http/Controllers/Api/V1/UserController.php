@@ -48,6 +48,10 @@ class UserController extends ApiController
     {
         $this->authorize('delete', $user);
 
+        if ($user->bookings()->exists() || $user->returnedBookings()->exists()) {
+            return $this->error('Cannot delete a user with existing booking records.', 422);
+        }
+
         $user->delete();
 
         return $this->noContent();
