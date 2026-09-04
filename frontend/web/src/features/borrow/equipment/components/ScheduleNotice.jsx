@@ -61,14 +61,41 @@ export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
 
                 {normalizedStatus === 'maintenance' ? (
                     <div className="self-stretch px-2.5 py-1.5 bg-orange-50 rounded-lg outline outline-1 outline-offset-[-1px] outline-amber-500 flex items-center justify-center gap-2">
-                        <span className="text-xs">🛠</span>
                         <div className="text-center text-amber-600 text-xs font-semibold">
                             OUT OF SERVICE FOR MAINTENANCE
                         </div>
                     </div>
                 ) : null}
 
-                {normalizedStatus === 'borrowed' || normalizedStatus === 'booked' ? (
+                {normalizedStatus === 'booked' ? (
+                    <div className="self-stretch p-2.5 bg-blue-600/20 rounded-lg outline outline-1 outline-offset-[-1px] outline-blue-600 inline-flex flex-col justify-center items-center gap-2.5">
+                        <div className="self-stretch px-1 inline-flex justify-center items-center gap-2.5">
+                            <Icon name="calendar" className="size-4 text-blue-600 shrink-0" fill="currentColor" />
+                            <div className="text-center text-blue-600 text-xs font-semibold">
+                                ALREADY BOOKED ON CERTAIN DATES:
+                            </div>
+                        </div>
+                        {activeRanges ? (
+                            activeRanges.map((range) => (
+                                <div
+                                    key={`range-${range.start}-${range.end}`}
+                                    className="self-stretch p-1 bg-white rounded-lg flex flex-wrap justify-center items-center gap-x-1.5 gap-y-0.5 text-slate-800 text-xs font-medium text-center">
+                                    <span className="whitespace-nowrap">{range.start}</span>
+                                    <span className="text-slate-400">–</span>
+                                    <span className="whitespace-nowrap">{range.end}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="self-stretch p-1 bg-white rounded-lg inline-flex justify-center items-center">
+                                <div className="text-slate-800 text-xs font-medium text-center">
+                                    Currently scheduled — review calendar for updates
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+
+                {normalizedStatus === 'borrowed' ? (
                     <div className="self-stretch px-2.5 py-1.5 bg-blue-200/20 rounded-lg outline outline-1 outline-offset-[-1px] outline-sky-800 flex flex-col justify-center items-center gap-2">
                         <div className="self-stretch px-1 inline-flex justify-center items-center gap-1.5">
                             <Icon name="calendar" className="size-4 text-sky-800 shrink-0" fill="currentColor" />
