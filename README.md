@@ -17,6 +17,29 @@ Equipment booking and tracking system built with Laravel and React.
 
 </div>
 
+## Table of Contents
+
+- [About](#about)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+    - [Linux / macOS](#linux--macos)
+    - [Windows](#windows-cmd--powershell)
+    - [Default Test Credentials](#default-test-credentials-local-only)
+- [Database Schema](#database-schema)
+- [API Reference](#api-reference-v1)
+- [Testing & Code Quality](#testing--code-quality)
+- [Deployment](#deployment)
+- [Documentation](#documentation)
+- [Team & Contributors](#team--contributors)
+- [License](#license)
+
+## About
+
+**Broadtrack** is an institutional equipment booking and tracking management system designed for schools and organizations. It simplifies how students and faculty borrow gear by replacing manual logbooks with real-time availability tracking, automated reservation approvals, overdue reminder notifications, and digital booking slips.
+
 ## Features
 
 - User authentication (register, login, Google OAuth, password reset, email verification)
@@ -42,6 +65,18 @@ Equipment booking and tracking system built with Laravel and React.
 | Sanctum + Socialite (Google) | TanStack Query + Laravel Echo |
 | Mail (SMTP, queued)          | Bun                           |
 | SQLite                       |                               |
+
+## Project Structure
+
+```text
+broadtrack/
+├── backend/            # Laravel 13 API (Octane FrankenPHP, Reverb, Sanctum)
+├── frontend/
+│   ├── web/            # React 19 SPA (Vite, Tailwind CSS 4, TanStack Query)
+│   └── shared/         # Platform-agnostic utilities, constants, schemas
+├── docs/               # Architecture, API endpoints, workflows, conventions
+└── postman/            # Pre-configured Postman API collection
+```
 
 ## Prerequisites
 
@@ -139,39 +174,9 @@ All seeded test accounts use the password: `password123`
 
 ## API Reference (v1)
 
-All API endpoints are versioned under the `/api/v1/` prefix.
+All API endpoints are versioned under the `/api/v1/` prefix with Sanctum authentication.
 
-| Method | Endpoint                        | Description                    | Role     | Rate Limit |
-| ------ | ------------------------------- | ------------------------------ | -------- | ---------- |
-| POST   | `/api/v1/register`              | Register new user              | Public   | 5/min      |
-| POST   | `/api/v1/login`                 | Login with email/password      | Public   | 5/min      |
-| POST   | `/api/v1/forgot-password`       | Request password reset         | Public   | 5/min      |
-| POST   | `/api/v1/reset-password`        | Reset password with token      | Public   | 5/min      |
-| POST   | `/api/v1/resend-verification`   | Resend email verification      | Public   | 5/min      |
-| POST   | `/api/v1/contact`               | Send contact message           | Public   | 5/min      |
-| GET    | `/api/v1/me`                    | Get current user profile       | Auth     | 60/min     |
-| PUT    | `/api/v1/profile`               | Update user profile            | Auth     | 60/min     |
-| POST   | `/api/v1/profile/picture`       | Upload user profile picture    | Auth     | 60/min     |
-| POST   | `/api/v1/logout`                | Logout current user            | Auth     | 60/min     |
-| GET    | `/api/v1/equipment`             | List all equipment             | Auth     | 60/min     |
-| POST   | `/api/v1/equipment`             | Create equipment               | Admin    | 60/min     |
-| PUT    | `/api/v1/equipment/{id}`        | Update equipment               | Admin    | 60/min     |
-| POST   | `/api/v1/equipment/{id}/upload` | Upload equipment image         | Admin    | 60/min     |
-| DELETE | `/api/v1/equipment/{id}`        | Delete equipment               | Admin    | 60/min     |
-| GET    | `/api/v1/bookings`              | List bookings                  | Auth     | 60/min     |
-| GET    | `/api/v1/bookings/{id}`         | Get booking details            | Auth     | 60/min     |
-| POST   | `/api/v1/bookings`              | Create new booking             | Borrower | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/read`    | Mark booking notification read | Borrower | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/cancel`  | Cancel pending booking         | Borrower | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/approve` | Approve booking                | Admin    | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/reject`  | Reject booking                 | Admin    | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/release` | Release equipment              | Admin    | 60/min     |
-| PUT    | `/api/v1/bookings/{id}/return`  | Return equipment               | Admin    | 60/min     |
-| POST   | `/api/v1/bookings/{id}/remind`  | Send return reminder email     | Admin    | 60/min     |
-| GET    | `/api/v1/users`                 | List users                     | Sysadmin | 60/min     |
-| POST   | `/api/v1/users`                 | Create user                    | Sysadmin | 60/min     |
-| PUT    | `/api/v1/users/{id}`            | Update user                    | Sysadmin | 60/min     |
-| DELETE | `/api/v1/users/{id}`            | Delete user                    | Sysadmin | 60/min     |
+For the complete list of endpoints, request parameters, response structures, and role permissions, see the [API Endpoints Reference](docs/reference/api-endpoints.md).
 
 ### Postman Collection
 
@@ -211,10 +216,17 @@ bun run format:backend  # Formats Backend only (Laravel Pint + Prettier)
 
 For architectural diagrams, workflows, and code conventions, see the [Developer Documentation](./docs/README.md).
 
+## Team & Contributors
+
+| Name                         | Role                 |
+| :--------------------------- | :------------------- |
+| **Samuel Binos**             | Full-Stack Developer |
+| **Rocelyn Lava**             | Project Manager      |
+| **Anne Stephanne Buenaflor** | Business Analyst     |
+| **Ydrey Ann Ramirez**        | UI/UX Designer       |
+| **Luisa Padillon**           | UI/UX Designer       |
+| **Karl Ashton Mahusay**      | Quality Assurance    |
+
 ## License
 
 See [LICENSE.md](./LICENSE.md) for details.
-
-## Contributors
-
-- Broadtrack Team

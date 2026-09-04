@@ -6,65 +6,65 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 
 ## Authentication & Account Endpoints
 
-| Method | Endpoint | Access | Rate Limit | Description |
-| --- | --- | --- | --- | --- |
-| `POST` | `/api/v1/register` | Public | 5/min | Register a new user account with school email. |
-| `POST` | `/api/v1/login` | Public | 5/min | Login with email and password; returns Sanctum bearer token. |
-| `POST` | `/api/v1/forgot-password` | Public | 5/min | Send password reset token email. |
-| `POST` | `/api/v1/reset-password` | Public | 5/min | Reset password and revoke all existing Sanctum sessions. |
-| `GET` | `/api/v1/verify-email` | Public | 60/min | Verify email address via 15-minute token link. |
-| `POST` | `/api/v1/resend-verification` | Public | 5/min | Resend verification email link to unverified user. |
-| `GET` | `/api/v1/auth/google/redirect` | Public | 60/min | Redirect to Google OAuth consent screen. |
-| `GET` | `/api/v1/auth/google/callback` | Public | 60/min | Handle Google OAuth callback with domain restriction. |
-| `POST` | `/api/v1/logout` | Authenticated | 60/min | Revoke current user bearer token. |
+| Method | Endpoint                       | Access        | Rate Limit | Description                                                  |
+| ------ | ------------------------------ | ------------- | ---------- | ------------------------------------------------------------ |
+| `POST` | `/api/v1/register`             | Public        | 5/min      | Register a new user account with school email.               |
+| `POST` | `/api/v1/login`                | Public        | 5/min      | Login with email and password; returns Sanctum bearer token. |
+| `POST` | `/api/v1/forgot-password`      | Public        | 5/min      | Send password reset token email.                             |
+| `POST` | `/api/v1/reset-password`       | Public        | 5/min      | Reset password and revoke all existing Sanctum sessions.     |
+| `GET`  | `/api/v1/verify-email`         | Public        | 60/min     | Verify email address via 15-minute token link.               |
+| `POST` | `/api/v1/resend-verification`  | Public        | 5/min      | Resend verification email link to unverified user.           |
+| `GET`  | `/api/v1/auth/google/redirect` | Public        | 60/min     | Redirect to Google OAuth consent screen.                     |
+| `GET`  | `/api/v1/auth/google/callback` | Public        | 60/min     | Handle Google OAuth callback with domain restriction.        |
+| `POST` | `/api/v1/logout`               | Authenticated | 60/min     | Revoke current user bearer token.                            |
 
 ---
 
 ## Profile & Contact Endpoints
 
-| Method | Endpoint | Access | Rate Limit | Description |
-| --- | --- | --- | --- | --- |
-| `GET` | `/api/v1/me` | Authenticated | 60/min | Fetch authenticated user profile and permissions. |
-| `PUT` | `/api/v1/profile` | Authenticated | 60/min | Update user profile details (name, phone, department). |
-| `POST` | `/api/v1/profile/picture` | Authenticated | 60/min | Upload user profile picture to Cloudinary. |
-| `POST` | `/api/v1/contact` | Public | 5/min | Send contact inquiry email to administrators. |
+| Method | Endpoint                  | Access        | Rate Limit | Description                                            |
+| ------ | ------------------------- | ------------- | ---------- | ------------------------------------------------------ |
+| `GET`  | `/api/v1/me`              | Authenticated | 60/min     | Fetch authenticated user profile and permissions.      |
+| `PUT`  | `/api/v1/profile`         | Authenticated | 60/min     | Update user profile details (name, phone, department). |
+| `POST` | `/api/v1/profile/picture` | Authenticated | 60/min     | Upload user profile picture to Cloudinary.             |
+| `POST` | `/api/v1/contact`         | Public        | 5/min      | Send contact inquiry email to administrators.          |
 
 ---
 
 ## Equipment Endpoints
 
-| Method | Endpoint | Access | Rate Limit | Description |
-| --- | --- | --- | --- | --- |
-| `GET` | `/api/v1/equipment` | Authenticated | 60/min | List all equipment items with category, status, and specs. |
-| `POST` | `/api/v1/equipment` | Admin / Sysadmin | 60/min | Create a new equipment item with generated serial number. |
-| `PUT` | `/api/v1/equipment/{equipment}` | Admin / Sysadmin | 60/min | Update equipment details, category, or status. |
-| `POST` | `/api/v1/equipment/{equipment}/upload` | Admin / Sysadmin | 60/min | Upload or update equipment photo on Cloudinary. |
-| `DELETE` | `/api/v1/equipment/{equipment}` | Admin / Sysadmin | 60/min | Delete equipment item (blocked if tied to bookings). |
+| Method   | Endpoint                               | Access           | Rate Limit | Description                                                |
+| -------- | -------------------------------------- | ---------------- | ---------- | ---------------------------------------------------------- |
+| `GET`    | `/api/v1/equipment`                    | Authenticated    | 60/min     | List all equipment items with category, status, and specs. |
+| `POST`   | `/api/v1/equipment`                    | Admin / Sysadmin | 60/min     | Create a new equipment item with generated serial number.  |
+| `PUT`    | `/api/v1/equipment/{equipment}`        | Admin / Sysadmin | 60/min     | Update equipment details, category, or status.             |
+| `POST`   | `/api/v1/equipment/{equipment}/upload` | Admin / Sysadmin | 60/min     | Upload or update equipment photo on Cloudinary.            |
+| `DELETE` | `/api/v1/equipment/{equipment}`        | Admin / Sysadmin | 60/min     | Delete equipment item (blocked if tied to bookings).       |
 
 ---
 
 ## Booking Endpoints
 
-| Method | Endpoint | Access | Rate Limit | Description |
-| --- | --- | --- | --- | --- |
-| `GET` | `/api/v1/bookings` | Authenticated | 60/min | List bookings (borrower sees own; admin sees all). |
-| `POST` | `/api/v1/bookings` | Borrower | 60/min | Submit new booking cart request with date validation. |
-| `GET` | `/api/v1/bookings/{booking}` | Borrower / Admin | 60/min | View single booking details, items, and return notes. |
-| `PUT` | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin | 60/min | Approve pending booking request. |
-| `PUT` | `/api/v1/bookings/{booking}/reject` | Admin / Sysadmin | 60/min | Reject pending booking request with rejection reason. |
-| `PUT` | `/api/v1/bookings/{booking}/release` | Admin / Sysadmin | 60/min | Mark approved booking equipment as released to borrower. |
-| `PUT` | `/api/v1/bookings/{booking}/return` | Admin / Sysadmin | 60/min | Mark released booking equipment as returned. |
-| `PUT` | `/api/v1/bookings/{booking}/cancel` | Borrower | 60/min | Cancel pending booking request. |
-| `PUT` | `/api/v1/bookings/{booking}/read` | Borrower | 60/min | Mark booking notification status as read. |
-| `POST` | `/api/v1/bookings/{booking}/remind` | Admin / Sysadmin | 60/min | Send manual return reminder email for released booking. |
+| Method | Endpoint                             | Access           | Rate Limit | Description                                              |
+| ------ | ------------------------------------ | ---------------- | ---------- | -------------------------------------------------------- |
+| `GET`  | `/api/v1/bookings`                   | Authenticated    | 60/min     | List bookings (borrower sees own; admin sees all).       |
+| `POST` | `/api/v1/bookings`                   | Borrower         | 60/min     | Submit new booking cart request with date validation.    |
+| `GET`  | `/api/v1/bookings/{booking}`         | Borrower / Admin | 60/min     | View single booking details, items, and return notes.    |
+| `PUT`  | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin | 60/min     | Approve pending booking request.                         |
+| `PUT`  | `/api/v1/bookings/{booking}/reject`  | Admin / Sysadmin | 60/min     | Reject pending booking request with rejection reason.    |
+| `PUT`  | `/api/v1/bookings/{booking}/release` | Admin / Sysadmin | 60/min     | Mark approved booking equipment as released to borrower. |
+| `PUT`  | `/api/v1/bookings/{booking}/return`  | Admin / Sysadmin | 60/min     | Mark released booking equipment as returned.             |
+| `PUT`  | `/api/v1/bookings/{booking}/cancel`  | Borrower         | 60/min     | Cancel pending booking request.                          |
+| `PUT`  | `/api/v1/bookings/{booking}/read`    | Borrower         | 60/min     | Mark booking notification status as read.                |
+| `POST` | `/api/v1/bookings/{booking}/remind`  | Admin / Sysadmin | 60/min     | Send manual return reminder email for released booking.  |
 
 ---
 
 ## User Management Endpoints
 
-| Method | Endpoint | Access | Rate Limit | Description |
-| --- | --- | --- | --- | --- |
-| `GET` | `/api/v1/users` | Sysadmin | 60/min | List all users excluding other sysadmin accounts. |
-| `POST` | `/api/v1/users` | Sysadmin | 60/min | Manually create pre-verified user account. |
-| `PUT` | `/api/v1/users/{user}` | Sysadmin | 60/min | Update user account, role, or department. |
-| `DELETE` | `/api/v1/users/{user}` | Sysadmin | 60/min | Delete user account (blocked if tied to bookings). |
+| Method   | Endpoint               | Access   | Rate Limit | Description                                        |
+| -------- | ---------------------- | -------- | ---------- | -------------------------------------------------- |
+| `GET`    | `/api/v1/users`        | Sysadmin | 60/min     | List all users excluding other sysadmin accounts.  |
+| `POST`   | `/api/v1/users`        | Sysadmin | 60/min     | Manually create pre-verified user account.         |
+| `PUT`    | `/api/v1/users/{user}` | Sysadmin | 60/min     | Update user account, role, or department.          |
+| `DELETE` | `/api/v1/users/{user}` | Sysadmin | 60/min     | Delete user account (blocked if tied to bookings). |

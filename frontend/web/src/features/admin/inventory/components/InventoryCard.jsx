@@ -6,8 +6,7 @@ import { getOptimizedImageUrl } from '@shared/util/image'
 const defaultEquipment = Object.freeze({})
 const noop = () => null
 
-const resolveCategoryName = (category) =>
-    (typeof category === 'string' ? category : category?.name) || 'Support'
+const resolveCategoryName = (category) => (typeof category === 'string' ? category : category?.name) || 'Support'
 
 export const InventoryCard = ({
     equipment = defaultEquipment,
@@ -40,7 +39,8 @@ export const InventoryCard = ({
 
     return (
         <div className="bg-white rounded-2xl border border-slate-300 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] flex flex-col h-full font-['Poppins'] relative hover:z-20 focus-within:z-30">
-            <div className={`relative h-44 ${optimizedImage ? 'bg-white' : 'bg-slate-100'} border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0`}>
+            <div
+                className={`relative h-44 ${optimizedImage ? 'bg-white' : 'bg-slate-100'} border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0`}>
                 {optimizedImage && (
                     <div className="absolute inset-0 flex items-center justify-center p-3 pointer-events-none">
                         <img
@@ -76,9 +76,7 @@ export const InventoryCard = ({
                 <div className="flex flex-col gap-1.5">
                     <h3 className="text-lg font-semibold text-slate-900 leading-tight">{equipmentTitle}</h3>
                     <p className="text-xs font-normal text-slate-500">{equipmentModel}</p>
-                    <p className="text-xs font-normal text-slate-500 leading-relaxed">
-                        {equipmentDescription}
-                    </p>
+                    <p className="text-xs font-normal text-slate-500 leading-relaxed">{equipmentDescription}</p>
                 </div>
 
                 <div className="flex flex-col gap-3.5 mt-auto pt-2">

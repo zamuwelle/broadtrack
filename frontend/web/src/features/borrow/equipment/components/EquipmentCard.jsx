@@ -47,7 +47,8 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
 
     return (
         <div className="h-[371px] w-full overflow-hidden rounded-[8px] border border-border-subtle bg-surface shadow-[0px_4px_4px_rgba(0,0,0,0.05)]">
-            <div className={`relative flex h-[150px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[21px] pt-[22px]`}>
+            <div
+                className={`relative flex h-[150px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[21px] pt-[22px]`}>
                 {equipment.image ? (
                     <div className="absolute inset-0 flex items-center justify-center p-3 pointer-events-none">
                         <img

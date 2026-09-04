@@ -20,7 +20,8 @@ export const EquipmentExpandedCard = ({
 
     return (
         <div className="scroll-mb-[24px] w-full overflow-hidden rounded-[8px] border border-border-subtle bg-surface shadow-[0px_4px_4px_rgba(0,0,0,0.05)]">
-            <div className={`relative flex h-[267px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[19px] pt-[22px]`}>
+            <div
+                className={`relative flex h-[267px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[19px] pt-[22px]`}>
                 {equipment.image ? (
                     <div className="absolute inset-0 flex items-center justify-center p-4 pt-10 pointer-events-none">
                         <img
@@ -36,7 +37,10 @@ export const EquipmentExpandedCard = ({
                 {isSelectable ? (
                     <SelectButton selected={isSelected} onSelect={onToggleSelect} className="relative z-10" />
                 ) : null}
-                <XButton onClick={onCollapse} className="relative z-10 flex h-[30px] w-[30px] items-center justify-center" />
+                <XButton
+                    onClick={onCollapse}
+                    className="relative z-10 flex h-[30px] w-[30px] items-center justify-center"
+                />
             </div>
             <div className="flex flex-col gap-[10px] px-4 py-5 lg:px-[26px] lg:py-[28px]">
                 <div className="flex items-start justify-between">

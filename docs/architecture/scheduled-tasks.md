@@ -33,14 +33,14 @@ Located in [`app/Console/Commands/SendReturnDueEmailRemindersCommand.php`](file:
 ### Two Dedicated Workflows:
 
 1. **Due Soon Reminders (`sendDueSoonReminders`):**
-   - Finds active bookings where `end_date` is between `now` and `now + 24 hours`.
-   - Sends an email notice with the return deadline.
-   - Cached for 14 days to prevent duplicate sends.
+    - Finds active bookings where `end_date` is between `now` and `now + 24 hours`.
+    - Sends an email notice with the return deadline.
+    - Cached for 14 days to prevent duplicate sends.
 2. **Overdue Alerts (`sendOverdueAlerts`):**
-   - Finds active bookings where `end_date < now`.
-   - Calculates the exact days overdue (`daysOverdue = max(1, diffInDays)`).
-   - Sends an overdue warning email.
-   - Cached daily (`booking_reminder_{id}_overdue_{Y-m-d}`) so overdue borrowers receive exactly 1 alert per day until returned.
+    - Finds active bookings where `end_date < now`.
+    - Calculates the exact days overdue (`daysOverdue = max(1, diffInDays)`).
+    - Sends an overdue warning email.
+    - Cached daily (`booking_reminder_{id}_overdue_{Y-m-d}`) so overdue borrowers receive exactly 1 alert per day until returned.
 
 ### Manual Execution:
 

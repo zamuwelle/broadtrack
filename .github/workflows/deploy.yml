@@ -1,38 +1,38 @@
 name: Deploy to Firebase
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths:
-      - "frontend/package.json"
-      - "frontend/bun.lock"
-      - "frontend/web/**"
-      - "frontend/shared/**"
-      - ".github/workflows/deploy.yml"
+    push:
+        branches:
+            - main
+            - dev
+        paths:
+            - 'frontend/package.json'
+            - 'frontend/bun.lock'
+            - 'frontend/web/**'
+            - 'frontend/shared/**'
+            - '.github/workflows/deploy.yml'
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install
-        working-directory: frontend
-      - name: Create .env
-        working-directory: frontend/web
-        env:
-          ENV_CONTENT: ${{ github.ref == 'refs/heads/main' && secrets.ENV_PROD || secrets.ENV_DEV }}
-        run: echo "$ENV_CONTENT" > .env
-      - run: bun run build
-        working-directory: frontend/web
-      - name: Deploy to Firebase Hosting
-        working-directory: frontend/web
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ github.ref == 'refs/heads/main' && secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK || secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK_DEV }}
-          PROJECT_ID: ${{ github.ref == 'refs/heads/main' && 'broadtrack' || 'broadtrack-dev' }}
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/sa.json
-          GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json bunx firebase-tools deploy --only hosting --project "$PROJECT_ID"
-          rm -f /tmp/sa.json
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+            - run: bun install
+              working-directory: frontend
+            - name: Create .env
+              working-directory: frontend/web
+              env:
+                  ENV_CONTENT: ${{ github.ref == 'refs/heads/main' && secrets.ENV_PROD || secrets.ENV_DEV }}
+              run: echo "$ENV_CONTENT" > .env
+            - run: bun run build
+              working-directory: frontend/web
+            - name: Deploy to Firebase Hosting
+              working-directory: frontend/web
+              env:
+                  FIREBASE_SERVICE_ACCOUNT: ${{ github.ref == 'refs/heads/main' && secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK || secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK_DEV }}
+                  PROJECT_ID: ${{ github.ref == 'refs/heads/main' && 'broadtrack' || 'broadtrack-dev' }}
+              run: |
+                  echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/sa.json
+                  GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json bunx firebase-tools deploy --only hosting --project "$PROJECT_ID"
+                  rm -f /tmp/sa.json
