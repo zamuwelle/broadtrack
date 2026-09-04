@@ -44,7 +44,7 @@ Backend API runs at `http://localhost:8000`.
 ```bash
 cd frontend
 bun install
-bun run dev:web
+bun run dev
 ```
 
 Frontend Web application runs at `http://localhost:5173`.
@@ -53,12 +53,10 @@ Frontend Web application runs at `http://localhost:5173`.
 
 ## Common Developer Commands
 
-All test and lint tasks can be run directly from the `frontend` folder using `bun`:
-
-| Command                                  | Action                                      |
-| ---------------------------------------- | ------------------------------------------- |
-| `cd frontend && bun run test:backend`    | Run full Pest backend test suite (52 tests) |
-| `cd frontend && bun run lint:backend`    | Check PHP code style via Laravel Pint       |
-| `cd frontend && bun run lint:frontend`   | Lint all JavaScript/React files via Oxlint  |
-| `cd frontend && bun run format:backend`  | Automatically format PHP code with Pint     |
-| `cd frontend && bun run format:frontend` | Automatically format frontend files         |
+| Command                               | Action                                       |
+| ------------------------------------- | -------------------------------------------- |
+| `cd frontend && bun run dev`          | Start full-stack dev server (Laravel + Vite) |
+| `cd frontend && bun run check`        | Run format, lint, build, and browser checks  |
+| `cd frontend && bun run test:backend` | Run backend Pest test suite (52 tests)       |
+| `cd frontend && bun run format`       | Format entire project (Pint + Oxfmt)         |
+| `cd frontend && bun run lint`         | Lint entire project (Pint + Oxlint)          |

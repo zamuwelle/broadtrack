@@ -76,3 +76,15 @@ Route access is guarded at the router level in `src/app/router.jsx` via `<Protec
 
 - Intercepts unauthenticated or unauthorized users before layouts or data-fetching hooks ever mount.
 - Prevents unauthorized layout renders and eliminates N+1 flash redirects.
+
+---
+
+## 6. Toolchain, Linting & Formatting (Vite+)
+
+BroadTrack uses **Vite+** (`vp` CLI) as its unified frontend toolchain:
+
+- **Centralized Configuration:** All linting and formatting settings live in [`frontend/vite.config.ts`](file:///home/sam/git/broadtrack/frontend/vite.config.ts) under the `lint` and `fmt` blocks.
+- **Oxlint:** High-performance Rust-based linter run via `vp lint`. Enforces single-component files (`react/no-multi-comp`), hooks rules, accessibility, and zero-barrel imports (`oxc/no-barrel-file`).
+- **Oxfmt:** Rust-based code formatter run via `vp fmt`. Adheres to Prettier standards (tab width 4, single quotes, no semicolons, no trailing commas).
+- **Automatic Ignore Resolution:** Both Oxlint and Oxfmt automatically respect [`.gitignore`](file:///home/sam/git/broadtrack/.gitignore) out of the box without requiring `.prettierignore`.
+- **Validation Pipeline:** Run `vp check` to check both formatting and linting concurrently.

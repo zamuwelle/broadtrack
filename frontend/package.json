@@ -9,11 +9,11 @@
         "test": "bun run test:backend",
         "test:backend": "(cd ../backend && php artisan test)",
         "lint": "bun run lint:frontend && bun run lint:backend",
-        "lint:frontend": "oxlint",
+        "lint:frontend": "vp lint",
         "lint:backend": "php ../backend/vendor/bin/pint --test --config ../backend/pint.json ../backend",
         "format": "bun run format:backend && bun run format:frontend",
-        "format:frontend": "prettier --write .. --ignore-path .prettierignore",
-        "format:backend": "php ../backend/vendor/bin/pint --config ../backend/pint.json ../backend && prettier --write .. --ignore-path .prettierignore",
+        "format:frontend": "vp fmt \"$(cd .. && pwd)\"",
+        "format:backend": "php ../backend/vendor/bin/pint --config ../backend/pint.json ../backend",
         "build": "bun run --filter web build",
         "check": "rm -f web/.vite-errors.log && bun run format && bun run lint && bun run build && bun scripts/assert-no-browser-errors.js",
         "dev": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others -p \"[{index}] [{name}]\" -n \"laravel,laravel queue,laravel reverb,vite\" \"bun run serve\" \"php ../../backend/artisan queue:work\" \"php ../../backend/artisan reverb:start\" \"bun run dev\"",
@@ -21,8 +21,22 @@
         "dev:frontend": "bun run --filter web dev"
     },
     "devDependencies": {
-        "concurrently": "^10.0.5",
-        "oxlint": "^1.87.0",
-        "prettier": "^3.9.9"
+        "concurrently": "^10.0.6",
+        "vite": "catalog:",
+        "vite-plus": "catalog:"
+    },
+    "catalog": {
+        "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+        "vite-plus": "1.1.0"
+    },
+    "overrides": {
+        "vite": "catalog:"
+    },
+    "devEngines": {
+        "packageManager": {
+            "name": "bun",
+            "version": "1.4.3",
+            "onFail": "download"
+        }
     }
 }

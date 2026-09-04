@@ -8,7 +8,7 @@
 <a href="#"><img src="https://img.shields.io/badge/Laravel-FF2D20?logo=laravel&logoColor=white" alt="Laravel"></a>
 <a href="#"><img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black" alt="React"></a>
 <a href="#"><img src="https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS"></a>
-<a href="#"><img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite"></a>
+<a href="#"><img src="https://img.shields.io/badge/Vite%2B-646CFF?logo=vite&logoColor=white" alt="Vite+"></a>
 <a href="#"><img src="https://img.shields.io/badge/Bun-000000?logo=bun&logoColor=white" alt="Bun"></a>
 <a href="#"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" alt="Firebase"></a>
 <a href="#"><img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions"></a>
@@ -60,7 +60,7 @@ Equipment booking and tracking system built with Laravel and React.
 | Backend                      | Frontend                      |
 | ---------------------------- | ----------------------------- |
 | Laravel 13 (PHP 8.3+)        | React 19                      |
-| Octane (FrankenPHP)          | Vite + Tailwind CSS 4         |
+| Octane (FrankenPHP)          | Vite+ + Tailwind CSS 4        |
 | Laravel Reverb (WebSockets)  | React Router DOM              |
 | Sanctum + Socialite (Google) | TanStack Query + Laravel Echo |
 | Mail (SMTP, queued)          | Bun                           |
@@ -72,7 +72,7 @@ Equipment booking and tracking system built with Laravel and React.
 broadtrack/
 ├── backend/            # Laravel 13 API (Octane FrankenPHP, Reverb, Sanctum)
 ├── frontend/
-│   ├── web/            # React 19 SPA (Vite, Tailwind CSS 4, TanStack Query)
+│   ├── web/            # React 19 SPA (Vite+, Tailwind CSS 4, TanStack Query)
 │   └── shared/         # Platform-agnostic utilities, constants, schemas
 ├── docs/               # Architecture, API endpoints, workflows, conventions
 └── postman/            # Pre-configured Postman API collection
@@ -112,7 +112,7 @@ cd frontend
 bun run dev          # Runs both Frontend & Backend
 # Or run individually:
 # bun run dev:backend   (Backend only: Octane + Reverb + Queue)
-# bun run dev:frontend  (Frontend only: Vite)
+# bun run dev:frontend  (Frontend only: Vite+)
 ```
 
 ### Windows (CMD / PowerShell)
@@ -141,7 +141,7 @@ cd frontend
 bun run dev          # Runs both Frontend & Backend
 # Or run individually:
 # bun run dev:backend   (Backend only: Octane + Reverb + Queue)
-# bun run dev:frontend  (Frontend only: Vite)
+# bun run dev:frontend  (Frontend only: Vite+)
 ```
 
 - Backend API: http://localhost:8000
@@ -203,8 +203,11 @@ bun run lint:backend    # Lints Backend only (Laravel Pint)
 
 # Formatting
 bun run format          # Formats ALL (Frontend + Backend)
-bun run format:frontend # Formats Frontend only (Prettier)
-bun run format:backend  # Formats Backend only (Laravel Pint + Prettier)
+bun run format:frontend # Formats Frontend & Repo (Oxfmt)
+bun run format:backend  # Formats Backend only (Laravel Pint)
+
+# Verification
+bun run check           # Formats, lints, builds, and asserts zero browser errors
 ```
 
 ## Deployment
@@ -220,12 +223,12 @@ For architectural diagrams, workflows, and code conventions, see the [Developer 
 
 | Name                         | Role                 |
 | :--------------------------- | :------------------- |
-| **Samuel Binos**             | Full-Stack Developer |
 | **Rocelyn Lava**             | Project Manager      |
 | **Anne Stephanne Buenaflor** | Business Analyst     |
 | **Ydrey Ann Ramirez**        | UI/UX Designer       |
 | **Luisa Padillon**           | UI/UX Designer       |
 | **Karl Ashton Mahusay**      | Quality Assurance    |
+| **Samuel Binos**             | Full-Stack Developer |
 
 ## License
 

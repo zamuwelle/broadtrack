@@ -8,7 +8,7 @@ BroadTrack is organized as a decoupled Single-Page Application (SPA) communicati
 
 ```mermaid
 flowchart TD
-    Client["React 19 SPA (Vite + TanStack Query)"]
+    Client["React 19 SPA (Vite+ / TanStack Query)"]
 
     subgraph Backend ["Laravel 13 Application"]
         Router["routes/api.php (v1 endpoints)"]
@@ -93,5 +93,4 @@ The repository contains 3 main code roots:
 - `flatpickr` / `react-flatpickr`
 - `zod`
 - `@fontsource/poppins`
-- `oxlint`
-- `prettier`
+- `vite-plus` (unified toolchain: Vite 8, Rolldown, Oxlint, Oxfmt)
