@@ -145,7 +145,7 @@ const getTransactionModalDetails = (booking) => {
     return {
         variant,
         equipmentTitle: equipment.name || 'Equipment',
-        equipmentModel: equipment.model || 'N/A',
+        equipmentModel: equipment.model || '',
         equipmentSerial: equipment.serial_no || 'N/A',
         equipmentId: getEquipmentId(equipment, booking),
         borrowerName: user.full_name || 'Borrower',

@@ -10,4 +10,5 @@ enum EquipmentCategory: string
     case Lighting = 'Lighting';
     case Support = 'Support';
     case Cables = 'Cables';
+    case Others = 'Others';
 }

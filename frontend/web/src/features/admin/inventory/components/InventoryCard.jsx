@@ -8,6 +8,9 @@ const noop = () => null
 
 const resolveCategoryName = (category) => (typeof category === 'string' ? category : category?.name) || 'Support'
 
+const resolveEquipmentModel = (equipment, categoryName) =>
+    equipment.model?.trim() || equipment.brand?.trim() || `${categoryName} Standard`
+
 export const InventoryCard = ({
     equipment = defaultEquipment,
     onEdit = noop,
@@ -15,10 +18,10 @@ export const InventoryCard = ({
     onUpdateStatus = noop
 }) => {
     const equipmentTitle = equipment.name || 'Equipment'
-    const equipmentModel = equipment.model || 'N/A'
+    const categoryName = resolveCategoryName(equipment.category)
+    const equipmentModel = resolveEquipmentModel(equipment, categoryName)
     const equipmentDescription = equipment.description || 'No description available'
     const serialNumber = equipment.serial_no || 'N/A'
-    const categoryName = resolveCategoryName(equipment.category)
 
     const handleEdit = useCallback(() => {
         onEdit(equipment)
@@ -74,9 +77,13 @@ export const InventoryCard = ({
 
             <div className="p-4 sm:p-6 flex flex-col flex-1 justify-between gap-3.5">
                 <div className="flex flex-col gap-1.5">
-                    <h3 className="text-lg font-semibold text-slate-900 leading-tight">{equipmentTitle}</h3>
-                    <p className="text-xs font-normal text-slate-500">{equipmentModel}</p>
-                    <p className="text-xs font-normal text-slate-500 leading-relaxed">{equipmentDescription}</p>
+                    <h3 className="text-lg font-semibold text-slate-900 leading-tight line-clamp-2 min-h-[2.75rem]">
+                        {equipmentTitle}
+                    </h3>
+                    <p className="text-xs font-normal text-slate-500 line-clamp-1 min-h-[1rem]">{equipmentModel}</p>
+                    <p className="text-xs font-normal text-slate-500 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                        {equipmentDescription}
+                    </p>
                 </div>
 
                 <div className="flex flex-col gap-3.5 mt-auto pt-2">

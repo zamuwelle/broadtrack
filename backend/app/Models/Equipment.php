@@ -32,11 +32,16 @@ class Equipment extends Model
         static::creating(static fn ($equipment) => $equipment->generateSerial());
     }
 
-    public function generateSerial()
+    public function generateSerial(): void
     {
+        if ($this->serial_no) {
+            return;
+        }
+
         $source = $this->brand ?: $this->name;
         $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source ?? ''), 0, 3)), 3, 'X');
-        $this->serial_no ??= 'SN-'.$code.'-'.str_pad((string)(static::max('id') + 1), 5, '0', STR_PAD_LEFT);
+        $unit = static::where('name', $this->name)->count() + 1;
+        $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
     }
 
     public function bookings()

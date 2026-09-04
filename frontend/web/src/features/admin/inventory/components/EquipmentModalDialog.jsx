@@ -31,9 +31,9 @@ const createEquipmentPayload = (formValues, equipment, isEditMode) => {
     const item = equipment || initialFormState
     return {
         name: formValues.equipmentName.trim(),
-        brand: formValues.equipmentName.trim(),
+        brand: isEditMode && item.brand ? item.brand : formValues.equipmentName.trim(),
         model: formValues.modelCode.trim() || null,
-        serial_no: isEditMode ? formValues.serialNumber.trim() || item.serial_no || null : null,
+        serial_no: formValues.serialNumber.trim() || (isEditMode ? item.serial_no : null) || null,
         category: formValues.categoryId,
         description: formValues.shortDescription.trim() || null,
         specs: formValues.technicalSpecs.trim() || null

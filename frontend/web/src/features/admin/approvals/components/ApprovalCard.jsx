@@ -34,7 +34,7 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
 
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
-    const equipmentModel = equipment.model || 'N/A'
+    const equipmentModel = equipment.model || null
 
     const accentColor = getAccentColor(status)
     const cardBorder = isRejected || isCompleted ? 'border-slate-300' : 'border-slate-200'
@@ -50,7 +50,9 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
                 <div className="flex-1 flex flex-col justify-between min-w-0 w-full">
                     <ApprovalHeader booking={booking} />
 
-                    <p className="text-xs text-slate-500 font-normal mt-0.5">{equipmentModel}</p>
+                    {equipmentModel ? (
+                        <p className="text-xs text-slate-500 font-normal mt-0.5">{equipmentModel}</p>
+                    ) : null}
                     <p className="text-xs text-slate-500 font-normal mt-0.5">Ticket ID: {booking.ticket_id}</p>
 
                     <div className="w-full h-0 border-t border-slate-200 my-3" />

@@ -16,7 +16,15 @@ export const DEPARTMENT_SHORTHANDS = Object.freeze({
     'BS Social Work': 'BSSW'
 })
 
-export const EQUIPMENT_CATEGORIES = Object.freeze(['Camera', 'Video', 'Audio', 'Lighting', 'Support', 'Cables'])
+export const EQUIPMENT_CATEGORIES = Object.freeze([
+    'Camera',
+    'Video',
+    'Audio',
+    'Lighting',
+    'Support',
+    'Cables',
+    'Others'
+])
 
 export const EQUIPMENT_STATUSES = Object.freeze(['available', 'booked', 'borrowed', 'maintenance'])
 

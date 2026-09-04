@@ -20,8 +20,12 @@ export const ModalHeader = ({
                 </span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-slate-500">
-                <span>Model: {equipmentModel}</span>
-                <span>|</span>
+                {equipmentModel ? (
+                    <>
+                        <span>Model: {equipmentModel}</span>
+                        <span>|</span>
+                    </>
+                ) : null}
                 <span>Serial Number: {equipmentSerial}</span>
             </div>
         </div>
