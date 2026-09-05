@@ -102,8 +102,8 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
-        if ($booking->status !== BookingStatus::Released) {
-            return $this->error('Only released bookings can be marked as returned.', 422);
+        if (! $booking->isActive()) {
+            return $this->error('Only approved or released bookings can be marked as returned.', 422);
         }
 
         $booking->markAsReturned($request->user()->id);
@@ -133,8 +133,8 @@ class BookingController extends ApiController
     {
         $this->authorize('manage', $booking);
 
-        if ($booking->status !== BookingStatus::Released) {
-            return $this->error('Return reminders can only be sent for released bookings.', 422);
+        if (! $booking->isActive()) {
+            return $this->error('Return reminders can only be sent for active bookings.', 422);
         }
 
         $booking->load(['user', 'equipments']);

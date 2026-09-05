@@ -15,14 +15,14 @@ export const ActivityStatusSection = ({
                 <span className="text-sky-800 text-[10px] font-semibold tracking-wider">ACTUAL RETURN DATE</span>
                 <div className="text-blue-600 text-xs font-medium flex items-center gap-1.5">
                     <Calendar size={14} className="text-blue-600" />
-                    <span>{formatDate(booking.returned_at || booking.updated_at)}</span>
+                    <span>{formatDate(booking.return_date || booking.returned_at || booking.updated_at)}</span>
                 </div>
-                <div className="border-t border-slate-200/80 pt-1.5 text-[10px] text-slate-500 font-medium">
-                    Processed by:{' '}
-                    <span className="text-slate-800 font-semibold">
-                        {booking.returned_by_user?.full_name || 'Mr. Linmark'}
-                    </span>
-                </div>
+                {booking.returned_by_user?.full_name ? (
+                    <div className="border-t border-slate-200/80 pt-1.5 text-[10px] text-slate-500 font-medium">
+                        Processed by:{' '}
+                        <span className="text-slate-800 font-semibold">{booking.returned_by_user.full_name}</span>
+                    </div>
+                ) : null}
             </div>
         )}
 

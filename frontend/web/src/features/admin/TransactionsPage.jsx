@@ -17,6 +17,40 @@ const INITIAL_PAGE_STATE = Object.freeze({
     selectedTransaction: null
 })
 
+const flattenBookingsByEquipment = (bookings) =>
+    bookings.flatMap((booking) => {
+        const equipments = booking.equipments || []
+        if (equipments.length <= 1) {
+            return [booking]
+        }
+        return equipments.map((equipment) =>
+            Object.assign({}, booking, {
+                itemKey: `${booking.id}-${equipment.id}`,
+                equipment,
+                equipments: [equipment]
+            })
+        )
+    })
+
+const matchesTransactionCategory = (status, isOverdue, selectedCategory) => {
+    if (status === 'pending') {
+        return false
+    }
+    if (selectedCategory === 'Active') {
+        return !isOverdue && (status === 'approved' || status === 'released')
+    }
+    if (selectedCategory === 'Completed') {
+        return status === 'returned'
+    }
+    if (selectedCategory === 'Overdue') {
+        return isOverdue
+    }
+    if (selectedCategory === 'Cancelled') {
+        return status === 'cancelled' || status === 'rejected'
+    }
+    return true
+}
+
 export const TransactionsPage = (props) => {
     useDocumentTitle('Transaction History')
     const { bookings: propBookings } = props
@@ -43,38 +77,25 @@ export const TransactionsPage = (props) => {
 
     const handleCloseModal = useCallback(() => updatePageState({ selectedTransaction: null }), [updatePageState])
 
+    const flattenedTransactions = useMemo(() => flattenBookingsByEquipment(bookings), [bookings])
+
     const filteredTransactions = useMemo(
         () =>
-            bookings
+            flattenedTransactions
                 .filter((booking) => {
                     const status = getBookingStatus(booking)
                     const isOverdue = isBookingOverdue(booking)
-
-                    if (status === 'pending') {
-                        return false
-                    }
-
-                    if (selectedCategory === 'Active' && (!['approved', 'released'].includes(status) || isOverdue)) {
-                        return false
-                    }
-                    if (selectedCategory === 'Completed' && status !== 'returned') {
-                        return false
-                    }
-                    if (selectedCategory === 'Overdue' && !isOverdue) {
-                        return false
-                    }
-                    if (selectedCategory === 'Cancelled' && status !== 'cancelled' && status !== 'rejected') {
-                        return false
-                    }
-
-                    return matchesBookingSearch(booking, searchText)
+                    return (
+                        matchesTransactionCategory(status, isOverdue, selectedCategory) &&
+                        matchesBookingSearch(booking, searchText)
+                    )
                 })
                 .toSorted(
                     (firstBooking, secondBooking) =>
                         new Date(secondBooking.start_date || secondBooking.created_at).getTime() -
                         new Date(firstBooking.start_date || firstBooking.created_at).getTime()
                 ),
-        [bookings, searchText, selectedCategory]
+        [flattenedTransactions, searchText, selectedCategory]
     )
 
     const isModalOpen = Boolean(selectedTransaction)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BookingStatus;
 use App\Enums\EquipmentStatus;
 use App\Models\Booking;
 use App\Models\Equipment;
@@ -191,13 +192,27 @@ test('admin cannot release non-approved booking', function () {
     $response->assertStatus(422);
 });
 
-test('admin cannot return non-released booking', function () {
+test('admin can return approved booking', function () {
     $admin = User::factory()->admin()->create();
     $booking = Booking::factory()->approved()->create();
 
     $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");
 
-    $response->assertStatus(422);
+    $response->assertOk()
+        ->assertJsonPath('data.status', 'returned');
+    expect($booking->fresh()->status)->toBe(BookingStatus::Returned);
+});
+
+test('admin cannot return pending or cancelled booking', function () {
+    $admin = User::factory()->admin()->create();
+    $pendingBooking = Booking::factory()->pending()->create();
+    $cancelledBooking = Booking::factory()->cancelled()->create();
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$pendingBooking->id}/return")
+        ->assertStatus(422);
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$cancelledBooking->id}/return")
+        ->assertStatus(422);
 });
 
 test('returning booking preserves equipment under maintenance', function () {

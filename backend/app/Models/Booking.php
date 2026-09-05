@@ -54,10 +54,15 @@ class Booking extends Model
         $this->ticket_id = $generatedTicketId;
     }
 
+    public function isActive(): bool
+    {
+        return in_array($this->status, [BookingStatus::Approved, BookingStatus::Released], true);
+    }
+
     protected function isOverdue(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->status === BookingStatus::Released && (bool)$this->end_date?->isPast(),
+            get: fn () => $this->isActive() && (bool)$this->end_date?->isPast(),
         );
     }
 

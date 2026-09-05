@@ -1,4 +1,5 @@
 import { getBookingStatus } from '@shared/util/booking'
+import { getOptimizedImageUrl } from '@shared/util/image'
 import { ApprovalHeader } from '@/features/admin/approvals/components/ApprovalHeader'
 import { ApprovalBorrowerDetails } from '@/features/admin/approvals/components/ApprovalBorrowerDetails'
 import { ApprovalNotesDetails } from '@/features/admin/approvals/components/ApprovalNotesDetails'
@@ -21,6 +22,9 @@ const getAccentColor = (status) => {
     return 'bg-amber-500'
 }
 
+const getCardBorder = (status) =>
+    status === 'rejected' || status === 'returned' ? 'border-slate-300' : 'border-slate-200'
+
 export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onReject = noop, onReturn = noop }) => {
     if (!booking.id) {
         return null
@@ -29,15 +33,13 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
     const status = getBookingStatus(booking)
     const isPending = status === 'pending'
     const isConfirmed = status === 'approved' || status === 'released'
-    const isRejected = status === 'rejected'
-    const isCompleted = status === 'returned'
 
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
     const equipmentModel = equipment.model || null
 
     const accentColor = getAccentColor(status)
-    const cardBorder = isRejected || isCompleted ? 'border-slate-300' : 'border-slate-200'
+    const cardBorder = getCardBorder(status)
 
     return (
         <div
@@ -45,7 +47,16 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
             <div className={`w-[9px] shrink-0 ${accentColor}`} />
 
             <div className="flex-1 p-4 sm:p-6 lg:p-7 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start min-w-0">
-                <div className="w-full h-44 sm:size-44 lg:size-48 shrink-0 rounded-lg bg-slate-200 border border-slate-300 self-center sm:self-start" />
+                <div className="w-full h-44 sm:size-44 lg:size-48 shrink-0 rounded-lg bg-white self-center sm:self-start overflow-hidden flex items-center justify-center">
+                    {equipment.image ? (
+                        <img
+                            src={getOptimizedImageUrl(equipment.image, 300)}
+                            alt={equipment.name}
+                            className="w-full h-full object-contain p-2"
+                            loading="lazy"
+                        />
+                    ) : null}
+                </div>
 
                 <div className="flex-1 flex flex-col justify-between min-w-0 w-full">
                     <ApprovalHeader booking={booking} />

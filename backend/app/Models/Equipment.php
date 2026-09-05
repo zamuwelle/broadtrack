@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BookingStatus;
 use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Observers\EquipmentObserver;
@@ -65,7 +66,8 @@ class Equipment extends Model
             }
 
             $bookings = $bookingsByEquipmentId->get($item->id, collect());
-            $hasStarted = static fn (Booking $booking) => $booking->start_date->lessThanOrEqualTo(now());
+            $hasStarted = static fn (Booking $booking) => $booking->status === BookingStatus::Released
+                || ($booking->status === BookingStatus::Approved && $booking->start_date->lessThanOrEqualTo(now()));
 
             $item->status = match (true) {
                 $bookings->contains($hasStarted) => EquipmentStatus::Borrowed,

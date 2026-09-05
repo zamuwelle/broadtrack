@@ -34,16 +34,19 @@ const matchStatus = (status, selectedStatus) => {
     if (status === 'cancelled') {
         return false
     }
-    if (selectedStatus === 'Pending' && status !== 'pending') {
-        return false
+    if (selectedStatus === 'Pending') {
+        return status === 'pending'
     }
-    if (selectedStatus === 'Confirmed' && status !== 'approved' && status !== 'released') {
-        return false
+    if (selectedStatus === 'Confirmed') {
+        return status === 'approved' || status === 'released'
     }
-    if (selectedStatus === 'Rejected' && status !== 'rejected') {
-        return false
+    if (selectedStatus === 'Rejected') {
+        return status === 'rejected'
     }
-    return !(selectedStatus === 'Completed' && status !== 'returned')
+    if (selectedStatus === 'Completed') {
+        return status === 'returned'
+    }
+    return true
 }
 
 const sortApprovalBookings = (firstBooking, secondBooking) => {
@@ -54,6 +57,21 @@ const sortApprovalBookings = (firstBooking, secondBooking) => {
               new Date(firstBooking.created_at || firstBooking.start_date).getTime()
         : diff
 }
+
+const flattenBookingsByEquipment = (bookings) =>
+    bookings.flatMap((booking) => {
+        const equipments = booking.equipments || []
+        if (equipments.length <= 1) {
+            return [booking]
+        }
+        return equipments.map((equipment) =>
+            Object.assign({}, booking, {
+                itemKey: `${booking.id}-${equipment.id}`,
+                equipment,
+                equipments: [equipment]
+            })
+        )
+    })
 
 const filterAndSortBookings = (bookings, selectedStatus, searchText) =>
     bookings
@@ -110,9 +128,10 @@ export const ApprovalsPage = (props) => {
     )
 
     const modalHandlers = useApprovalModals(updatePageState)
+    const flattenedBookings = useMemo(() => flattenBookingsByEquipment(bookings), [bookings])
     const filteredBookings = useMemo(
-        () => filterAndSortBookings(bookings, selectedStatus, searchText),
-        [bookings, selectedStatus, searchText]
+        () => filterAndSortBookings(flattenedBookings, selectedStatus, searchText),
+        [flattenedBookings, selectedStatus, searchText]
     )
 
     return (
@@ -130,7 +149,7 @@ export const ApprovalsPage = (props) => {
                 {filteredBookings.length > 0 ? (
                     filteredBookings.map((booking) => (
                         <ApprovalCard
-                            key={booking.id}
+                            key={booking.itemKey ?? booking.id}
                             booking={booking}
                             onApprove={modalHandlers.handleApprove}
                             onReject={modalHandlers.handleReject}

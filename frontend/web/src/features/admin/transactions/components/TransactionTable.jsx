@@ -35,7 +35,11 @@ export const TransactionTable = ({ transactions = defaultTransactions, onViewDet
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                     {transactions.map((booking) => (
-                        <TransactionTableRow key={booking.id} booking={booking} onViewDetails={onViewDetails} />
+                        <TransactionTableRow
+                            key={booking.itemKey ?? booking.id}
+                            booking={booking}
+                            onViewDetails={onViewDetails}
+                        />
                     ))}
                 </tbody>
             </table>

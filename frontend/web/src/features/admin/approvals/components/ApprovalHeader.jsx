@@ -20,7 +20,7 @@ export const ApprovalHeader = ({ booking = defaultBooking }) => {
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
     const equipmentName = equipment.name || 'Equipment'
-    const categoryName = equipment.category?.name || ''
+    const categoryName = typeof equipment.category === 'string' ? equipment.category : equipment.category?.name || ''
     const requestDateText = formatShortDate(booking.created_at)
     const status = getBookingStatus(booking)
     const badgeConfig = getBadgeConfig(status)

@@ -13,10 +13,10 @@ export const matchesBookingSearch = (booking = {}, query = '') => {
     if (!normalizedQuery) {
         return true
     }
-    const equipment = booking.equipments ? booking.equipments[0] : null
+    const equipments = booking.equipments || []
+    const equipmentFields = equipments.flatMap((item) => [item.name, item.model, item.serial_no, item.brand])
     const fields = [
-        equipment ? equipment.name : '',
-        equipment ? equipment.model : '',
+        ...equipmentFields,
         booking.ticket_id,
         String(booking.id ?? ''),
         booking.user ? booking.user.full_name : '',

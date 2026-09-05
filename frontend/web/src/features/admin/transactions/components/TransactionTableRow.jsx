@@ -14,7 +14,7 @@ const statusBadgeStyles = Object.freeze({
 
 const formatReturnDate = (booking = defaultBooking) => {
     const status = getBookingStatus(booking)
-    const dateValue = booking.returned_at || (status === 'returned' ? booking.return_date || booking.updated_at : null)
+    const dateValue = status === 'returned' ? booking.return_date || booking.returned_at || booking.updated_at : null
     return formatSimpleDate(dateValue)
 }
 
