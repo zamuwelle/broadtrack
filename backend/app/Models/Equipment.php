@@ -41,7 +41,12 @@ class Equipment extends Model
 
         $source = $this->brand ?: $this->name;
         $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source ?? ''), 0, 3)), 3, 'X');
-        $unit = (int)(static::where('name', $this->name)->max('id') ?? 0) + 1;
+        $maxUnit = static::where('name', $this->name)
+            ->whereNotNull('serial_no')
+            ->pluck('serial_no')
+            ->map(static fn ($sn) => (int)substr($sn, -4))
+            ->max() ?? 0;
+        $unit = $maxUnit + 1;
         $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
     }
 
@@ -66,8 +71,7 @@ class Equipment extends Model
             }
 
             $bookings = $bookingsByEquipmentId->get($item->id, collect());
-            $isOngoing = static fn (Booking $booking) => $booking->status === BookingStatus::Released
-                || ($booking->status === BookingStatus::Approved && $booking->start_date->lessThanOrEqualTo(now()) && $booking->end_date->isFuture());
+            $isOngoing = static fn (Booking $booking) => $booking->status === BookingStatus::Released;
             $isUpcoming = static fn (Booking $booking) => $booking->status === BookingStatus::Approved && $booking->end_date->isFuture();
 
             $item->status = match (true) {

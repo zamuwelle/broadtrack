@@ -41,7 +41,7 @@ class VerificationController extends ApiController
         $user = User::where('email', $request->input('email'))->first();
 
         if (! $user) {
-            return $this->notFound('User not found.');
+            return $this->success(message: 'If an account exists with that email and is unverified, a verification link has been sent.');
         }
 
         if ($user->email_verified_at) {

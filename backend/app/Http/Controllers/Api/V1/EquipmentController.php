@@ -11,6 +11,7 @@ use App\Http\Resources\Api\V1\EquipmentResource;
 use App\Models\Equipment;
 use App\Services\CloudinaryService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentController extends ApiController
 {
@@ -62,20 +63,28 @@ class EquipmentController extends ApiController
     {
         $this->authorize('manage', Equipment::class);
 
-        if ($equipment->status === EquipmentStatus::Booked || $equipment->status === EquipmentStatus::Borrowed) {
-            return $this->error('Cannot delete equipment that is currently booked or borrowed.', 422);
-        }
+        return DB::transaction(function () use ($equipment, $cloudinary) {
+            $lockedEquipment = Equipment::where('id', $equipment->id)->lockForUpdate()->first();
 
-        if ($equipment->bookings()->exists()) {
-            return $this->error('Cannot delete equipment that has associated booking records.', 422);
-        }
+            if (! $lockedEquipment) {
+                return $this->error('Cannot delete equipment that has associated booking records.', 422);
+            }
 
-        if ($equipment->image) {
-            $cloudinary->destroy($equipment->imagePublicId());
-        }
+            if ($lockedEquipment->status === EquipmentStatus::Booked || $lockedEquipment->status === EquipmentStatus::Borrowed) {
+                return $this->error('Cannot delete equipment that is currently booked or borrowed.', 422);
+            }
 
-        $equipment->delete();
+            if ($lockedEquipment->bookings()->exists()) {
+                return $this->error('Cannot delete equipment that has associated booking records.', 422);
+            }
 
-        return $this->noContent();
+            if ($lockedEquipment->image) {
+                $cloudinary->destroy($lockedEquipment->imagePublicId());
+            }
+
+            $lockedEquipment->delete();
+
+            return $this->noContent();
+        });
     }
 }

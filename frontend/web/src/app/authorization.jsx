@@ -18,7 +18,7 @@ export const ProtectedRoute = ({ allowedRoles, children }) => {
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        const homePath = ADMIN_ROLES.includes(user.role) ? paths.app.admin : paths.app.borrow
+        const homePath = ADMIN_ROLES.includes(user.role) ? paths.app.adminDashboard : paths.app.borrowEquipment
         return <Navigate to={homePath} replace />
     }
 

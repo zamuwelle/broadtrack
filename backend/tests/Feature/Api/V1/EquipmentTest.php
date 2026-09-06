@@ -150,3 +150,44 @@ test('admin cannot delete equipment with historical bookings', function () {
 
     $this->assertDatabaseHas('equipments', ['id' => $equipment->id]);
 });
+
+test('resolveStatuses marks approved booking within window as booked and released booking as borrowed', function () {
+    $equipment1 = Equipment::factory()->available()->create(['name' => 'Camera Alpha']);
+    $equipment2 = Equipment::factory()->available()->create(['name' => 'Camera Beta']);
+
+    $approvedBooking = Booking::factory()->approved()->create([
+        'start_date' => now()->subHour(),
+        'end_date' => now()->addHours(2),
+    ]);
+    $approvedBooking->equipments()->attach($equipment1->id);
+
+    $releasedBooking = Booking::factory()->released()->create([
+        'start_date' => now()->subHour(),
+        'end_date' => now()->addHours(2),
+    ]);
+    $releasedBooking->equipments()->attach($equipment2->id);
+
+    $resolved = Equipment::resolveStatuses(collect([$equipment1, $equipment2]));
+
+    expect($resolved->firstWhere('id', $equipment1->id)->status)->toBe(EquipmentStatus::Booked);
+    expect($resolved->firstWhere('id', $equipment2->id)->status)->toBe(EquipmentStatus::Borrowed);
+});
+
+test('generateSerial computes unit number based on count rather than id', function () {
+    $first = Equipment::create([
+        'name' => 'Tripod Pro',
+        'category' => EquipmentCategory::Support->value,
+    ]);
+    expect($first->serial_no)->toBe('SN-TRI-0001');
+
+    Equipment::create([
+        'name' => 'Studio Light',
+        'category' => EquipmentCategory::Lighting->value,
+    ]);
+
+    $second = Equipment::create([
+        'name' => 'Tripod Pro',
+        'category' => EquipmentCategory::Support->value,
+    ]);
+    expect($second->serial_no)->toBe('SN-TRI-0002');
+});

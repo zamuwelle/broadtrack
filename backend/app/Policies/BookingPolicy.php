@@ -23,7 +23,7 @@ class BookingPolicy
 
     public function markAsRead(User $user, Booking $booking): bool
     {
-        return $user->isAdmin() || $booking->user_id === $user->id;
+        return $booking->user_id === $user->id;
     }
 
     public function manage(User $user): bool

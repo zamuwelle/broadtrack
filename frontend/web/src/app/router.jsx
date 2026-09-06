@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { ADMIN_ROLES, BORROWER_ROLES } from '@shared/constants'
+import { ADMIN_ROLES, BORROWER_ROLES, ROLES } from '@shared/constants'
 import { ProtectedRoute } from '@/app/authorization'
 import { paths } from '@/config/paths'
+
+const SYSADMIN_ROLES = Object.freeze([ROLES.SYSADMIN])
 
 const createAppRouter = () =>
     createBrowserRouter([
@@ -71,8 +73,13 @@ const createAppRouter = () =>
                             lazy: () => import('@/routes/admin/Transactions')
                         },
                         {
-                            path: paths.app.adminUsers,
-                            lazy: () => import('@/routes/admin/Users')
+                            element: <ProtectedRoute allowedRoles={SYSADMIN_ROLES} />,
+                            children: [
+                                {
+                                    path: paths.app.adminUsers,
+                                    lazy: () => import('@/routes/admin/Users')
+                                }
+                            ]
                         }
                     ]
                 }

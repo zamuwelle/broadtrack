@@ -4,12 +4,14 @@ namespace App\Models;
 
 use App\Enums\BookingStatus;
 use App\Observers\BookingObserver;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 #[Appends(['is_overdue'])]
 #[Fillable(['user_id', 'returned_by_user_id', 'ticket_id', 'purpose', 'start_date', 'end_date', 'return_date', 'status', 'approval_note', 'rejection_reason', 'isRead'])]
@@ -133,9 +135,12 @@ class Booking extends Model
 
     public function scopeOverlapping($query, $startDate, $endDate)
     {
-        return $query->where(static function ($q) use ($startDate, $endDate) {
-            $q->where('start_date', '<', $endDate)
-                ->where('end_date', '>', $startDate);
+        $start = $startDate instanceof DateTimeInterface ? $startDate : Carbon::parse($startDate);
+        $end = $endDate instanceof DateTimeInterface ? $endDate : Carbon::parse($endDate);
+
+        return $query->where(static function ($q) use ($start, $end) {
+            $q->where('start_date', '<', $end)
+                ->where('end_date', '>', $start);
         });
     }
 }

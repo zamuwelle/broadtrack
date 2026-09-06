@@ -51,7 +51,7 @@ const useAuthLoginHandlers = ({
             onClose()
             const user = data.user || {}
             const { role } = user
-            navigate(role === 'admin' || role === 'sysadmin' ? paths.app.admin : paths.app.borrow, {
+            navigate(role === 'admin' || role === 'sysadmin' ? paths.app.adminDashboard : paths.app.borrowEquipment, {
                 replace: true
             })
         },

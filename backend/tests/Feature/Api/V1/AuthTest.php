@@ -282,3 +282,43 @@ test('contact endpoint is throttled after five requests', function () {
         'message' => 'Hello there',
     ])->assertStatus(429);
 });
+
+test('resending verification for non-existent email returns generic success message', function () {
+    $response = $this->postJson('/api/v1/resend-verification', [
+        'email' => 'nonexistent@student.laverdad.edu.ph',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'If an account exists with that email and is unverified, a verification link has been sent.');
+});
+
+test('resending verification for unverified user queues verification email', function () {
+    Mail::fake();
+
+    $user = User::factory()->unverified()->create([
+        'email' => 'unverified@student.laverdad.edu.ph',
+        'verification_sent_at' => now()->subMinutes(5),
+    ]);
+
+    $response = $this->postJson('/api/v1/resend-verification', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'Verification link sent to your email.');
+
+    Mail::assertQueued(VerifyEmailMail::class);
+});
+
+test('resending verification for already verified user returns 422', function () {
+    $user = User::factory()->borrower()->create([
+        'email' => 'verified@student.laverdad.edu.ph',
+    ]);
+
+    $response = $this->postJson('/api/v1/resend-verification', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('message', 'Email is already verified.');
+});

@@ -6,6 +6,7 @@ use App\Enums\EquipmentStatus;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
 test('borrower can create booking request', function () {
@@ -148,6 +149,27 @@ test('cannot book equipment with overlapping dates', function () {
         'purpose' => 'Conflicting shoot',
         'start_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
         'end_date' => now()->addDays(4)->format('Y-m-d H:i:s'),
+        'equipment_ids' => [$equipment->id],
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['equipment_ids']);
+});
+
+test('cannot book equipment with overlapping dates on same day using ISO strings', function () {
+    $borrower = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $existingBooking = Booking::factory()->approved()->create([
+        'start_date' => Carbon::parse('2026-12-01 08:00:00'),
+        'end_date' => Carbon::parse('2026-12-01 17:00:00'),
+    ]);
+    $existingBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Same-day shoot',
+        'start_date' => '2026-12-01T09:00',
+        'end_date' => '2026-12-01T12:00',
         'equipment_ids' => [$equipment->id],
     ]);
 
@@ -442,4 +464,27 @@ test('cancel-expired command cancels past pending bookings and leaves future pen
     expect($pastBooking->fresh()->status)->toBe(BookingStatus::Cancelled);
     expect($pastBooking->fresh()->rejection_reason)->toBe('Auto-cancelled: Request expired without approval');
     expect($futureBooking->fresh()->status)->toBe(BookingStatus::Pending);
+});
+
+test('admin cannot mark booking notification as read', function () {
+    $admin = User::factory()->admin()->create();
+    $booking = Booking::factory()->pending()->create(['isRead' => false]);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/read");
+
+    $response->assertForbidden();
+});
+
+test('borrower can mark their own booking notification as read', function () {
+    $borrower = User::factory()->borrower()->create();
+    $booking = Booking::factory()->pending()->create([
+        'user_id' => $borrower->id,
+        'isRead' => false,
+    ]);
+
+    $response = $this->actingAs($borrower)->putJson("/api/v1/bookings/{$booking->id}/read");
+
+    $response->assertOk()
+        ->assertJsonPath('data.isRead', true);
+    expect($booking->fresh()->isRead)->toBeTrue();
 });
