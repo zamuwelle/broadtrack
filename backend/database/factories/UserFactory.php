@@ -54,7 +54,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => [
             'email_verified_at' => null,
-            'verification_token' => 'test-token',
+            'verification_code' => '123456',
             'verification_sent_at' => now(),
         ]);
     }

@@ -30,7 +30,7 @@ class AuthController extends ApiController
 
         return $this->created([
             'email' => $validated['email'],
-        ], 'Verification link sent to your email.');
+        ], 'Verification code sent to your email.');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -46,7 +46,7 @@ class AuthController extends ApiController
         if (! $user->email_verified_at) {
             VerificationController::sendVerification($user);
 
-            return $this->forbidden('Please verify your email first. We sent you a link.');
+            return $this->forbidden('Please verify your email first. We sent you a verification code.');
         }
 
         $user->tokens()->delete();

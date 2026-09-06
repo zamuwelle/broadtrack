@@ -43,13 +43,13 @@ const useAuthModalState = ({ mode, initialError, initialData, isOpen, onClose })
 
     const switchTab = useCallback(
         (targetTab) => {
-            updateAuthState({
+            updateAuthState((prev) => ({
                 tab: targetTab,
                 showPass: false,
                 error: '',
                 successMessage: '',
-                form: { ...initialFormState }
-            })
+                form: targetTab === 'verify' ? prev.form : { ...initialFormState }
+            }))
         },
         [updateAuthState]
     )
@@ -108,7 +108,8 @@ export const AuthModal = ({
     const { tab, showPass, error, successMessage, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
 
-    useEscapeKey(onClose)
+    const isVerifyTab = tab === 'verify'
+    useEscapeKey(isVerifyTab ? null : onClose)
 
     useEffect(() => {
         if (isOpen && initialError) {
@@ -145,7 +146,7 @@ export const AuthModal = ({
                     aria-label="Close dialog"
                     tabIndex={-1}
                     className="fixed inset-0 dim-screen border-none outline-none cursor-default"
-                    onClick={handleClose}
+                    onClick={isVerifyTab ? noop : handleClose}
                 />
                 <div className="bg-surface p-5 sm:p-6 rounded-[8px] w-full max-w-[420px] max-h-[90dvh] overflow-y-scroll my-auto relative z-10 font-['Poppins']">
                     <button

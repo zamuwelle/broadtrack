@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
     Route::post('/resend-verification', [VerificationController::class, 'resend'])->middleware('throttle:5,1');
+    Route::post('/verify-email', [VerificationController::class, 'verify'])->middleware('throttle:10,1');
 
     // Contact
     Route::post('/contact', [ContactController::class, 'send'])->middleware('throttle:5,1');

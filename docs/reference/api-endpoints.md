@@ -12,8 +12,8 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 | `POST` | `/api/v1/login`                | Public        | 5/min      | Login with email and password; returns Sanctum bearer token. |
 | `POST` | `/api/v1/forgot-password`      | Public        | 5/min      | Send password reset token email.                             |
 | `POST` | `/api/v1/reset-password`       | Public        | 5/min      | Reset password and revoke all existing Sanctum sessions.     |
-| `GET`  | `/api/v1/verify-email`         | Public        | 60/min     | Verify email address via 15-minute token link.               |
-| `POST` | `/api/v1/resend-verification`  | Public        | 5/min      | Resend verification email link to unverified user.           |
+| `POST` | `/api/v1/verify-email`         | Public        | 10/min     | Verify user email address with 6-digit OTP verification code. |
+| `POST` | `/api/v1/resend-verification`  | Public        | 5/min      | Resend 6-digit OTP verification code to unverified user (60s cooldown). |
 | `GET`  | `/api/v1/auth/google/redirect` | Public        | 60/min     | Redirect to Google OAuth consent screen.                     |
 | `GET`  | `/api/v1/auth/google/callback` | Public        | 60/min     | Handle Google OAuth callback with domain restriction.        |
 | `POST` | `/api/v1/logout`               | Authenticated | 60/min     | Revoke current user bearer token.                            |
@@ -50,7 +50,7 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 | `GET`  | `/api/v1/bookings`                    | Authenticated    | 60/min     | List bookings (borrower sees own; admin sees all).                          |
 | `POST` | `/api/v1/bookings`                    | Borrower         | 60/min     | Submit new booking cart request with date validation.                       |
 | `GET`  | `/api/v1/bookings/{booking}`          | Borrower / Admin | 60/min     | View single booking details, items, and return notes.                       |
-| `GET`  | `/api/v1/bookings/{booking}/slip/pdf` | Borrower / Admin | 60/min     | Export official A4 portrait borrowing slip PDF with barcode and signatures. |
+| `GET`  | `/api/v1/bookings/{booking}/slip/pdf` | Borrower / Admin | 60/min     | Export official A4 portrait borrowing slip PDF with barcode manifest.       |
 | `GET`  | `/api/v1/bookings/reports/pdf`        | Admin / Sysadmin | 60/min     | Export filtered transaction history as A4 landscape PDF report.             |
 | `GET`  | `/api/v1/bookings/reports/csv`        | Admin / Sysadmin | 60/min     | Export filtered transaction history as UTF-8 BOM CSV spreadsheet.           |
 | `PUT`  | `/api/v1/bookings/{booking}/approve`  | Admin / Sysadmin | 60/min     | Approve pending booking request (blocked if reservation period has passed). |

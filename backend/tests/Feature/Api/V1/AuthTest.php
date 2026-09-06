@@ -173,7 +173,7 @@ test('oauth callback redirects unverified user with error message', function () 
     $response = $this->get('/api/v1/auth/google/callback?code=mock-code');
 
     $response->assertRedirect();
-    expect($response->headers->get('Location'))->toContain('error=Please+verify+your+email+first.+We+sent+you+a+link.');
+    expect($response->headers->get('Location'))->toContain('error=Please+verify+your+email+first.+We+sent+you+a+verification+code.');
 });
 
 test('oauth callback redirects unregistered user to register tab', function () {
@@ -232,12 +232,66 @@ test('cannot register with spoofed domain without at symbol', function () {
         ->assertJsonValidationErrors(['email']);
 });
 
-test('verification with missing token renders failure view', function () {
-    $response = $this->get('/api/v1/verify-email');
+test('user can verify email with valid 6-digit code', function () {
+    $user = User::factory()->unverified()->create([
+        'email' => 'otp.verify@student.laverdad.edu.ph',
+        'verification_code' => '482915',
+        'verification_sent_at' => now(),
+    ]);
+
+    $response = $this->postJson('/api/v1/verify-email', [
+        'email' => 'otp.verify@student.laverdad.edu.ph',
+        'code' => '482915',
+    ]);
 
     $response->assertOk()
-        ->assertViewIs('emails.verify-result')
-        ->assertViewHas('success', false);
+        ->assertJsonPath('message', 'Email verified successfully.');
+
+    $user->refresh();
+    expect($user->email_verified_at)->not->toBeNull();
+    expect($user->verification_code)->toBeNull();
+});
+
+test('user cannot verify email with incorrect 6-digit code', function () {
+    User::factory()->unverified()->create([
+        'email' => 'otp.fail@student.laverdad.edu.ph',
+        'verification_code' => '123456',
+        'verification_sent_at' => now(),
+    ]);
+
+    $response = $this->postJson('/api/v1/verify-email', [
+        'email' => 'otp.fail@student.laverdad.edu.ph',
+        'code' => '999999',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Incorrect verification code. Please try again.');
+});
+
+test('user cannot verify email with expired 6-digit code', function () {
+    User::factory()->unverified()->create([
+        'email' => 'otp.expired@student.laverdad.edu.ph',
+        'verification_code' => '123456',
+        'verification_sent_at' => now()->subMinutes(16),
+    ]);
+
+    $response = $this->postJson('/api/v1/verify-email', [
+        'email' => 'otp.expired@student.laverdad.edu.ph',
+        'code' => '123456',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Verification code has expired. Please request a new one.');
+});
+
+test('user cannot verify email with invalid code format', function () {
+    $response = $this->postJson('/api/v1/verify-email', [
+        'email' => 'otp.format@student.laverdad.edu.ph',
+        'code' => 'abc',
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['code']);
 });
 
 test('password reset revokes existing sanctum tokens', function () {
@@ -289,7 +343,7 @@ test('resending verification for non-existent email returns generic success mess
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', 'If an account exists with that email and is unverified, a verification link has been sent.');
+        ->assertJsonPath('message', 'If an account exists with that email and is unverified, a verification code has been sent.');
 });
 
 test('resending verification for unverified user queues verification email', function () {
@@ -305,7 +359,7 @@ test('resending verification for unverified user queues verification email', fun
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', 'Verification link sent to your email.');
+        ->assertJsonPath('message', 'Verification code sent to your email.');
 
     Mail::assertQueued(VerifyEmailMail::class);
 });
@@ -321,4 +375,18 @@ test('resending verification for already verified user returns 422', function ()
 
     $response->assertUnprocessable()
         ->assertJsonPath('message', 'Email is already verified.');
+});
+
+test('resending verification within 60 seconds returns 429', function () {
+    $user = User::factory()->unverified()->create([
+        'email' => 'throttled.resend@student.laverdad.edu.ph',
+        'verification_sent_at' => now()->subSeconds(20),
+    ]);
+
+    $response = $this->postJson('/api/v1/resend-verification', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertStatus(429)
+        ->assertJsonPath('message', 'Please wait before requesting another verification code.');
 });

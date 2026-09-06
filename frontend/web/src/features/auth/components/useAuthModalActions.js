@@ -65,6 +65,10 @@ const useAuthLoginHandlers = ({
             (loginError = {}) => {
                 if (loginError.status === 403) {
                     showToast(loginError.message)
+                    updateAuthState({
+                        tab: 'verify',
+                        error: ''
+                    })
                 } else {
                     updateAuthState({
                         error: loginError.message || 'Email or password is incorrect'
@@ -100,17 +104,15 @@ const useAuthLoginHandlers = ({
     }
 }
 
-const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToast, initialFormState }) => {
+const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToast }) => {
     const showCheckInbox = useCallback(() => {
         updateAuthState({
-            tab: 'login',
+            tab: 'verify',
             showPass: false,
             error: '',
-            successMessage: '',
-            form: { ...initialFormState }
+            successMessage: ''
         })
-        showToast('Account created! Check your inbox to verify.')
-    }, [updateAuthState, initialFormState, showToast])
+    }, [updateAuthState])
 
     const registerSend = useSend({
         send: registerUser,
@@ -255,8 +257,7 @@ export const useAuthModalActions = ({
         form,
         validRegister,
         updateAuthState,
-        showToast,
-        initialFormState
+        showToast
     })
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({

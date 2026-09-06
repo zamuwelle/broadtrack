@@ -19,8 +19,8 @@ use Laravel\Sanctum\HasApiTokens;
 use function Tamtamchik\NameCase\str_name_case;
 
 #[Appends(['full_name'])]
-#[Fillable(['firstname', 'lastname', 'email', 'phone', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_token', 'verification_sent_at', 'created_at'])]
-#[Hidden(['password', 'remember_token', 'verification_token'])]
+#[Fillable(['firstname', 'lastname', 'email', 'phone', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_code', 'verification_sent_at', 'created_at'])]
+#[Hidden(['password', 'remember_token', 'verification_code'])]
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable
 {

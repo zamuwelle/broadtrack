@@ -10,16 +10,16 @@ BroadTrack restricts user authentication to institution email domains (`@student
 stateDiagram-v2
     [*] --> FormSubmitted: User Submits Register Form
     FormSubmitted --> UnverifiedCreated: Create Account (email_verified_at = NULL)
-    UnverifiedCreated --> EmailDispatched: 15-Minute Verification Link Sent
+    UnverifiedCreated --> EmailDispatched: 6-Digit Verification Code Dispatched
 
     state UnverifiedCreated {
         [*] --> WaitingForVerification
         WaitingForVerification --> ReRegistered: User Submits Form Again (within 24h)
-        ReRegistered --> WaitingForVerification: Updated Credentials + Fresh Link
+        ReRegistered --> WaitingForVerification: Updated Credentials + Fresh 6-Digit Code
         WaitingForVerification --> Pruned: 24 Hours Elapsed Without Verification
     }
 
-    EmailDispatched --> VerifiedAccount: User Clicks Link Within 15 Min
+    EmailDispatched --> VerifiedAccount: User Submits Valid Code Within 15 Min
     VerifiedAccount --> [*]: Permanent Borrower Access
     Pruned --> [*]: Permanently Deleted from Database
 ```
@@ -41,16 +41,18 @@ In [`HasUserRules.php`](file:///home/sam/git/broadtrack/backend/app/Http/Request
 
 ---
 
-## 2. Unverified Registration Handling & Token Verification
+## 2. Unverified Registration Handling & OTP Verification
 
-In [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php) and [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php):
+In [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php), [`VerifyEmailRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/VerifyEmailRequest.php), and [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php):
 
 - Email uniqueness is enforced only against verified accounts:
     ```php
     Rule::unique('users')->whereNotNull('email_verified_at')
     ```
-- If a user registered previously but did not verify within the 15-minute link window, submitting the form again updates their existing unverified record and sends a new verification link.
-- In [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php), requests missing the `token` query parameter or supplying an invalid non-string token are rejected before hitting the database, preventing unintended queries against verified users where `verification_token` is `NULL`.
+- When a user registers, BroadTrack generates a cryptographic 6-digit code via `random_int(100000, 999999)` stored in `verification_code` alongside a `verification_sent_at` timestamp.
+- If a user registered previously but did not verify within the 15-minute window, submitting the registration form again updates their unverified record, refreshes `created_at = now()`, and issues a fresh 6-digit OTP code.
+- Verification is submitted directly inside the authentication modal via `POST /api/v1/verify-email`. [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php) validates the code using timing-safe `hash_equals()` and rejects expired codes (>15 minutes) or invalid submissions with a 422 Unprocessable Entity status.
+- Resend requests (`POST /api/v1/resend-verification`) enforce a 60-second cooldown period, returning HTTP 429 if called within 60 seconds of dispatch.
 
 ---
 

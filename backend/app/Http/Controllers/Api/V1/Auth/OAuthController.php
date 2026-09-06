@@ -60,7 +60,7 @@ class OAuthController extends ApiController
         if (! $user->email_verified_at) {
             VerificationController::sendVerification($user);
 
-            return $fail('Please verify your email first. We sent you a link.');
+            return $fail('Please verify your email first. We sent you a verification code.');
         }
 
         if ($profilePicture && (! $user->profile_picture || str_contains($user->profile_picture, 'googleusercontent.com'))) {

@@ -9,6 +9,7 @@ import { ForgotForm } from '@/features/auth/components/ForgotForm'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
 import { ResetForm } from '@/features/auth/components/ResetForm'
+import { VerifyOtpForm } from '@/features/auth/components/VerifyOtpForm'
 
 const resolveFormErrors = (form, error, isCredentialError) => {
     const isPhoneError = error === 'Invalid phone number format' || Boolean(error?.toLowerCase().includes('phone'))
@@ -120,6 +121,10 @@ export const AuthModalBody = ({
                 onSubmit={actions.handleReset}
             />
         )
+    }
+
+    if (tab === 'verify') {
+        return <VerifyOtpForm email={form.email} onSwitchTab={onSwitchTab} />
     }
 
     return null

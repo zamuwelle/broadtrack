@@ -4,19 +4,15 @@
 		@include('emails.partials.header')
 		<h2 style="font-size: 20px; font-weight: 700; color: #1F2937; margin: 0 0 16px 0;">Verify Your Email</h2>
 		<p style="font-size: 15px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
-			Hi {{ $firstname }}, welcome to BroadTrack! Click the button below to verify your email address and activate your account:
+			Hi {{ $firstname }}, welcome to BroadTrack! Use the 6-digit verification code below to verify your email address and activate your account:
 		</p>
-		<div style="text-align: center; margin-bottom: 24px;">
-			<a href="{{ $verifyUrl }}" style="display: inline-block; background-color: #0F4C81; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 16px 32px; border-radius: 8px;">
-				Verify Email
-			</a>
+		<div style="text-align: center; margin: 28px 0;">
+			<div style="display: inline-block; background-color: #f1f5f9; border: 1.5px dashed #cbd5e1; border-radius: 8px; padding: 14px 28px;">
+				<span style="font-family: 'Courier New', Courier, monospace; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #075985;">{{ $code }}</span>
+			</div>
 		</div>
 		<p style="font-size: 13px; line-height: 1.5; color: #64748b; margin: 0 0 16px 0;">
-			This link will expire in 15 minutes. If you did not create a BroadTrack account, you can safely ignore this email.
+			This code will expire in 15 minutes. Enter this code in the verification dialog to complete your setup. If you did not create a BroadTrack account, you can safely ignore this email.
 		</p>
-		<div style="border-top: 1px solid #f1f5f9; padding-top: 16px; font-size: 12px; color: #94a3b8; word-break: break-all;">
-			If the button doesn't work, copy and paste this link into your browser:<br />
-			<a href="{{ $verifyUrl }}" style="color: #0F4C81; text-decoration: underline;">{{ $verifyUrl }}</a>
-		</div>
 	</div>
 </div>

@@ -13,12 +13,12 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public $verifyUrl, public $firstname) {}
+    public function __construct(public string $code, public string $firstname) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Verify Your BroadTrack Email',
+            subject: 'Your BroadTrack Verification Code',
         );
     }
 
@@ -27,7 +27,7 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'emails.verify-email',
             with: [
-                'verifyUrl' => $this->verifyUrl,
+                'code' => $this->code,
                 'firstname' => $this->firstname,
             ],
         );
