@@ -8,17 +8,21 @@ All automated background tasks in BroadTrack are centralized in [`routes/console
 
 ```php
 // routes/console.php
+use App\Console\Commands\CancelExpiredPendingBookingsCommand;
 use App\Console\Commands\SendReturnDueEmailRemindersCommand;
 use App\Models\User;
 use Illuminate\Support\Facades\Schedule;
 
-// 1. Email Reminders (Due soon & Overdue notices)
+// 1. Auto-Cancel Expired Requests (Pending requests with end_date past)
+Schedule::command(CancelExpiredPendingBookingsCommand::class)->daily()->timezone('Asia/Manila');
+
+// 2. Email Reminders (Due soon & Overdue notices)
 Schedule::command(SendReturnDueEmailRemindersCommand::class)->daily()->timezone('Asia/Manila');
 
-// 2. Sanctum API Token Cleanup (Tokens expired >24h)
+// 3. Sanctum API Token Cleanup (Tokens expired >24h)
 Schedule::command('sanctum:prune-expired --hours=24')->daily()->timezone('Asia/Manila');
 
-// 3. User Account Pruning (Unverified accounts >24h old)
+// 4. User Account Pruning (Unverified accounts >24h old)
 Schedule::command('model:prune', [
     '--model' => [User::class],
 ])->daily()->timezone('Asia/Manila');
@@ -81,4 +85,20 @@ php artisan model:prune --pretend
 
 # Execute actual prune
 php artisan model:prune --model="App\Models\User"
+```
+
+---
+
+## 4. Auto-Cancel Expired Requests (`CancelExpiredPendingBookingsCommand`)
+
+Located in [`app/Console/Commands/CancelExpiredPendingBookingsCommand.php`](file:///home/sam/git/broadtrack/backend/app/Console/Commands/CancelExpiredPendingBookingsCommand.php).
+
+- **Purpose:** Automatically cancels pending bookings whose scheduled `end_date` has elapsed without administrative review (`end_date < now`).
+- **Audit Preservation:** Instead of deleting records from the database, transitions the status to `BookingStatus::Cancelled` and records the internal rejection reason: `"Auto-cancelled: Request expired without approval"`.
+- **Administrative Queue Hygiene:** Cleans up the administrator's pending approval list without manual intervention.
+
+### Manual Execution:
+
+```bash
+php artisan bookings:cancel-expired
 ```

@@ -57,6 +57,6 @@ Frontend Web application runs at `http://localhost:5173`.
 | ------------------------------------- | -------------------------------------------- |
 | `cd frontend && bun run dev`          | Start full-stack dev server (Laravel + Vite) |
 | `cd frontend && bun run check`        | Run format, lint, build, and browser checks  |
-| `cd frontend && bun run test:backend` | Run backend Pest test suite (52 tests)       |
+| `cd frontend && bun run test:backend` | Run backend Pest test suite (62 tests)       |
 | `cd frontend && bun run format`       | Format entire project (Pint + Oxfmt)         |
 | `cd frontend && bun run lint`         | Lint entire project (Pint + Oxlint)          |

@@ -18,6 +18,9 @@ const getTransactionVariant = (booking) => {
     if (status === 'rejected') {
         return 'rejected'
     }
+    if (status === 'cancelled' || status === 'canceled') {
+        return 'cancelled'
+    }
     if (status === 'returned') {
         return 'completed'
     }
@@ -25,13 +28,7 @@ const getTransactionVariant = (booking) => {
 }
 
 const getEquipmentBadge = (variant) => {
-    if (variant === 'rejected') {
-        return {
-            label: 'Maintenance',
-            className: 'bg-orange-50 border-amber-500 text-amber-500'
-        }
-    }
-    if (variant === 'completed') {
+    if (variant === 'rejected' || variant === 'completed' || variant === 'cancelled') {
         return {
             label: 'Available',
             className: 'bg-green-100 border-green-500 text-green-500'

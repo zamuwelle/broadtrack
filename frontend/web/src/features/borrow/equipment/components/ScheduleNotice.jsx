@@ -4,11 +4,10 @@ import { formatDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useBookings } from '@/api/bookings/get-bookings'
 
-const filterParams = Object.freeze({ all: 1, public: 1 })
+const filterParams = Object.freeze({ public: 1 })
 const defaultEquipment = Object.freeze({})
 
-const isExcludedStatus = (status) =>
-    status === 'cancelled' || status === 'canceled' || status === 'rejected' || status === 'returned'
+const isBookedStatus = (status) => status === 'approved' || status === 'released'
 
 export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
     const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : 'available'
@@ -18,10 +17,10 @@ export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
     const activeRanges = useMemo(() => {
         const activeBookings = remoteBookings.filter((booking) => {
             const bookingStatus = getBookingStatus(booking)
-            if (isExcludedStatus(bookingStatus)) {
-                return false
+            if (isBookedStatus(bookingStatus)) {
+                return booking.equipments ? booking.equipments.some((item) => item.id === equipmentId) : false
             }
-            return booking.equipments ? booking.equipments.some((item) => item.id === equipmentId) : false
+            return false
         })
 
         if (activeBookings.length === 0) {

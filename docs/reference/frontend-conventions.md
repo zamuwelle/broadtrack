@@ -88,3 +88,13 @@ BroadTrack uses **Vite+** (`vp` CLI) as its unified frontend toolchain:
 - **Oxfmt:** Rust-based code formatter run via `vp fmt`. Adheres to Prettier standards (tab width 4, single quotes, no semicolons, no trailing commas).
 - **Automatic Ignore Resolution:** Both Oxlint and Oxfmt automatically respect [`.gitignore`](file:///home/sam/git/broadtrack/.gitignore) out of the box without requiring `.prettierignore`.
 - **Validation Pipeline:** Run `vp check` to check both formatting and linting concurrently.
+
+---
+
+## 7. Campus Timezone & Date Standardization
+
+Because BroadTrack manages physical media equipment located on campus, all date formatting and calculation functions in [`frontend/shared/util/date.js`](file:///home/sam/git/broadtrack/frontend/shared/util/date.js) strictly enforce the Philippine campus timezone:
+
+- **Target Timezone:** `Asia/Manila` (UTC+8).
+- **Wall-Clock Consistency:** Dates and times are displayed in campus local time regardless of the browser or operating system's local timezone.
+- **Intl Formatter:** Uses native `Intl.DateTimeFormat` with `{ timeZone: 'Asia/Manila' }` across `formatDate`, `formatDateTime`, `formatSimpleDate`, `formatDateRange`, and `getTodayDateString`.

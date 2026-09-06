@@ -45,18 +45,18 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 
 ## Booking Endpoints
 
-| Method | Endpoint                             | Access           | Rate Limit | Description                                              |
-| ------ | ------------------------------------ | ---------------- | ---------- | -------------------------------------------------------- |
-| `GET`  | `/api/v1/bookings`                   | Authenticated    | 60/min     | List bookings (borrower sees own; admin sees all).       |
-| `POST` | `/api/v1/bookings`                   | Borrower         | 60/min     | Submit new booking cart request with date validation.    |
-| `GET`  | `/api/v1/bookings/{booking}`         | Borrower / Admin | 60/min     | View single booking details, items, and return notes.    |
-| `PUT`  | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin | 60/min     | Approve pending booking request.                         |
-| `PUT`  | `/api/v1/bookings/{booking}/reject`  | Admin / Sysadmin | 60/min     | Reject pending booking request with rejection reason.    |
-| `PUT`  | `/api/v1/bookings/{booking}/release` | Admin / Sysadmin | 60/min     | Mark approved booking equipment as released to borrower. |
-| `PUT`  | `/api/v1/bookings/{booking}/return`  | Admin / Sysadmin | 60/min     | Mark released booking equipment as returned.             |
-| `PUT`  | `/api/v1/bookings/{booking}/cancel`  | Borrower         | 60/min     | Cancel pending booking request.                          |
-| `PUT`  | `/api/v1/bookings/{booking}/read`    | Borrower         | 60/min     | Mark booking notification status as read.                |
-| `POST` | `/api/v1/bookings/{booking}/remind`  | Admin / Sysadmin | 60/min     | Send manual return reminder email for released booking.  |
+| Method | Endpoint                             | Access           | Rate Limit | Description                                                                 |
+| ------ | ------------------------------------ | ---------------- | ---------- | --------------------------------------------------------------------------- |
+| `GET`  | `/api/v1/bookings`                   | Authenticated    | 60/min     | List bookings (borrower sees own; admin sees all).                          |
+| `POST` | `/api/v1/bookings`                   | Borrower         | 60/min     | Submit new booking cart request with date validation.                       |
+| `GET`  | `/api/v1/bookings/{booking}`         | Borrower / Admin | 60/min     | View single booking details, items, and return notes.                       |
+| `PUT`  | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin | 60/min     | Approve pending booking request (blocked if reservation period has passed). |
+| `PUT`  | `/api/v1/bookings/{booking}/reject`  | Admin / Sysadmin | 60/min     | Reject pending booking request with rejection reason.                       |
+| `PUT`  | `/api/v1/bookings/{booking}/release` | Admin / Sysadmin | 60/min     | Mark approved booking equipment as released to borrower.                    |
+| `PUT`  | `/api/v1/bookings/{booking}/return`  | Admin / Sysadmin | 60/min     | Mark released booking equipment as returned.                                |
+| `PUT`  | `/api/v1/bookings/{booking}/cancel`  | Borrower / Admin | 60/min     | Cancel pending or approved booking request before physical release.         |
+| `PUT`  | `/api/v1/bookings/{booking}/read`    | Borrower         | 60/min     | Mark booking notification status as read.                                   |
+| `POST` | `/api/v1/bookings/{booking}/remind`  | Admin / Sysadmin | 60/min     | Send manual return reminder email for released booking.                     |
 
 ---
 

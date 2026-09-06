@@ -53,7 +53,7 @@ Equipment booking and tracking system built with Laravel and React.
 - Admin dashboard for managing equipment inventory, categories, and approvals
 - Shared API and real-time Echo layer for web and future mobile (Expo) clients
 - RESTful API versioned at `/api/v1/` with Sanctum authentication
-- Automated Feature Test Suite with Pest PHP (52/52 passing)
+- Automated Feature Test Suite with Pest PHP (62/62 passing)
 
 ## Tech Stack
 

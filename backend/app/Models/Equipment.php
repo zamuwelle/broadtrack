@@ -66,12 +66,13 @@ class Equipment extends Model
             }
 
             $bookings = $bookingsByEquipmentId->get($item->id, collect());
-            $hasStarted = static fn (Booking $booking) => $booking->status === BookingStatus::Released
-                || ($booking->status === BookingStatus::Approved && $booking->start_date->lessThanOrEqualTo(now()));
+            $isOngoing = static fn (Booking $booking) => $booking->status === BookingStatus::Released
+                || ($booking->status === BookingStatus::Approved && $booking->start_date->lessThanOrEqualTo(now()) && $booking->end_date->isFuture());
+            $isUpcoming = static fn (Booking $booking) => $booking->status === BookingStatus::Approved && $booking->end_date->isFuture();
 
             $item->status = match (true) {
-                $bookings->contains($hasStarted) => EquipmentStatus::Borrowed,
-                $bookings->isNotEmpty() => EquipmentStatus::Booked,
+                $bookings->contains($isOngoing) => EquipmentStatus::Borrowed,
+                $bookings->contains($isUpcoming) => EquipmentStatus::Booked,
                 default => EquipmentStatus::Available,
             };
 

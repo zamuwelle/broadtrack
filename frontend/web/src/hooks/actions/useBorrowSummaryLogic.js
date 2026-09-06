@@ -7,10 +7,9 @@ import { useBookings } from '@/api/bookings/get-bookings'
 import { useCreateBooking } from '@/api/bookings/create-booking'
 import { useSetState } from '@shared/hooks/useSetState'
 
-const filterParams = Object.freeze({ all: 1, public: 1 })
+const filterParams = Object.freeze({ public: 1 })
 
-const isExcludedStatus = (status) =>
-    status === 'cancelled' || status === 'canceled' || status === 'rejected' || status === 'returned'
+const isBookedStatus = (status) => status === 'approved' || status === 'released'
 
 const checkEquipmentMatch = (bookingEquipments, selectedId) => {
     if (!bookingEquipments) {
@@ -48,7 +47,7 @@ const computeMinStartDate = (remoteBookings, selectedItems, todayDateString) => 
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
         const startDatePrefix = booking.start_date ? String(booking.start_date).slice(0, 10) : ''
-        const isOngoing = !isExcludedStatus(status) && startDatePrefix <= todayDateString
+        const isOngoing = isBookedStatus(status) && startDatePrefix <= todayDateString
         if (isOngoing && hasEquipmentOverlap(booking, selectedItems) && booking.end_date) {
             activeItemEndDates.push(booking.end_date)
         }
@@ -69,7 +68,7 @@ const computeExcludeDateIntervals = (remoteBookings, selectedItems) => {
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
         if (
-            !isExcludedStatus(status) &&
+            isBookedStatus(status) &&
             hasEquipmentOverlap(booking, selectedItems) &&
             booking.start_date &&
             booking.end_date
@@ -89,7 +88,7 @@ const checkScheduleConflict = (startDate, endDate, remoteBookings, selectedItems
     }
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
-        if (!isExcludedStatus(status) && hasEquipmentOverlap(booking, selectedItems)) {
+        if (isBookedStatus(status) && hasEquipmentOverlap(booking, selectedItems)) {
             const bookingStart = booking.start_date ? String(booking.start_date).slice(0, 16) : ''
             const bookingEnd = booking.end_date ? String(booking.end_date).slice(0, 16) : ''
             if (bookingStart < endDate && startDate < bookingEnd) {

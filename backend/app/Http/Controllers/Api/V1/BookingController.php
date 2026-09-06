@@ -22,16 +22,11 @@ class BookingController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $isPublic = $request->boolean('public') || $request->boolean('all') || $request->has('public') || $request->has('all');
 
         if ($user && $user->isAdmin()) {
             $query = Booking::query();
-        } elseif ($isPublic) {
-            $query = Booking::whereNotIn('status', [
-                BookingStatus::Cancelled,
-                BookingStatus::Rejected,
-                BookingStatus::Returned,
-            ]);
+        } elseif ($request->boolean('public')) {
+            $query = Booking::active();
         } else {
             $query = $user ? $user->bookings() : Booking::query();
         }
@@ -60,10 +55,9 @@ class BookingController extends ApiController
             Equipment::whereIn('id', $equipmentIds)->lockForUpdate()->get();
 
             $overlapping = Booking::overlapping($startDate, $endDate)
-                ->whereNotIn('status', [
-                    BookingStatus::Cancelled,
-                    BookingStatus::Rejected,
-                    BookingStatus::Returned,
+                ->whereIn('status', [
+                    BookingStatus::Approved,
+                    BookingStatus::Released,
                 ])
                 ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
@@ -103,6 +97,10 @@ class BookingController extends ApiController
 
         if ($booking->status !== BookingStatus::Pending) {
             return $this->error('Only pending bookings can be approved.', 422);
+        }
+
+        if ($booking->end_date->isPast()) {
+            return $this->error('Cannot approve a booking whose reservation period has already passed.', 422);
         }
 
         return DB::transaction(function () use ($request, $booking) {

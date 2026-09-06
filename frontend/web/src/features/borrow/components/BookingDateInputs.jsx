@@ -14,10 +14,13 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
             return
         }
 
-        const disabledRanges = (excludeDateIntervals || []).map((interval) => ({
-            from: interval.start,
-            to: interval.end
-        }))
+        const disabledRanges = (excludeDateIntervals || []).map((interval) => {
+            const from = new Date(interval.start)
+            from.setHours(0, 0, 0, 0)
+            const to = new Date(interval.end)
+            to.setHours(23, 59, 59, 999)
+            return { from, to }
+        })
 
         const options = {
             enableTime: true,

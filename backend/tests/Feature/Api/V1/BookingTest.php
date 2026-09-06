@@ -6,6 +6,7 @@ use App\Enums\EquipmentStatus;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 
 test('borrower can create booking request', function () {
     $borrower = User::factory()->borrower()->create();
@@ -372,4 +373,73 @@ test('borrower checking out multiple equipment items creates independent booking
 
     expect($booking1->fresh()->status)->toBe(BookingStatus::Approved);
     expect($booking2->fresh()->status)->toBe(BookingStatus::Pending);
+});
+
+test('multiple borrowers can submit booking requests for the same equipment while unapproved', function () {
+    $borrower1 = User::factory()->borrower()->create();
+    $borrower2 = User::factory()->borrower()->create();
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $startDate = now()->addDays(5)->format('Y-m-d H:i:s');
+    $endDate = now()->addDays(7)->format('Y-m-d H:i:s');
+
+    $this->actingAs($borrower1)->postJson('/api/v1/bookings', [
+        'purpose' => 'Borrower 1 request',
+        'start_date' => $startDate,
+        'end_date' => $endDate,
+        'equipment_ids' => [$equipment->id],
+    ])->assertCreated();
+
+    $this->actingAs($borrower2)->postJson('/api/v1/bookings', [
+        'purpose' => 'Borrower 2 request for same equipment and dates',
+        'start_date' => $startDate,
+        'end_date' => $endDate,
+        'equipment_ids' => [$equipment->id],
+    ])->assertCreated();
+
+    $booking1 = Booking::where('user_id', $borrower1->id)->first();
+    $booking2 = Booking::where('user_id', $borrower2->id)->first();
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking1->id}/approve", [
+        'approval_note' => 'Admin selected Borrower 1',
+    ])->assertOk();
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking2->id}/approve", [
+        'approval_note' => 'Should fail due to active approved booking',
+    ])->assertUnprocessable();
+});
+
+test('admin cannot approve a booking whose reservation period has passed', function () {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->pending()->create([
+        'start_date' => now()->subDays(5),
+        'end_date' => now()->subDays(3),
+    ]);
+    $booking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/approve", [
+        'approval_note' => 'Approving expired booking',
+    ]);
+
+    $response->assertUnprocessable();
+});
+
+test('cancel-expired command cancels past pending bookings and leaves future pending bookings untouched', function () {
+    $pastBooking = Booking::factory()->pending()->create([
+        'start_date' => now()->subDays(5),
+        'end_date' => now()->subDays(3),
+    ]);
+
+    $futureBooking = Booking::factory()->pending()->create([
+        'start_date' => now()->addDays(1),
+        'end_date' => now()->addDays(3),
+    ]);
+
+    Artisan::call('bookings:cancel-expired');
+
+    expect($pastBooking->fresh()->status)->toBe(BookingStatus::Cancelled);
+    expect($pastBooking->fresh()->rejection_reason)->toBe('Auto-cancelled: Request expired without approval');
+    expect($futureBooking->fresh()->status)->toBe(BookingStatus::Pending);
 });

@@ -1,9 +1,15 @@
-export const getTodayDateString = () => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
+const PH_TIMEZONE = 'Asia/Manila'
+
+export const getTodayDateString = () => new Intl.DateTimeFormat('en-CA', { timeZone: PH_TIMEZONE }).format(new Date())
+
+const normalizeIsoString = (isoWithT) => {
+    if (isoWithT.length === 16) {
+        return `${isoWithT}:00+08:00`
+    }
+    if (isoWithT.length === 19) {
+        return `${isoWithT}+08:00`
+    }
+    return isoWithT
 }
 
 export const parseBookingDate = (dateValue) => {
@@ -13,12 +19,14 @@ export const parseBookingDate = (dateValue) => {
     if (dateValue instanceof Date) {
         return dateValue
     }
-    const cleaned = String(dateValue).replace('Z', '').replace('T', ' ')
-    const [datePart, timePart = '00:00'] = cleaned.split(' ')
-    const [year, month, day] = datePart.split('-').map(Number)
-    const [hours = 0, minutes = 0] = timePart.split(':').map(Number)
-    const date = new Date(year, month - 1, day, hours, minutes)
-    return Number.isNaN(date.getTime()) ? new Date(dateValue) : date
+    const str = String(dateValue).trim()
+    if (str.includes('+') || str.includes('Z')) {
+        return new Date(str)
+    }
+    const isoWithT = str.replace(' ', 'T')
+    const normalized = normalizeIsoString(isoWithT)
+    const date = new Date(normalized)
+    return Number.isNaN(date.getTime()) ? new Date(str) : date
 }
 
 export const formatDate = (dateValue) => {
@@ -26,35 +34,40 @@ export const formatDate = (dateValue) => {
     if (!date || Number.isNaN(date.getTime())) {
         return String(dateValue ?? '')
     }
-    const month = date.toLocaleDateString('en-US', { month: 'long' })
+    const month = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
+    const day = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
+    const year = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
     const time = date.toLocaleTimeString('en-US', {
+        timeZone: PH_TIMEZONE,
         hour: '2-digit',
         minute: '2-digit',
         hour12: true
     })
-    return `${month} ${date.getDate()}, ${date.getFullYear()}, ${time}`
+    return `${month} ${day}, ${year}, ${time}`
 }
 
 export const formatShortDate = (dateValue) => {
-    if (!dateValue) {
+    const date = parseBookingDate(dateValue)
+    if (!date || Number.isNaN(date.getTime())) {
         return ''
     }
-    const date = new Date(dateValue)
-    if (Number.isNaN(date.getTime())) {
-        return ''
-    }
-    return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getFullYear()}`
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: PH_TIMEZONE,
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+    })
+        .format(date)
+        .replaceAll('/', '-')
 }
 
 export const formatSimpleDate = (dateValue) => {
-    if (!dateValue) {
-        return '---'
-    }
-    const date = new Date(dateValue)
-    if (Number.isNaN(date.getTime())) {
+    const date = parseBookingDate(dateValue)
+    if (!date || Number.isNaN(date.getTime())) {
         return '---'
     }
     return date.toLocaleDateString('en-US', {
+        timeZone: PH_TIMEZONE,
         month: 'long',
         day: 'numeric',
         year: 'numeric'
@@ -62,49 +75,62 @@ export const formatSimpleDate = (dateValue) => {
 }
 
 export const formatDateTime = (dateValue) => {
-    const date = dateValue ? new Date(dateValue) : null
+    const date = parseBookingDate(dateValue)
     if (!date || Number.isNaN(date.getTime())) {
         return '---'
     }
-    return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()} ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}`
+    const datePart = new Intl.DateTimeFormat('en-US', {
+        timeZone: PH_TIMEZONE,
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+    }).format(date)
+    const timePart = date.toLocaleTimeString('en-US', {
+        timeZone: PH_TIMEZONE,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    })
+    return `${datePart} ${timePart}`
 }
 
 export const formatDateRange = (startDate, endDate) => {
-    if (!startDate) {
-        return '---'
-    }
-    const start = new Date(startDate)
-    if (Number.isNaN(start.getTime())) {
+    const start = parseBookingDate(startDate)
+    if (!start || Number.isNaN(start.getTime())) {
         return '---'
     }
     if (!endDate) {
         return formatSimpleDate(startDate)
     }
 
-    const end = new Date(endDate)
-    if (Number.isNaN(end.getTime())) {
+    const end = parseBookingDate(endDate)
+    if (!end || Number.isNaN(end.getTime())) {
         return formatSimpleDate(startDate)
     }
 
-    const startMonth = start.toLocaleDateString('en-US', { month: 'long' })
-    const endMonth = end.toLocaleDateString('en-US', { month: 'long' })
-    const startYear = start.getFullYear()
-    const endYear = end.getFullYear()
+    const startMonth = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
+    const endMonth = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
+    const startYear = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
+    const endYear = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
+    const startDay = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
+    const endDay = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
 
     if (startMonth === endMonth && startYear === endYear) {
-        if (start.getDate() === end.getDate()) {
-            return `${startMonth} ${start.getDate()}, ${startYear}`
+        if (startDay === endDay) {
+            return `${startMonth} ${startDay}, ${startYear}`
         }
-        return `${startMonth} ${start.getDate()}-${end.getDate()}, ${startYear}`
+        return `${startMonth} ${startDay}-${endDay}, ${startYear}`
     }
-    return `${startMonth} ${start.getDate()}, ${startYear} – ${endMonth} ${end.getDate()}, ${endYear}`
+    return `${startMonth} ${startDay}, ${startYear} – ${endMonth} ${endDay}, ${endYear}`
 }
 
 export const getOverdueDuration = (endDate) => {
-    if (!endDate) {
+    const parsedEnd = parseBookingDate(endDate)
+    if (!parsedEnd || Number.isNaN(parsedEnd.getTime())) {
         return '0 minutes'
     }
-    const diff = Date.now() - new Date(endDate).getTime()
+    const diff = Date.now() - parsedEnd.getTime()
     if (diff <= 0) {
         return '0 minutes'
     }
