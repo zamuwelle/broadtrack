@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
 import { TransactionTable } from '@/features/admin/transactions/components/TransactionTable'
 import { TransactionDetailsModal } from '@/features/admin/transactions/components/TransactionDetailsModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useBookings } from '@/api/bookings/get-bookings'
+import { exportTransactionsCsv, exportTransactionsPdf } from '@/api/bookings/export-transactions'
 import { useSetState } from '@shared/hooks/useSetState'
 import { getBookingStatus, isBookingOverdue } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
@@ -62,6 +63,8 @@ export const TransactionsPage = (props) => {
 
     const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
     const { searchText, selectedCategory, selectedTransaction } = pageState
+    const [exportingType, setExportingType] = useState(null)
+    const isExporting = Boolean(exportingType)
 
     const handleSearchChange = useCallback(
         (newSearchText) => updatePageState({ searchText: newSearchText }),
@@ -79,6 +82,36 @@ export const TransactionsPage = (props) => {
     )
 
     const handleCloseModal = useCallback(() => updatePageState({ selectedTransaction: null }), [updatePageState])
+
+    const handleExportPdf = useCallback(async () => {
+        if (exportingType) {
+            return
+        }
+        try {
+            setExportingType('pdf')
+            await exportTransactionsPdf({
+                category: selectedCategory,
+                search: searchText
+            })
+        } finally {
+            setExportingType(null)
+        }
+    }, [exportingType, selectedCategory, searchText])
+
+    const handleExportCsv = useCallback(async () => {
+        if (exportingType) {
+            return
+        }
+        try {
+            setExportingType('csv')
+            await exportTransactionsCsv({
+                category: selectedCategory,
+                search: searchText
+            })
+        } finally {
+            setExportingType(null)
+        }
+    }, [exportingType, selectedCategory, searchText])
 
     const flattenedTransactions = useMemo(() => flattenBookingsByEquipment(bookings), [bookings])
 
@@ -111,11 +144,33 @@ export const TransactionsPage = (props) => {
                     onChange={handleSearchChange}
                     placeholder="Search borrower, equipment, or transaction ID..."
                 />
-                <CategoryButtons
-                    categories={TRANSACTION_CATEGORIES}
-                    selected={selectedCategory}
-                    onSelect={handleCategorySelect}
-                />
+                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                    <CategoryButtons
+                        categories={TRANSACTION_CATEGORIES}
+                        selected={selectedCategory}
+                        onSelect={handleCategorySelect}
+                    />
+                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                        <button
+                            type="button"
+                            onClick={handleExportPdf}
+                            disabled={isExporting}
+                            className="w-48 h-9 pl-6 pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <div className="justify-start text-white text-lg font-semibold font-['Poppins']">
+                                {exportingType === 'pdf' ? 'Exporting...' : 'Export to PDF'}
+                            </div>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleExportCsv}
+                            disabled={isExporting}
+                            className="w-48 h-9 pl-6 pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <div className="justify-start text-white text-lg font-semibold font-['Poppins']">
+                                {exportingType === 'csv' ? 'Exporting...' : 'Export to CSV'}
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="mt-4 sm:mt-6 lg:mt-[27px] flex flex-col gap-4">

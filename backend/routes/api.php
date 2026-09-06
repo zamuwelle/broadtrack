@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\VerificationController;
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\BookingReportController;
+use App\Http\Controllers\Api\V1\BookingSlipController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\EquipmentController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -45,6 +47,7 @@ Route::prefix('v1')->group(function () {
         // Bookings
         Route::get('/bookings', [BookingController::class, 'index']);
         Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+        Route::get('/bookings/{booking}/slip/pdf', [BookingSlipController::class, 'show']);
         Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
 
         // Bookings (borrower only)
@@ -55,6 +58,8 @@ Route::prefix('v1')->group(function () {
 
         // Bookings (admin & sysadmin)
         Route::middleware('role:admin')->group(function () {
+            Route::get('/bookings/reports/pdf', [BookingReportController::class, 'exportPdf']);
+            Route::get('/bookings/reports/csv', [BookingReportController::class, 'exportCsv']);
             Route::put('/bookings/{booking}/approve', [BookingController::class, 'approve']);
             Route::put('/bookings/{booking}/reject', [BookingController::class, 'reject']);
             Route::put('/bookings/{booking}/release', [BookingController::class, 'release']);
