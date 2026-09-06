@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Api\ApiController;
 use App\Mail\VerifyEmailMail;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class VerificationController extends ApiController
 {
-    public function verify(Request $request)
+    public function verify(Request $request): View
     {
         $token = $request->query('token');
 

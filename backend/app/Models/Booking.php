@@ -8,9 +8,12 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 #[Appends(['is_overdue'])]
@@ -24,7 +27,7 @@ class Booking extends Model
         'status' => 'pending',
     ];
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'start_date' => 'datetime',
@@ -35,15 +38,15 @@ class Booking extends Model
         ];
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(static fn ($booking) => $booking->generateTicketId());
     }
 
-    public function generateTicketId()
+    public function generateTicketId(): string
     {
         if ($this->ticket_id) {
-            return;
+            return $this->ticket_id;
         }
 
         do {
@@ -52,7 +55,7 @@ class Booking extends Model
             $generatedTicketId = "TKT-{$numericCode}-{$suffixCode}";
         } while (static::where('ticket_id', $generatedTicketId)->exists());
 
-        $this->ticket_id = $generatedTicketId;
+        return $this->ticket_id = $generatedTicketId;
     }
 
     public function isActive(): bool
@@ -67,17 +70,17 @@ class Booking extends Model
         );
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function returnedByUser()
+    public function returnedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'returned_by_user_id');
     }
 
-    public function equipments()
+    public function equipments(): BelongsToMany
     {
         return $this->belongsToMany(Equipment::class)->withTimestamps();
     }
@@ -128,12 +131,12 @@ class Booking extends Model
         return $this->update(['isRead' => true]);
     }
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', [BookingStatus::Approved, BookingStatus::Released]);
     }
 
-    public function scopeOverlapping($query, $startDate, $endDate)
+    public function scopeOverlapping(Builder $query, DateTimeInterface|string $startDate, DateTimeInterface|string $endDate): Builder
     {
         $start = $startDate instanceof DateTimeInterface ? $startDate : Carbon::parse($startDate);
         $end = $endDate instanceof DateTimeInterface ? $endDate : Carbon::parse($endDate);

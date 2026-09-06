@@ -23,7 +23,7 @@ class EquipmentReturnReminderMail extends Mailable implements ShouldQueue
         public $startDate = null
     ) {}
 
-    public function envelope()
+    public function envelope(): Envelope
     {
         $subject = $this->reminderType === 'near_deadline'
             ? "Equipment Return Reminder: Slip #{$this->ticketId}"
@@ -32,7 +32,7 @@ class EquipmentReturnReminderMail extends Mailable implements ShouldQueue
         return new Envelope(subject: $subject);
     }
 
-    public function content()
+    public function content(): Content
     {
         $viewName = $this->reminderType === 'near_deadline'
             ? 'emails.near-deadline-reminder'

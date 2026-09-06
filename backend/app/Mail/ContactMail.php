@@ -16,7 +16,7 @@ class ContactMail extends Mailable implements ShouldQueue
 
     public function __construct(public $firstname, public $lastname, public $email, public $message, public $recipients) {}
 
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             to: $this->recipients,
@@ -25,7 +25,7 @@ class ContactMail extends Mailable implements ShouldQueue
         );
     }
 
-    public function content()
+    public function content(): Content
     {
         return new Content(
             view: 'emails.contact',

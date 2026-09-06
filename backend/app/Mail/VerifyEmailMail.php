@@ -15,14 +15,14 @@ class VerifyEmailMail extends Mailable implements ShouldQueue
 
     public function __construct(public $verifyUrl, public $firstname) {}
 
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Verify Your BroadTrack Email',
         );
     }
 
-    public function content()
+    public function content(): Content
     {
         return new Content(
             view: 'emails.verify-email',

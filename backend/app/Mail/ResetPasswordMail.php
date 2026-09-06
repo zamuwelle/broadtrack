@@ -15,14 +15,14 @@ class ResetPasswordMail extends Mailable implements ShouldQueue
 
     public function __construct(public $resetUrl, public $firstname) {}
 
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Reset Your BroadTrack Password',
         );
     }
 
-    public function content()
+    public function content(): Content
     {
         return new Content(
             view: 'emails.reset-password',

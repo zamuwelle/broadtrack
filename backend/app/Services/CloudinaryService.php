@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
@@ -19,7 +20,7 @@ class CloudinaryService
         $this->apiSecret = config('services.cloudinary.api_secret');
     }
 
-    public function upload($file, $rawIdentifier = null)
+    public function upload(string|UploadedFile $file, ?string $rawIdentifier = null): array
     {
         $hashed = $rawIdentifier ? $this->hashIdentifier($rawIdentifier) : null;
         $filePath = $file instanceof UploadedFile ? $file->getRealPath() : $file;
@@ -36,7 +37,7 @@ class CloudinaryService
             ])))->json();
     }
 
-    public function destroy($rawIdentifier)
+    public function destroy(string $rawIdentifier): array
     {
         return $this->client()
             ->post($this->endpoint('destroy'), $this->signParameters([
@@ -45,18 +46,18 @@ class CloudinaryService
             ]))->json();
     }
 
-    protected function client()
+    protected function client(): PendingRequest
     {
         return Http::timeout(60)
             ->when(app()->isLocal(), static fn ($client) => $client->withoutVerifying());
     }
 
-    protected function endpoint($action)
+    protected function endpoint(string $action): string
     {
         return "https://api.cloudinary.com/v1_1/{$this->cloudName}/image/{$action}";
     }
 
-    protected function signParameters(array $parameters)
+    protected function signParameters(array $parameters): array
     {
         return array_merge($parameters, [
             'api_key' => $this->apiKey,
@@ -64,14 +65,14 @@ class CloudinaryService
         ]);
     }
 
-    protected function generateSignature($parameters)
+    protected function generateSignature(array $parameters): string
     {
         ksort($parameters);
 
         return sha1(urldecode(http_build_query($parameters)).$this->apiSecret);
     }
 
-    protected function hashIdentifier($rawIdentifier)
+    protected function hashIdentifier(string $rawIdentifier): string
     {
         return substr(hash('sha256', config('app.key').$rawIdentifier), 0, 32);
     }

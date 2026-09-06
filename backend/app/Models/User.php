@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use function Tamtamchik\NameCase\str_name_case;
@@ -31,7 +32,7 @@ class User extends Authenticatable
             ->where('created_at', '<=', now()->subHours(24));
     }
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'password' => 'hashed',
@@ -42,27 +43,27 @@ class User extends Authenticatable
         ];
     }
 
-    public function isBorrower()
+    public function isBorrower(): bool
     {
         return $this->role === UserRole::Borrower;
     }
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin || $this->role === UserRole::Sysadmin;
     }
 
-    public function isSysAdmin()
+    public function isSysAdmin(): bool
     {
         return $this->role === UserRole::Sysadmin;
     }
 
-    public function bookings()
+    public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
-    public function returnedBookings()
+    public function returnedBookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'returned_by_user_id');
     }
@@ -95,7 +96,7 @@ class User extends Authenticatable
         return Attribute::make(set: static fn ($value) => self::normalizePhone($value) ?? $value);
     }
 
-    public static function normalizePhone($phone)
+    public static function normalizePhone(mixed $phone): ?string
     {
         $digits = preg_replace('/[^0-9]/', '', (string)$phone);
 

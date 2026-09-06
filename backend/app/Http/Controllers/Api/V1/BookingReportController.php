@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -88,7 +89,7 @@ class BookingReportController extends ApiController
         }, $filename, $headers);
     }
 
-    private function getFilteredBookings(Request $request)
+    private function getFilteredBookings(Request $request): Collection
     {
         $query = Booking::with(['user', 'equipments', 'returnedByUser'])->orderByDesc('start_date');
 

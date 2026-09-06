@@ -4,18 +4,21 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
 class OAuthController extends ApiController
 {
-    public function redirect()
+    public function redirect(): SymfonyResponse
     {
         return Socialite::driver('google')->stateless()->redirect();
     }
 
-    public function callback()
+    public function callback(): JsonResponse|RedirectResponse
     {
         $frontendUrl = config('app.frontend_url');
         $fail = fn (string $msg) => redirect($frontendUrl.'/?error='.urlencode($msg));

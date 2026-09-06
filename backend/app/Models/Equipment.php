@@ -9,8 +9,10 @@ use App\Observers\EquipmentObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 #[Fillable(['category', 'name', 'brand', 'model', 'serial_no', 'status', 'description', 'specs', 'image'])]
@@ -20,7 +22,7 @@ class Equipment extends Model
 {
     use HasFactory;
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'status' => EquipmentStatus::class,
@@ -28,7 +30,7 @@ class Equipment extends Model
         ];
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(static fn ($equipment) => $equipment->generateSerial());
     }
@@ -50,7 +52,7 @@ class Equipment extends Model
         $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
     }
 
-    public function bookings()
+    public function bookings(): BelongsToMany
     {
         return $this->belongsToMany(Booking::class)->withTimestamps();
     }
@@ -99,12 +101,12 @@ class Equipment extends Model
         return $this->status === EquipmentStatus::Maintenance;
     }
 
-    public function scopeAvailable($query)
+    public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('status', EquipmentStatus::Available);
     }
 
-    public function scopeCategory($query, EquipmentCategory|string $category)
+    public function scopeCategory(Builder $query, EquipmentCategory|string $category): Builder
     {
         $value = $category instanceof EquipmentCategory ? $category->value : $category;
 
