@@ -39,6 +39,7 @@ test('user can re-register with unverified email', function () {
         'email' => 'reregister.test@student.laverdad.edu.ph',
         'password' => Hash::make('oldpassword123'),
         'verification_sent_at' => now()->subMinutes(5),
+        'created_at' => now()->subHours(23),
     ]);
 
     $response = $this->postJson('/api/v1/register', [
@@ -58,6 +59,7 @@ test('user can re-register with unverified email', function () {
     expect($user->firstname)->toBe('New');
     expect($user->lastname)->toBe('User');
     expect(Hash::check('newpassword123', $user->password))->toBeTrue();
+    expect($user->created_at->isToday())->toBeTrue();
 
     Mail::assertQueued(VerifyEmailMail::class);
 });

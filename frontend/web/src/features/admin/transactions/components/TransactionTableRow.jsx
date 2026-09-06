@@ -9,6 +9,7 @@ const statusBadgeStyles = Object.freeze({
     overdue: 'bg-orange-50 text-amber-500 border border-amber-300',
     completed: 'bg-blue-200 text-sky-800',
     rejected: 'bg-rose-50 text-rose-700',
+    cancelled: 'bg-slate-100 text-slate-600',
     confirmed: 'bg-green-100 text-green-600'
 })
 

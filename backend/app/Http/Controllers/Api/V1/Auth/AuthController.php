@@ -21,7 +21,7 @@ class AuthController extends ApiController
             ->first();
 
         if ($user) {
-            $user->update($validated);
+            $user->update(array_merge($validated, ['created_at' => now()]));
         } else {
             $user = User::create($validated);
         }

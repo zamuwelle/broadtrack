@@ -12,6 +12,7 @@ import { Icon } from '@/components/ui/Icon'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const defaultEmptyArray = Object.freeze([])
+const filterParams = Object.freeze({ all: 1, public: 1 })
 
 const normalizeBookingItem = (booking, equipment) => {
     const borrowerName = booking.user?.full_name || 'Borrower'
@@ -98,7 +99,7 @@ const useCalendarPageLogic = () => {
     const { currentMonthDate, selectedDate, selectedEquipmentName } = calendarState
 
     const { data: equipmentList = defaultEmptyArray } = useEquipment()
-    const { data: remoteBookings = defaultEmptyArray } = useBookings()
+    const { data: remoteBookings = defaultEmptyArray } = useBookings({ params: filterParams })
 
     const normalizedBookings = useMemo(() => normalizeBookings(remoteBookings), [remoteBookings])
 

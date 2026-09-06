@@ -10,6 +10,8 @@ export const SummaryFormView = (props) => {
         startDate,
         endDate,
         minStartDate,
+        excludeDateIntervals,
+        hasScheduleConflict,
         purpose,
         isSubmittable,
         isSubmitting,
@@ -38,6 +40,8 @@ export const SummaryFormView = (props) => {
                     startDate={startDate}
                     endDate={endDate}
                     minStartDate={minStartDate}
+                    excludeDateIntervals={excludeDateIntervals}
+                    hasScheduleConflict={hasScheduleConflict}
                     onStartDateChange={onStartDateChange}
                     onEndDateChange={onEndDateChange}
                 />

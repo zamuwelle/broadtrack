@@ -3,9 +3,7 @@ import { getBookingStatus } from '@shared/util/booking'
 
 const defaultBooking = Object.freeze({})
 
-const getProcessedByName = (booking) => {
-    return booking.returned_by_user?.full_name || ''
-}
+const getProcessedByName = (booking) => booking.returned_by_user?.full_name || ''
 
 export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
     const user = booking.user || defaultBooking

@@ -15,8 +15,10 @@ class BookingPolicy
 
     public function cancel(User $user, Booking $booking): bool
     {
-        return ($user->isAdmin() || $booking->user_id === $user->id)
-            && $booking->status === BookingStatus::Pending;
+        $isAuthorized = $user->isAdmin() || $booking->user_id === $user->id;
+        $isCancellable = in_array($booking->status, [BookingStatus::Pending, BookingStatus::Approved], true);
+
+        return $isAuthorized && $isCancellable;
     }
 
     public function markAsRead(User $user, Booking $booking): bool

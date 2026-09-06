@@ -7,6 +7,7 @@ import { useRejectBooking } from '@/api/bookings/reject-booking'
 import { DecisionForm } from '@/features/admin/approvals/components/DecisionForm'
 
 const defaultBooking = Object.freeze({})
+const defaultList = Object.freeze([])
 const noop = () => null
 
 export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaultBooking, type = 'approve' }) => {
@@ -63,7 +64,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
         return null
     }
 
-    const equipments = booking.equipments || []
+    const equipments = booking.equipments ?? defaultList
     const equipment = equipments[0] || defaultBooking
     const borrowerName = booking.user?.full_name || 'Borrower'
     const equipmentName = equipment.name || 'Equipment'
@@ -99,6 +100,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                     errorMessage={errorMessage}
                     isSubmitting={isSubmitting}
                     borrowerName={borrowerName}
+                    equipments={equipments}
                     equipmentName={equipmentName}
                     onTextChange={handleTextChange}
                     onSubmit={handleSubmit}

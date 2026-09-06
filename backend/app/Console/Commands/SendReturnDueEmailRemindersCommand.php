@@ -86,8 +86,8 @@ class SendReturnDueEmailRemindersCommand extends Command
 
     private function dispatchEmail(Booking $booking, string $reminderType, int $daysOverdue): void
     {
-        $startDate = $booking->start_date?->timezone('Asia/Manila')->format('F d, Y \a\t h:i A');
-        $endDate = $booking->end_date->timezone('Asia/Manila')->format('F d, Y \a\t h:i A');
+        $startDate = $booking->start_date?->format('F d, Y \a\t h:i A');
+        $endDate = $booking->end_date->format('F d, Y \a\t h:i A');
 
         $equipmentsList = $booking->equipments->map(static fn ($equipment) => [
             'name' => $equipment->name,

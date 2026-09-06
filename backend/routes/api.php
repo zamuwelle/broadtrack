@@ -45,12 +45,12 @@ Route::prefix('v1')->group(function () {
         // Bookings
         Route::get('/bookings', [BookingController::class, 'index']);
         Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+        Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
 
         // Bookings (borrower only)
         Route::middleware('role:borrower')->group(function () {
             Route::post('/bookings', [BookingController::class, 'store']);
             Route::put('/bookings/{booking}/read', [BookingController::class, 'markAsRead']);
-            Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
         });
 
         // Bookings (admin & sysadmin)

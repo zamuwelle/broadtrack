@@ -10,6 +10,8 @@ use App\Http\Requests\Api\V1\StoreBookingRequest;
 use App\Http\Resources\Api\V1\BookingResource;
 use App\Mail\EquipmentReturnReminderMail;
 use App\Models\Booking;
+use App\Models\Equipment;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,10 +22,19 @@ class BookingController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $isPublic = $request->boolean('public') || $request->boolean('all') || $request->has('public') || $request->has('all');
 
-        $query = $user->isAdmin()
-            ? Booking::query()
-            : $user->bookings();
+        if ($user && $user->isAdmin()) {
+            $query = Booking::query();
+        } elseif ($isPublic) {
+            $query = Booking::whereNotIn('status', [
+                BookingStatus::Cancelled,
+                BookingStatus::Rejected,
+                BookingStatus::Returned,
+            ]);
+        } else {
+            $query = $user ? $user->bookings() : Booking::query();
+        }
 
         return $this->success(BookingResource::collection(
             $query->with(['user', 'equipments', 'returnedByUser'])->get()
@@ -42,21 +53,48 @@ class BookingController extends ApiController
     public function store(StoreBookingRequest $request): JsonResponse
     {
         $equipmentIds = $request->validated('equipment_ids');
+        $startDate = $request->validated('start_date');
+        $endDate = $request->validated('end_date');
 
-        $booking = DB::transaction(function () use ($request, $equipmentIds) {
-            $booking = $request->user()->bookings()->create(
-                $request->safe()->except('equipment_ids')
+        return DB::transaction(function () use ($request, $equipmentIds, $startDate, $endDate) {
+            Equipment::whereIn('id', $equipmentIds)->lockForUpdate()->get();
+
+            $overlapping = Booking::overlapping($startDate, $endDate)
+                ->whereNotIn('status', [
+                    BookingStatus::Cancelled,
+                    BookingStatus::Rejected,
+                    BookingStatus::Returned,
+                ])
+                ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
+                ->exists();
+
+            if ($overlapping) {
+                return $this->error('One or more selected items are already booked for the specified dates.', 422);
+            }
+
+            $createdBookings = new Collection;
+
+            foreach ($equipmentIds as $equipmentId) {
+                $booking = $request->user()->bookings()->create(
+                    $request->safe()->except('equipment_ids')
+                );
+
+                $booking->equipments()->attach([$equipmentId]);
+                $createdBookings->push($booking);
+            }
+
+            if (count($equipmentIds) === 1) {
+                return $this->created(
+                    new BookingResource($createdBookings->first()->load('equipments')),
+                    'Booking created successfully.'
+                );
+            }
+
+            return $this->created(
+                BookingResource::collection($createdBookings->load('equipments')),
+                'Bookings created successfully.'
             );
-
-            $booking->equipments()->attach($equipmentIds);
-
-            return $booking;
         });
-
-        return $this->created(
-            new BookingResource($booking->load('equipments')),
-            'Booking created successfully.'
-        );
     }
 
     public function approve(ApproveBookingRequest $request, Booking $booking): JsonResponse
@@ -67,22 +105,37 @@ class BookingController extends ApiController
             return $this->error('Only pending bookings can be approved.', 422);
         }
 
-        $booking->approve($request->validated('approval_note'));
+        return DB::transaction(function () use ($request, $booking) {
+            $equipmentIds = $booking->equipments()->pluck('equipments.id');
+            Equipment::whereIn('id', $equipmentIds)->lockForUpdate()->get();
 
-        return $this->success(new BookingResource($booking), 'Booking approved');
+            $hasOverlap = Booking::overlapping($booking->start_date, $booking->end_date)
+                ->where('id', '!=', $booking->id)
+                ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+                ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
+                ->exists();
+
+            if ($hasOverlap) {
+                return $this->error('One or more equipment items have an active booking overlapping this period.', 422);
+            }
+
+            $booking->approve($request->validated('approval_note'));
+
+            return $this->success(new BookingResource($booking), 'Booking approved');
+        });
     }
 
     public function reject(RejectBookingRequest $request, Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
 
-        if ($booking->status !== BookingStatus::Pending) {
-            return $this->error('Only pending bookings can be rejected.', 422);
+        if (in_array($booking->status, [BookingStatus::Pending, BookingStatus::Approved], true)) {
+            $booking->reject($request->validated('rejection_reason'));
+
+            return $this->success(new BookingResource($booking), 'Booking rejected');
         }
 
-        $booking->reject($request->validated('rejection_reason'));
-
-        return $this->success(new BookingResource($booking), 'Booking rejected');
+        return $this->error('Only pending or approved bookings can be rejected.', 422);
     }
 
     public function release(Booking $booking): JsonResponse
@@ -143,9 +196,9 @@ class BookingController extends ApiController
             return $this->validationError(message: 'Borrower email not found.');
         }
 
-        $startDate = $booking->start_date?->timezone('Asia/Manila')->format('F d, Y \a\t h:i A');
-        $endDate = $booking->end_date->timezone('Asia/Manila');
-        $currentDate = now('Asia/Manila');
+        $startDate = $booking->start_date?->format('F d, Y \a\t h:i A');
+        $endDate = $booking->end_date;
+        $currentDate = now();
 
         $daysOverdue = max(0, (int)$endDate->diffInDays($currentDate));
         $reminderType = $endDate->isPast() ? 'overdue' : 'near_deadline';

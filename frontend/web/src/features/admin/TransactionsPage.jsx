@@ -23,13 +23,16 @@ const flattenBookingsByEquipment = (bookings) =>
         if (equipments.length <= 1) {
             return [booking]
         }
-        return equipments.map((equipment) =>
-            Object.assign({}, booking, {
+        const flattened = []
+        for (const equipment of equipments) {
+            flattened.push({
+                ...booking,
                 itemKey: `${booking.id}-${equipment.id}`,
                 equipment,
                 equipments: [equipment]
             })
-        )
+        }
+        return flattened
     })
 
 const matchesTransactionCategory = (status, isOverdue, selectedCategory) => {

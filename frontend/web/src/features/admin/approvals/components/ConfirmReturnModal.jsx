@@ -15,6 +15,7 @@ const getConfirmModalDetails = (booking) => {
     return {
         borrowerName: borrower.full_name || 'Borrower',
         borrowerDepartment: borrower.department ? ` (${borrower.department})` : '',
+        equipments,
         equipmentName: equipment?.name || 'Equipment',
         timelineText: `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
     }
@@ -48,7 +49,8 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
         return null
     }
 
-    const { borrowerName, borrowerDepartment, equipmentName, timelineText } = getConfirmModalDetails(booking)
+    const { borrowerName, borrowerDepartment, equipments, equipmentName, timelineText } =
+        getConfirmModalDetails(booking)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">
@@ -91,8 +93,25 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                     </div>
 
                     <div>
-                        <div className="text-xs font-bold text-slate-500 tracking-wider">EQUIPMENT DETAILS</div>
-                        <div className="text-base font-semibold text-slate-900 mt-0.5">{equipmentName}</div>
+                        <div className="text-xs font-bold text-slate-500 tracking-wider">
+                            {equipments.length > 1
+                                ? `EQUIPMENT DETAILS (${equipments.length} ITEMS)`
+                                : 'EQUIPMENT DETAILS'}
+                        </div>
+                        {equipments.length > 1 ? (
+                            <div className="mt-1 flex flex-col gap-1">
+                                {equipments.map((item) => (
+                                    <div key={item.id} className="text-base font-semibold text-slate-900">
+                                        • {item.name} {item.model ? `(${item.model})` : ''}
+                                    </div>
+                                ))}
+                                <div className="text-xs text-amber-600 font-medium mt-1">
+                                    Note: Confirming return applies to all equipment items on this ticket.
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-base font-semibold text-slate-900 mt-0.5">{equipmentName}</div>
+                        )}
                     </div>
 
                     <div>

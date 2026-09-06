@@ -47,6 +47,9 @@ const getStatusBadge = (variant) => {
     if (variant === 'rejected') {
         return { label: 'Rejected', className: 'bg-rose-50 text-rose-700' }
     }
+    if (variant === 'cancelled') {
+        return { label: 'Cancelled', className: 'bg-slate-100 text-slate-600' }
+    }
     if (variant === 'completed') {
         return { label: 'Completed', className: 'bg-blue-200 text-sky-800' }
     }
@@ -62,6 +65,9 @@ const getStatusBadge = (variant) => {
 const getTimelineColor = (variant) => {
     if (variant === 'rejected') {
         return 'bg-red-500'
+    }
+    if (variant === 'cancelled') {
+        return 'bg-slate-400'
     }
     if (variant === 'completed') {
         return 'bg-sky-600'

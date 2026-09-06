@@ -4,7 +4,7 @@ import { formatDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useBookings } from '@/api/bookings/get-bookings'
 
-const filterParams = Object.freeze({ all: 1 })
+const filterParams = Object.freeze({ all: 1, public: 1 })
 const defaultEquipment = Object.freeze({})
 
 const isExcludedStatus = (status) =>

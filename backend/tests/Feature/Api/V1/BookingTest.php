@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\BookingStatus;
+use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Models\Booking;
 use App\Models\Equipment;
@@ -239,4 +240,136 @@ test('borrower cannot submit booking with empty equipment list', function () {
 
     $response->assertUnprocessable()
         ->assertJsonValidationErrors(['equipment_ids']);
+});
+
+test('admin cannot approve booking when equipment has overlapping active booking', function () {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $activeBooking = Booking::factory()->approved()->create([
+        'start_date' => now()->addDays(1),
+        'end_date' => now()->addDays(3),
+    ]);
+    $activeBooking->equipments()->attach($equipment->id);
+
+    $pendingBooking = Booking::factory()->pending()->create([
+        'start_date' => now()->addDays(2),
+        'end_date' => now()->addDays(4),
+    ]);
+    $pendingBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$pendingBooking->id}/approve");
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'One or more equipment items have an active booking overlapping this period.');
+});
+
+test('borrower and admin can cancel approved booking', function () {
+    $borrower = User::factory()->borrower()->create();
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $booking1 = Booking::factory()->approved()->create(['user_id' => $borrower->id]);
+    $booking1->equipments()->attach($equipment->id);
+
+    $response1 = $this->actingAs($borrower)->putJson("/api/v1/bookings/{$booking1->id}/cancel");
+    $response1->assertOk()
+        ->assertJsonPath('data.status', 'cancelled');
+
+    $booking2 = Booking::factory()->approved()->create(['user_id' => $borrower->id]);
+    $booking2->equipments()->attach($equipment->id);
+
+    $response2 = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking2->id}/cancel");
+    $response2->assertOk()
+        ->assertJsonPath('data.status', 'cancelled');
+});
+
+test('borrower can fetch public bookings with sanitized details', function () {
+    $borrower = User::factory()->borrower()->create();
+    $otherUser = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $otherBooking = Booking::factory()->approved()->create([
+        'user_id' => $otherUser->id,
+        'purpose' => 'Confidential Documentary',
+    ]);
+    $otherBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($borrower)->getJson('/api/v1/bookings?public=1');
+
+    $response->assertOk();
+    $item = collect($response->json('data'))->firstWhere('id', $otherBooking->id);
+    expect($item)->not->toBeNull();
+    expect($item['purpose'])->toBeNull();
+    expect($item['user'])->toBeNull();
+    expect($item['user_id'])->toBeNull();
+});
+
+test('approving or returning booking does not mutate equipment table status', function () {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->pending()->create();
+    $booking->equipments()->attach($equipment->id);
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/approve")->assertOk();
+    expect($equipment->fresh()->getRawOriginal('status'))->toBe(EquipmentStatus::Available->value);
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return")->assertOk();
+    expect($equipment->fresh()->getRawOriginal('status'))->toBe(EquipmentStatus::Available->value);
+});
+
+test('equipment serial number counter avoids duplicates on deletion', function () {
+    $eq1 = Equipment::create([
+        'name' => 'Sony FX3',
+        'category' => EquipmentCategory::Camera->value,
+    ]);
+    $eq2 = Equipment::create([
+        'name' => 'Sony FX3',
+        'category' => EquipmentCategory::Camera->value,
+    ]);
+    expect($eq2->serial_no)->toBe('SN-SON-0002');
+
+    $eq1->delete();
+
+    $eq3 = Equipment::create([
+        'name' => 'Sony FX3',
+        'category' => EquipmentCategory::Camera->value,
+    ]);
+    expect($eq3->serial_no)->not->toBe($eq2->serial_no);
+    expect($eq3->serial_no)->toBe('SN-SON-0003');
+});
+
+test('borrower checking out multiple equipment items creates independent bookings per item', function () {
+    $borrower = User::factory()->borrower()->create();
+    $admin = User::factory()->admin()->create();
+    $eq1 = Equipment::factory()->available()->create();
+    $eq2 = Equipment::factory()->available()->create();
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Multi-gear shoot',
+        'start_date' => now()->addDays(1)->format('Y-m-d H:i:s'),
+        'end_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        'equipment_ids' => [$eq1->id, $eq2->id],
+    ]);
+
+    $response->assertCreated();
+    expect($response->json('data'))->toHaveCount(2);
+
+    $bookings = Booking::where('user_id', $borrower->id)->get();
+    expect($bookings)->toHaveCount(2);
+
+    $booking1 = $bookings->first();
+    $booking2 = $bookings->last();
+
+    expect($booking1->id)->not->toBe($booking2->id);
+    expect($booking1->ticket_id)->not->toBe($booking2->ticket_id);
+    expect($booking1->equipments)->toHaveCount(1);
+    expect($booking2->equipments)->toHaveCount(1);
+
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking1->id}/approve", [
+        'approval_note' => 'Approved gear 1',
+    ])->assertOk();
+
+    expect($booking1->fresh()->status)->toBe(BookingStatus::Approved);
+    expect($booking2->fresh()->status)->toBe(BookingStatus::Pending);
 });

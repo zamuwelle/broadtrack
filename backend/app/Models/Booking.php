@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
-use App\Enums\EquipmentStatus;
 use App\Observers\BookingObserver;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -83,57 +82,39 @@ class Booking extends Model
 
     public function approve(?string $note = null): bool
     {
-        $updated = $this->update([
+        return $this->update([
             'status' => BookingStatus::Approved,
             'approval_note' => $note ?? $this->approval_note,
             'isRead' => false,
         ]);
-
-        $this->equipments->each->update(['status' => EquipmentStatus::Booked]);
-
-        return $updated;
     }
 
     public function reject(string $reason): bool
     {
-        $updated = $this->update([
+        return $this->update([
             'status' => BookingStatus::Rejected,
             'rejection_reason' => $reason,
             'isRead' => false,
         ]);
-
-        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
-
-        return $updated;
     }
 
     public function release(): bool
     {
-        $updated = $this->update(['status' => BookingStatus::Released]);
-
-        $this->equipments->each->update(['status' => EquipmentStatus::Borrowed]);
-
-        return $updated;
+        return $this->update(['status' => BookingStatus::Released]);
     }
 
     public function markAsReturned(int $returnedByUserId): bool
     {
-        $updated = $this->update([
+        return $this->update([
             'status' => BookingStatus::Returned,
             'return_date' => now(),
             'returned_by_user_id' => $returnedByUserId,
             'isRead' => false,
         ]);
-
-        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
-
-        return $updated;
     }
 
     public function cancel(): bool
     {
-        $this->equipments->reject->isUnderMaintenance()->each->update(['status' => EquipmentStatus::Available]);
-
         return $this->update([
             'status' => BookingStatus::Cancelled,
             'isRead' => false,

@@ -19,6 +19,7 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         startDate,
         endDate,
         minStartDate,
+        excludeDateIntervals,
         hasScheduleConflict,
         purpose,
         isSubmittable,
@@ -83,6 +84,7 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         startDate={startDate}
                         endDate={endDate}
                         minStartDate={minStartDate}
+                        excludeDateIntervals={excludeDateIntervals}
                         hasScheduleConflict={hasScheduleConflict}
                         purpose={purpose}
                         isSubmittable={isSubmittable}

@@ -23,6 +23,9 @@ export const getBookingStatusBadge = (booking = {}) => {
     if (status === 'rejected') {
         return { label: 'Rejected', variant: 'rejected' }
     }
+    if (status === 'cancelled' || status === 'canceled') {
+        return { label: 'Cancelled', variant: 'cancelled' }
+    }
     return { label: 'Confirmed', variant: 'confirmed' }
 }
 

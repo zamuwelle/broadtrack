@@ -41,7 +41,7 @@ class Equipment extends Model
 
         $source = $this->brand ?: $this->name;
         $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source ?? ''), 0, 3)), 3, 'X');
-        $unit = static::where('name', $this->name)->count() + 1;
+        $unit = (int)(static::where('name', $this->name)->max('id') ?? 0) + 1;
         $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
     }
 
@@ -61,7 +61,7 @@ class Equipment extends Model
             ->map->pluck('booking');
 
         return $equipmentItems->map(static function (Equipment $item) use ($bookingsByEquipmentId) {
-            if ($item->status !== EquipmentStatus::Available) {
+            if ($item->status === EquipmentStatus::Maintenance) {
                 return $item;
             }
 

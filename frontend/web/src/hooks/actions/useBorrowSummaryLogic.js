@@ -7,6 +7,8 @@ import { useBookings } from '@/api/bookings/get-bookings'
 import { useCreateBooking } from '@/api/bookings/create-booking'
 import { useSetState } from '@shared/hooks/useSetState'
 
+const filterParams = Object.freeze({ all: 1, public: 1 })
+
 const isExcludedStatus = (status) =>
     status === 'cancelled' || status === 'canceled' || status === 'rejected' || status === 'returned'
 
@@ -196,7 +198,14 @@ const addMinutesToIso = (isoStr, minutesToAdd) => {
     return `${nyyyy}-${nmm}-${ndd}T${nh}:${nm}`
 }
 
-const useBorrowFieldHandlers = ({ updateSummaryState, removeItem, selectedItems, summaryState, remoteBookings }) => {
+const useBorrowFieldHandlers = ({
+    updateSummaryState,
+    removeItem,
+    selectedItems,
+    summaryState,
+    remoteBookings,
+    setErrorMessage
+}) => {
     const handleStartDateChange = useCallback(
         (event) => {
             let selectedDate = event?.target?.value ?? event
@@ -208,15 +217,21 @@ const useBorrowFieldHandlers = ({ updateSummaryState, removeItem, selectedItems,
             }
 
             if (checkScheduleConflict(selectedDate, newEndDate, remoteBookings, selectedItems)) {
+                setErrorMessage('Selected date conflicts with an existing reservation.')
+                updateSummaryState({
+                    startDate: selectedDate,
+                    endDate: newEndDate
+                })
                 return
             }
 
+            setErrorMessage('')
             updateSummaryState({
                 startDate: selectedDate,
                 endDate: newEndDate
             })
         },
-        [updateSummaryState, summaryState.endDate, remoteBookings, selectedItems]
+        [updateSummaryState, summaryState.endDate, remoteBookings, selectedItems, setErrorMessage]
     )
 
     const handleEndDateChange = useCallback(
@@ -230,15 +245,21 @@ const useBorrowFieldHandlers = ({ updateSummaryState, removeItem, selectedItems,
             }
 
             if (checkScheduleConflict(newStartDate, selectedDate, remoteBookings, selectedItems)) {
+                setErrorMessage('Selected date conflicts with an existing reservation.')
+                updateSummaryState({
+                    endDate: selectedDate,
+                    startDate: newStartDate
+                })
                 return
             }
 
+            setErrorMessage('')
             updateSummaryState({
                 endDate: selectedDate,
                 startDate: newStartDate
             })
         },
-        [updateSummaryState, summaryState.startDate, remoteBookings, selectedItems]
+        [updateSummaryState, summaryState.startDate, remoteBookings, selectedItems, setErrorMessage]
     )
 
     const handleRemoveItem = useCallback(
@@ -282,7 +303,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     const selectedItems = useBookingCartStore((state) => state.items)
     const removeItem = useBookingCartStore((state) => state.removeItem)
     const clearCart = useBookingCartStore((state) => state.clearCart)
-    const { data: remoteBookings = [] } = useBookings()
+    const { data: remoteBookings = [] } = useBookings({ params: filterParams })
     const createBookingMutation = useCreateBooking()
     const [errorMessage, setErrorMessage] = useState('')
 
@@ -351,7 +372,8 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         removeItem,
         selectedItems,
         summaryState,
-        remoteBookings
+        remoteBookings,
+        setErrorMessage
     })
 
     const handleSubmit = useBorrowSubmitHandler({
@@ -375,6 +397,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         endDate,
         minStartDate,
         excludeDateIntervals,
+        hasScheduleConflict,
         purpose,
         isSubmittable,
         isSubmitting,

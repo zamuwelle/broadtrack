@@ -3,6 +3,9 @@ import { formatDate } from '@shared/util/date'
 
 const defaultBooking = Object.freeze({})
 
+const getReturnDate = (booking) => booking.return_date || booking.returned_at || booking.updated_at
+const getRejectionReason = (booking) => booking.rejection_reason || 'The equipment is under maintenance.'
+
 export const ActivityStatusSection = ({
     booking = defaultBooking,
     variant = '',
@@ -15,7 +18,7 @@ export const ActivityStatusSection = ({
                 <span className="text-sky-800 text-[10px] font-semibold tracking-wider">ACTUAL RETURN DATE</span>
                 <div className="text-blue-600 text-xs font-medium flex items-center gap-1.5">
                     <Calendar size={14} className="text-blue-600" />
-                    <span>{formatDate(booking.return_date || booking.returned_at || booking.updated_at)}</span>
+                    <span>{formatDate(getReturnDate(booking))}</span>
                 </div>
                 {booking.returned_by_user?.full_name ? (
                     <div className="border-t border-slate-200/80 pt-1.5 text-[10px] text-slate-500 font-medium">
@@ -43,7 +46,7 @@ export const ActivityStatusSection = ({
         {variant === 'rejected' && (
             <div className="bg-rose-50 rounded-xl border border-rose-200 p-3.5 text-xs text-rose-900">
                 <span className="font-bold">Rejection Reason: </span>
-                <span className="font-normal">{booking.rejection_reason || 'The equipment is under maintenance.'}</span>
+                <span className="font-normal">{getRejectionReason(booking)}</span>
             </div>
         )}
 

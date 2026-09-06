@@ -7,6 +7,7 @@ export const DecisionForm = (props) => {
         errorMessage,
         isSubmitting,
         borrowerName,
+        equipments = [],
         equipmentName,
         onTextChange,
         onSubmit,
@@ -31,10 +32,25 @@ export const DecisionForm = (props) => {
                     <span className="font-semibold text-slate-700">Borrower: </span>
                     <span className="text-slate-900">{borrowerName}</span>
                 </p>
-                <p>
-                    <span className="font-semibold text-slate-700">Equipment: </span>
-                    <span className="text-slate-900">{equipmentName}</span>
-                </p>
+                <div>
+                    <span className="font-semibold text-slate-700">
+                        {equipments.length > 1 ? `Equipment (${equipments.length} items):` : 'Equipment: '}
+                    </span>
+                    {equipments.length > 1 ? (
+                        <div className="mt-1 flex flex-col gap-0.5">
+                            {equipments.map((item) => (
+                                <span key={item.id} className="text-slate-900 font-medium">
+                                    • {item.name} {item.model ? `(${item.model})` : ''}
+                                </span>
+                            ))}
+                            <span className="text-[11px] text-amber-600 font-medium mt-0.5">
+                                Note: {isApprove ? 'Approval' : 'Rejection'} applies to the entire reservation ticket.
+                            </span>
+                        </div>
+                    ) : (
+                        <span className="text-slate-900">{equipmentName}</span>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
