@@ -73,7 +73,7 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
         return resolvedFields
     }, [user?.role])
 
-    const initial = useMemo(
+    const initialValues = useMemo(
         () => ({
             firstname: user?.firstname ?? '',
             lastname: user?.lastname ?? '',
@@ -104,9 +104,9 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
         [pendingPicture, queryClient]
     )
 
-    const { values, errors, valid, isPending, set, setError, handleUpdate } = useUpdateForm({
+    const { values, errors, canSubmit, isPending, setFieldValue, setError, handleUpdate } = useUpdateForm({
         fields: profileFields,
-        initial,
+        initialValues,
         extraDirty: Boolean(pendingPicture),
         update: updateHandler,
         onSuccess: onUpdated,
@@ -133,7 +133,7 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
                         value={values[field.key] ?? ''}
                         error={errors[field.key] ?? ''}
                         card={card}
-                        onValueChange={set}
+                        onValueChange={setFieldValue}
                         onErrorChange={setError}
                     />
                 ))}
@@ -141,7 +141,7 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
             <div
                 className={`flex items-end ${card ? 'w-full justify-end flex-col gap-2' : 'mt-[18px] self-end flex-col gap-2 w-[401px]'}`}>
                 {errors.submit ? <span className="text-[12px] text-red-500">{errors.submit}</span> : null}
-                <ProfileActionButtons card={card} valid={valid} isPending={isPending} onClose={onClose} />
+                <ProfileActionButtons card={card} canSubmit={canSubmit} isPending={isPending} onClose={onClose} />
             </div>
         </form>
     )

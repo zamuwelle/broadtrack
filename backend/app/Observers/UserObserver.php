@@ -9,16 +9,16 @@ class UserObserver
 {
     public function created(User $user): void
     {
-        rescue(static fn () => broadcast(new UserUpdated('created', $user->id)), report: false);
+        broadcast(new UserUpdated('created', $user->id));
     }
 
     public function updated(User $user): void
     {
-        rescue(static fn () => broadcast(new UserUpdated('updated', $user->id)), report: false);
+        broadcast(new UserUpdated('updated', $user->id));
     }
 
     public function deleted(User $user): void
     {
-        rescue(static fn () => broadcast(new UserUpdated('deleted', (int)$user->id)), report: false);
+        broadcast(new UserUpdated('deleted', (int)$user->id));
     }
 }

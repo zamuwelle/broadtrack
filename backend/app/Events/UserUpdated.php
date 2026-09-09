@@ -4,9 +4,10 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Queue\SerializesModels;
 
-class UserUpdated implements ShouldBroadcastNow
+class UserUpdated implements ShouldBroadcastNow, ShouldRescue
 {
     use SerializesModels;
 

@@ -1,10 +1,9 @@
+import { useCallback } from 'react'
 import { getBookingStatus } from '@shared/util/booking'
 import { getOptimizedImageUrl } from '@shared/util/image'
 import { ApprovalHeader } from '@/features/admin/approvals/components/ApprovalHeader'
 import { ApprovalBorrowerDetails } from '@/features/admin/approvals/components/ApprovalBorrowerDetails'
 import { ApprovalNotesDetails } from '@/features/admin/approvals/components/ApprovalNotesDetails'
-import { ApprovalPendingActions } from '@/features/admin/approvals/components/ApprovalPendingActions'
-import { ApprovalConfirmedAction } from '@/features/admin/approvals/components/ApprovalConfirmedAction'
 
 const defaultBooking = Object.freeze({})
 const noop = () => null
@@ -26,6 +25,10 @@ const getCardBorder = (status) =>
     status === 'rejected' || status === 'returned' ? 'border-slate-300' : 'border-slate-200'
 
 export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onReject = noop, onReturn = noop }) => {
+    const handleApprove = useCallback(() => onApprove(booking), [booking, onApprove])
+    const handleReject = useCallback(() => onReject(booking), [booking, onReject])
+    const handleReturn = useCallback(() => onReturn(booking), [booking, onReturn])
+
     if (!booking.id) {
         return null
     }
@@ -74,10 +77,46 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
                     </div>
 
                     {isPending ? (
-                        <ApprovalPendingActions booking={booking} onApprove={onApprove} onReject={onReject} />
+                        <div className="w-full mt-4 flex flex-row items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handleApprove}
+                                className="flex-1 h-10 px-3 bg-amber-500 hover:bg-amber-600 transition-colors text-white text-sm sm:text-base font-medium rounded-lg inline-flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs">
+                                <span className="text-sm sm:text-base font-semibold">✓</span>
+                                Approve<span className="hidden sm:inline"> Reservation</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleReject}
+                                className="flex-1 h-10 px-3 bg-slate-50 hover:bg-slate-100 transition-colors text-slate-800 border border-slate-300 text-sm sm:text-base font-medium rounded-lg inline-flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer">
+                                <span className="text-sm sm:text-base font-semibold">✕</span>
+                                Reject<span className="hidden sm:inline"> Request</span>
+                            </button>
+                        </div>
                     ) : null}
 
-                    {isConfirmed ? <ApprovalConfirmedAction booking={booking} onReturn={onReturn} /> : null}
+                    {isConfirmed ? (
+                        <div className="w-full mt-4 flex items-center justify-end">
+                            <button
+                                type="button"
+                                onClick={handleReturn}
+                                className="w-full sm:w-[calc(50%-8px)] h-10 px-4 bg-green-500 hover:bg-green-600 transition-colors text-white text-base font-medium rounded-lg inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs">
+                                <svg
+                                    className="w-4 h-4 text-white shrink-0"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    />
+                                </svg>
+                                Mark Returned &amp; Stock Feed
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>

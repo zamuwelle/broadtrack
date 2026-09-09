@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useLogout } from '@/lib/auth'
 import { useSetState } from '@shared/hooks/useSetState'
 import { ProfileModal } from '@/features/users/components/ProfileModal'
-import { LogoutModal } from '@/features/users/components/LogoutModal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Icon } from '@/components/ui/Icon'
 
 const defaultUser = Object.freeze({})
@@ -60,7 +60,15 @@ export const ProfileMenu = ({ user = defaultUser, onUpdated = noop }) => {
                 </div>
             </div>
             <ProfileModal isOpen={editOpen} onClose={closeEdit} onUpdated={onUpdated} />
-            <LogoutModal isOpen={logoutOpen} onClose={closeLogout} onConfirm={logout} />
+            <ConfirmModal
+                isOpen={logoutOpen}
+                onClose={closeLogout}
+                onConfirm={logout}
+                title="Logout"
+                description="You will be returned to the landing page."
+                confirmLabel="Logout"
+                variant="danger"
+            />
         </>
     )
 }

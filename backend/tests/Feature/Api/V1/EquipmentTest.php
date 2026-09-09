@@ -7,6 +7,8 @@ use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Services\CloudinaryService;
+use Illuminate\Broadcasting\Broadcasters\Broadcaster;
+use Illuminate\Support\Facades\Broadcast;
 
 test('authenticated user can list equipment', function () {
     $user = User::factory()->borrower()->create();
@@ -237,3 +239,25 @@ test('generateSerial computes unit number based on count rather than id', functi
     ]);
     expect($second->serial_no)->toBe('SN-TRI-0002');
 });
+
+test('equipment mutations succeed when the broadcast transport fails', function (string $method, string $action, int $status): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->create();
+    $payloads = collect();
+    $broadcaster = Mockery::mock(Broadcaster::class);
+    $broadcaster->shouldReceive('broadcast')->andReturnUsing(static function (array $channels, string $event, array $payload) use ($payloads): never {
+        $payloads->push(['event' => $event, 'payload' => $payload]);
+        throw new RuntimeException('transport unavailable');
+    });
+    Broadcast::extend('audit-failing', static fn (): Broadcaster => $broadcaster);
+    config(['broadcasting.default' => 'audit-failing', 'broadcasting.connections.audit-failing' => ['driver' => 'audit-failing']]);
+    $uri = $method === 'POST' ? '/api/v1/equipment' : "/api/v1/equipment/{$equipment->id}";
+
+    $response = $this->actingAs($admin)->json($method, $uri, ['name' => 'Studio Camera', 'category' => 'Camera'])->assertStatus($status);
+
+    $id = $method === 'POST' ? $response->json('data.id') : $equipment->id;
+    expect($payloads->first())->toBe(['event' => 'equipment.changed', 'payload' => ['action' => $action, 'equipmentId' => $id]]);
+    $method === 'DELETE'
+        ? $this->assertDatabaseMissing('equipments', ['id' => $id])
+        : $this->assertDatabaseHas('equipments', ['id' => $id, 'name' => 'Studio Camera']);
+})->with([['POST', 'created', 201], ['PUT', 'updated', 200], ['DELETE', 'deleted', 204]]);

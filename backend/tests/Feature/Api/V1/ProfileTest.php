@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Department;
 use App\Models\User;
 use App\Services\CloudinaryService;
 
@@ -64,3 +65,12 @@ test('user can upload profile picture', function () {
         'profile_picture' => 'https://res.cloudinary.com/test/avatar.webp',
     ]);
 });
+
+test('bearer authentication returns typed or empty department shorthand', function (?Department $department, ?string $shorthand): void {
+    $admin = User::factory()->admin()->create(['department' => $department]);
+    $token = $admin->createToken('profile-test')->plainTextToken;
+
+    $this->withToken($token)->getJson('/api/v1/me')->assertOk()
+        ->assertJsonPath('data.id', $admin->id)
+        ->assertJsonPath('data.department_shorthand', $shorthand);
+})->with([[Department::InformationSystems, 'BSIS'], [null, null]]);

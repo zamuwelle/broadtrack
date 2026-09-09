@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/Button'
 
 const noop = () => null
 
-export const ProfileActionButtons = ({ card = false, valid = false, isPending = false, onClose = noop }) => {
+export const ProfileActionButtons = ({ card = false, canSubmit = false, isPending = false, onClose = noop }) => {
     if (card) {
         return (
             <div className="flex items-center gap-6">
@@ -14,7 +14,7 @@ export const ProfileActionButtons = ({ card = false, valid = false, isPending = 
                 </button>
                 <button
                     type="submit"
-                    disabled={!valid || isPending}
+                    disabled={!canSubmit || isPending}
                     className="h-10 rounded-lg bg-sky-800 px-3 py-2 text-base font-medium text-white hover:bg-sky-900 disabled:opacity-50">
                     Update
                 </button>
@@ -27,7 +27,7 @@ export const ProfileActionButtons = ({ card = false, valid = false, isPending = 
             <Button variant="ghost" className="w-20 h-10" onClick={onClose}>
                 Cancel
             </Button>
-            <Button variant="primary" className="w-20 h-10" type="submit" disabled={!valid || isPending}>
+            <Button variant="primary" className="w-20 h-10" type="submit" disabled={!canSubmit || isPending}>
                 Update
             </Button>
         </div>

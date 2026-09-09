@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { echo } from '@/lib/echo'
-import { useInvalidateBookings } from '@/hooks/queries/useInvalidateBookings'
 
 export const useEvents = ({ onBookingNotification } = {}) => {
     const queryClient = useQueryClient()
-    const invalidateBookings = useInvalidateBookings()
 
     useEffect(() => {
         if (!echo) {
@@ -18,7 +16,8 @@ export const useEvents = ({ onBookingNotification } = {}) => {
 
         equipmentChannel.listen('.equipment.changed', () => queryClient.invalidateQueries({ queryKey: ['equipment'] }))
         bookingsChannel.listen('.booking.changed', (event) => {
-            invalidateBookings()
+            queryClient.invalidateQueries({ queryKey: ['bookings'] })
+            queryClient.invalidateQueries({ queryKey: ['equipment'] })
             if (typeof onBookingNotification === 'function') {
                 onBookingNotification(event)
             }
@@ -30,5 +29,5 @@ export const useEvents = ({ onBookingNotification } = {}) => {
             bookingsChannel.stopListening('.booking.changed')
             usersChannel.stopListening('.user.changed')
         }
-    }, [queryClient, invalidateBookings, onBookingNotification])
+    }, [queryClient, onBookingNotification])
 }

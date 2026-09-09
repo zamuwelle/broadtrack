@@ -49,11 +49,7 @@ export const Teams = () => {
                             key={member.name}
                             ref={member.role === 'Project Manager' ? projectManagerRef : null}
                             className="relative w-[160px] lg:w-[180px] h-[430px] shrink-0 flex flex-col items-center text-center snap-center">
-                            <div className="relative z-10 w-[118px] h-[118px] bg-gray-200">
-                                {member.avatar ? (
-                                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                                ) : null}
-                            </div>
+                            <div className="relative z-10 w-[118px] h-[118px] bg-gray-200" />
                             <p className="relative z-10 text-primary text-[15px] lg:text-[16px] font-bold uppercase leading-snug mt-6 min-h-[44px] flex items-center justify-center">
                                 {member.name}
                             </p>

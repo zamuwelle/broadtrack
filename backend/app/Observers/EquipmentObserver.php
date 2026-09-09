@@ -9,16 +9,16 @@ class EquipmentObserver
 {
     public function created(Equipment $equipment): void
     {
-        rescue(static fn () => broadcast(new EquipmentUpdated('created', $equipment->id)), report: false);
+        broadcast(new EquipmentUpdated('created', $equipment->id));
     }
 
     public function updated(Equipment $equipment): void
     {
-        rescue(static fn () => broadcast(new EquipmentUpdated('updated', $equipment->id)), report: false);
+        broadcast(new EquipmentUpdated('updated', $equipment->id));
     }
 
     public function deleted(Equipment $equipment): void
     {
-        rescue(static fn () => broadcast(new EquipmentUpdated('deleted', (int)$equipment->id)), report: false);
+        broadcast(new EquipmentUpdated('deleted', (int)$equipment->id));
     }
 }

@@ -93,7 +93,7 @@ class BookingReportController extends ApiController
 
     private function getFilteredBookings(Request $request): Collection
     {
-        $query = Booking::with(['user', 'equipments', 'returnedByUser'])->orderByDesc('start_date');
+        $query = Booking::with(['user', 'equipments'])->orderByDesc('start_date');
 
         $category = $request->query('category', 'All');
         if ($category === 'Active') {
@@ -136,7 +136,7 @@ class BookingReportController extends ApiController
         return $query->get();
     }
 
-    private function flattenRows($bookings): array
+    private function flattenRows(Collection $bookings): array
     {
         $rows = [];
 
@@ -157,8 +157,8 @@ class BookingReportController extends ApiController
             $deptShort = $user?->department?->shorthand() ?? '';
             $purpose = $booking->purpose ?: 'N/A';
 
-            $equipments = $booking->equipments;
-            if ($equipments->isEmpty()) {
+            $equipments = $booking->equipments->isNotEmpty() ? $booking->equipments : [null];
+            foreach ($equipments as $equipment) {
                 $rows[] = [
                     'ticket_id' => $booking->ticket_id,
                     'borrower' => $borrowerName,
@@ -166,10 +166,10 @@ class BookingReportController extends ApiController
                     'email' => $email,
                     'department' => $department,
                     'department_short' => $deptShort,
-                    'equipment_name' => 'None',
-                    'category' => 'N/A',
-                    'model' => '',
-                    'serial_no' => 'N/A',
+                    'equipment_name' => $equipment?->name ?? 'None',
+                    'category' => $equipment ? ($equipment->category?->value ?? (string)$equipment->category ?? 'N/A') : 'N/A',
+                    'model' => $equipment?->model ?? '',
+                    'serial_no' => $equipment?->serial_no ?? 'N/A',
                     'borrow_date' => $borrowDate,
                     'due_date' => $dueDate,
                     'actual_return_date' => $actualReturnDate,
@@ -177,27 +177,6 @@ class BookingReportController extends ApiController
                     'status_key' => $statusKey,
                     'status_label' => $statusLabel,
                 ];
-            } else {
-                foreach ($equipments as $equipment) {
-                    $rows[] = [
-                        'ticket_id' => $booking->ticket_id,
-                        'borrower' => $borrowerName,
-                        'phone' => $phone,
-                        'email' => $email,
-                        'department' => $department,
-                        'department_short' => $deptShort,
-                        'equipment_name' => $equipment->name,
-                        'category' => $equipment->category?->value ?? (string)$equipment->category ?? 'N/A',
-                        'model' => $equipment->model ?? '',
-                        'serial_no' => $equipment->serial_no ?? 'N/A',
-                        'borrow_date' => $borrowDate,
-                        'due_date' => $dueDate,
-                        'actual_return_date' => $actualReturnDate,
-                        'purpose' => $purpose,
-                        'status_key' => $statusKey,
-                        'status_label' => $statusLabel,
-                    ];
-                }
             }
         }
 

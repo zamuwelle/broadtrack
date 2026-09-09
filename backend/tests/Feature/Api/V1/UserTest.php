@@ -2,6 +2,8 @@
 
 use App\Models\Booking;
 use App\Models\User;
+use Illuminate\Broadcasting\Broadcasters\Broadcaster;
+use Illuminate\Support\Facades\Broadcast;
 
 test('sysadmin can list all users excluding sysadmins', function () {
     $sysadmin = User::factory()->sysadmin()->create();
@@ -84,3 +86,28 @@ test('sysadmin cannot delete user with existing booking records', function () {
 
     $this->assertDatabaseHas('users', ['id' => $borrower->id]);
 });
+
+test('user mutations succeed when the broadcast transport fails', function (string $method, string $action, int $status): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $user = User::factory()->borrower()->create();
+    $payloads = collect();
+    $broadcaster = Mockery::mock(Broadcaster::class);
+    $broadcaster->shouldReceive('broadcast')->andReturnUsing(static function (array $channels, string $event, array $payload) use ($payloads): never {
+        $payloads->push(['event' => $event, 'payload' => $payload]);
+        throw new RuntimeException('transport unavailable');
+    });
+    Broadcast::extend('audit-failing', static fn (): Broadcaster => $broadcaster);
+    config(['broadcasting.default' => 'audit-failing', 'broadcasting.connections.audit-failing' => ['driver' => 'audit-failing']]);
+    $uri = $method === 'POST' ? '/api/v1/users' : "/api/v1/users/{$user->id}";
+    $data = $method === 'POST'
+        ? ['firstname' => 'New', 'lastname' => 'Admin', 'email' => 'broadcast@laverdad.edu.ph', 'phone' => '+639123456789', 'password' => 'password123', 'role' => 'admin']
+        : ['firstname' => 'Updated'];
+
+    $response = $this->actingAs($sysadmin)->json($method, $uri, $data)->assertStatus($status);
+
+    $id = $method === 'POST' ? $response->json('data.id') : $user->id;
+    expect($payloads->first())->toBe(['event' => 'user.changed', 'payload' => ['action' => $action, 'userId' => $id]]);
+    $method === 'DELETE'
+        ? $this->assertDatabaseMissing('users', ['id' => $id])
+        : $this->assertDatabaseHas('users', ['id' => $id, 'firstname' => $method === 'POST' ? 'New' : 'Updated']);
+})->with([['POST', 'created', 201], ['PUT', 'updated', 200], ['DELETE', 'deleted', 204]]);

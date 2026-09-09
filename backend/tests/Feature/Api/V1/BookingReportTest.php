@@ -109,3 +109,35 @@ test('unauthenticated user cannot export transactions report', function () {
     $this->getJson('/api/v1/bookings/reports/csv')
         ->assertUnauthorized();
 });
+
+test('transaction exports preserve rows for zero one or multiple equipment', function (int $count): void {
+    $admin = User::factory()->admin()->create(['firstname' => 'Alice', 'lastname' => 'Adams', 'department' => null]);
+    $booking = Booking::factory()->returned()->create([
+        'user_id' => $admin->id, 'ticket_id' => 'REPORT-ROWS', 'purpose' => '=1+1',
+        'start_date' => '2026-01-10 00:00:00', 'end_date' => '2026-01-11 00:00:00', 'return_date' => '2026-01-11 01:00:00',
+    ]);
+    for ($index = 0; $index < $count; $index++) {
+        $booking->equipments()->attach(Equipment::factory()->create([
+            'name' => 'Camera '.$index, 'category' => 'Camera', 'model' => null, 'serial_no' => 'REPORT-'.$index,
+        ]));
+    }
+
+    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
+    $lines = explode("\n", trim(substr($response->streamedContent(), 3)));
+    $rows = array_map(static fn (string $line): array => str_getcsv($line, ',', '"', ''), array_slice($lines, 1));
+
+    expect($rows)->toHaveCount(max(1, $count));
+    foreach ($rows as $index => $row) {
+        expect($row)->toHaveCount(14)
+            ->and($row[0])->toBe('REPORT-ROWS')
+            ->and($row[1])->toBe('Alice Adams')
+            ->and($row[4])->toBe('')
+            ->and($row[5])->toBe($count ? 'Camera '.$index : 'None')
+            ->and($row[6])->toBe($count ? 'Camera' : 'N/A')
+            ->and($row[7])->toBe('')
+            ->and($row[8])->toBe($count ? 'REPORT-'.$index : 'N/A')
+            ->and($row[12])->toBe("'=1+1")
+            ->and($row[13])->toBe('Returned');
+    }
+    $this->get('/api/v1/bookings/reports/pdf')->assertOk()->assertHeader('content-type', 'application/pdf');
+})->with([0, 1, 2]);

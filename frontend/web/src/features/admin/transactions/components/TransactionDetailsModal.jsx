@@ -5,9 +5,9 @@ import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
 import { SendReminderModal } from '@/features/admin/transactions/components/SendReminderModal'
 import { ConfirmReturnModal } from '@/features/admin/approvals/components/ConfirmReturnModal'
-import { ModalHeader } from '@/features/borrow/components/ModalHeader'
+import { ModalHeader } from '@/features/admin/transactions/components/ModalHeader'
 import { ActivityLogSection } from '@/features/admin/transactions/components/ActivityLogSection'
-import { OverdueFooterActions } from '@/features/admin/dashboard/components/OverdueFooterActions'
+import { Mail } from 'lucide-react'
 
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
@@ -231,10 +231,25 @@ export const TransactionDetailsModal = (props) => {
                     />
 
                     {variant === 'overdue' && (
-                        <OverdueFooterActions
-                            onOpenSendReminder={handleOpenSendReminder}
-                            onOpenConfirmReturn={handleOpenConfirmReturn}
-                        />
+                        <div className="px-4 py-5 sm:px-8 sm:py-6 bg-slate-50 flex flex-col items-center gap-4 shrink-0">
+                            <button
+                                type="button"
+                                onClick={handleOpenSendReminder}
+                                className="w-full sm:w-auto h-12 px-6 bg-sky-800 hover:bg-sky-900 transition-colors rounded-lg text-white text-base font-medium inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                                <Mail size={18} />
+                                <span>Send Reminder Again</span>
+                            </button>
+
+                            <div className="text-xs sm:text-sm font-medium text-slate-700 flex flex-wrap justify-center items-center gap-1.5">
+                                <span>Has the equipment been returned?</span>
+                                <button
+                                    type="button"
+                                    onClick={handleOpenConfirmReturn}
+                                    className="text-blue-600 hover:underline font-semibold cursor-pointer">
+                                    Confirm here
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

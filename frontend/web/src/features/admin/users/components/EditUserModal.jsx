@@ -3,20 +3,10 @@ import { useSetState } from '@shared/hooks/useSetState'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/api/users/update-user'
 import { formatPhone } from '@shared/util/phone'
-import {
-    MAX_NAME_LENGTH,
-    isValidEmail,
-    isValidName,
-    isValidPassword,
-    isValidPhone,
-    validateDepartment,
-    validateEmail,
-    validateName,
-    validatePassword,
-    validatePhone
-} from '@shared/schemas/common'
+import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword, isValidPhone } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
+import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -127,16 +117,7 @@ const checkEditUserValid = (form, isBorrower) =>
         (!form.password || isValidPassword(form.password))
     )
 
-const getEditUserErrors = (form, isBorrower) => ({
-    firstname: form.firstname ? validateName(form.firstname) : '',
-    lastname: form.lastname ? validateName(form.lastname) : '',
-    email: form.error || (form.email ? validateEmail(form.email) : ''),
-    phone: form.phone ? validatePhone(form.phone) : '',
-    password: form.password ? validatePassword(form.password) : '',
-    department: isBorrower && form.department ? validateDepartment(form.department) : ''
-})
-
-const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
+const useEditUserForm = (user, onClose, onSuccess) => {
     const [form, setForm] = useSetState(() => getInitialFormState(user))
 
     const handleClose = useCallback(() => {
@@ -171,7 +152,7 @@ const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
         [form, isBorrower, isValid, onClose, onSuccess, setForm, updateUserMutation, user]
     )
 
-    const errors = getEditUserErrors(form, isBorrower)
+    const errors = getUserFormErrors(form, isBorrower)
 
     return {
         form,
@@ -202,7 +183,7 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
         handlePasswordChange,
         handleTogglePassword,
         handleSubmit
-    } = useEditUserForm(user, isOpen, onClose, onSuccess)
+    } = useEditUserForm(user, onClose, onSuccess)
 
     if (!isOpen || !user) {
         return null

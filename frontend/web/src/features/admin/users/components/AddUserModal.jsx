@@ -2,20 +2,10 @@ import { useCallback } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateUser } from '@/api/users/create-user'
 import { formatPhone } from '@shared/util/phone'
-import {
-    MAX_NAME_LENGTH,
-    isValidEmail,
-    isValidName,
-    isValidPassword,
-    isValidPhone,
-    validateDepartment,
-    validateEmail,
-    validateName,
-    validatePassword,
-    validatePhone
-} from '@shared/schemas/common'
+import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword, isValidPhone } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
+import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 
@@ -32,7 +22,7 @@ const initialFormState = Object.freeze({
     error: ''
 })
 
-const useAddUserForm = (role, isOpen, onClose, onSuccess) => {
+const useAddUserForm = (role, onClose, onSuccess) => {
     const [form, setForm] = useSetState(initialFormState)
     const isBorrower = role === 'borrower'
 
@@ -129,14 +119,7 @@ const useAddUserForm = (role, isOpen, onClose, onSuccess) => {
         [createUserMutation, form, isBorrower, isValid, onClose, onSuccess, role, setForm]
     )
 
-    const errors = {
-        firstname: form.firstname ? validateName(form.firstname) : '',
-        lastname: form.lastname ? validateName(form.lastname) : '',
-        email: form.error || (form.email ? validateEmail(form.email) : ''),
-        phone: form.phone ? validatePhone(form.phone) : '',
-        password: form.password ? validatePassword(form.password) : '',
-        department: isBorrower && form.department ? validateDepartment(form.department) : ''
-    }
+    const errors = getUserFormErrors(form, isBorrower)
 
     return {
         form,
@@ -178,7 +161,7 @@ export const AddUserModal = ({
         handlePasswordChange,
         handleTogglePassword,
         handleSubmit
-    } = useAddUserForm(role, isOpen, onClose, onSuccess)
+    } = useAddUserForm(role, onClose, onSuccess)
 
     if (!isOpen) {
         return null

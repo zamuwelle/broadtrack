@@ -7,7 +7,7 @@ import { useSetState } from '@shared/hooks/useSetState'
 import { getBookingStatus } from '@shared/util/booking'
 import { BookingSlipCard } from '@/features/borrow/slips/components/BookingSlipCard'
 import { FilterDropdown } from '@/components/ui/FilterDropdown'
-import { CancelBookingModal } from '@/features/borrow/slips/components/CancelBookingModal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { BOOKING_FILTER_OPTIONS } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
@@ -151,11 +151,17 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                 <EmptyState icon="summary" title="No booking slips found" description={emptyDesc} />
             ) : null}
 
-            <CancelBookingModal
+            <ConfirmModal
                 isOpen={Boolean(cancellingBookingId)}
                 onClose={handleCloseCancelModal}
                 onConfirm={handleConfirmCancel}
                 isPending={cancelMutation.isPending}
+                title="Are you sure you want to cancel this request?"
+                description="This process cannot be undone."
+                confirmLabel="Cancel Request"
+                loadingLabel="Cancelling..."
+                cancelLabel="No, keep it"
+                variant="danger"
             />
         </div>
     )

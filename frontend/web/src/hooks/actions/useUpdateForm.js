@@ -3,12 +3,14 @@ import { useSetState } from '@shared/hooks/useSetState'
 
 const noop = () => null
 
-const buildPayload = (fields, values, initial) =>
-    Object.fromEntries(fields.filter(({ key }) => values[key] !== initial[key]).map(({ key }) => [key, values[key]]))
+const buildPayload = (fields, values, initialValues) =>
+    Object.fromEntries(
+        fields.filter(({ key }) => values[key] !== initialValues[key]).map(({ key }) => [key, values[key]])
+    )
 
 export const useUpdateForm = ({
     fields = [],
-    initial = {},
+    initialValues = {},
     update,
     onSuccess = noop,
     onClose = noop,
@@ -16,20 +18,20 @@ export const useUpdateForm = ({
 }) => {
     const [formState, updateFormState] = useSetState({
         errors: {},
-        values: initial
+        values: initialValues
     })
     const { errors, values } = formState
     const setError = (key, message) =>
         updateFormState((prev) => ({
             errors: { ...prev.errors, [key]: message }
         }))
-    const set = (key, value) =>
+    const setFieldValue = (key, value) =>
         updateFormState((prev) => ({
             values: { ...prev.values, [key]: value }
         }))
 
-    const dirty = extraDirty || fields.some(({ key }) => values[key] !== initial[key])
-    const valid = dirty && fields.every(({ key, validate }) => !validate || !validate(values[key] || ''))
+    const isDirty = extraDirty || fields.some(({ key }) => values[key] !== initialValues[key])
+    const canSubmit = isDirty && fields.every(({ key, validate }) => !validate || !validate(values[key] || ''))
 
     const { send, isPending } = useSend({
         send: update,
@@ -58,14 +60,14 @@ export const useUpdateForm = ({
     return {
         values,
         errors,
-        valid,
+        canSubmit,
         isPending,
-        set,
+        setFieldValue,
         setError,
         handleUpdate: (event) => {
             event.preventDefault()
-            if (valid && !isPending) {
-                send(buildPayload(fields, values, initial))
+            if (canSubmit && !isPending) {
+                send(buildPayload(fields, values, initialValues))
             }
         }
     }
