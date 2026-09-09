@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { contactSchema } from '@shared/schemas/contact'
 import { useCreateContact } from '@/api/contact/create-contact'
 import { useSetState } from '@shared/hooks/useSetState'
@@ -13,6 +13,7 @@ const initialForm = Object.freeze({
 })
 
 export const QuickContact = () => {
+    const resetTimer = useRef(null)
     const [contactState, updateContactState] = useSetState({
         isOpen: false,
         sent: false,
@@ -32,6 +33,8 @@ export const QuickContact = () => {
     })
 
     const isValid = contactSchema.safeParse(form).success
+
+    useEffect(() => () => clearTimeout(resetTimer.current), [])
 
     const updateField = useCallback(
         (name, value) => {
@@ -68,14 +71,16 @@ export const QuickContact = () => {
     )
 
     const close = useCallback(() => {
+        clearTimeout(resetTimer.current)
         updateContactState({ isOpen: false })
-        setTimeout(() => {
+        resetTimer.current = setTimeout(() => {
             updateContactState({ sent: false, form: initialForm, touched: {} })
             reset()
         }, 300)
     }, [reset, updateContactState])
 
     const handleOpen = useCallback(() => {
+        clearTimeout(resetTimer.current)
         updateContactState({ isOpen: true })
     }, [updateContactState])
 
@@ -90,14 +95,14 @@ export const QuickContact = () => {
 
     return (
         <>
-            {isOpen && (
+            {isOpen ? (
                 <button
                     type="button"
                     aria-label="Close contact backdrop"
                     onClick={close}
                     className="fixed inset-0 z-50 dim-screen transition-opacity border-none outline-none"
                 />
-            )}
+            ) : null}
             <div
                 className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center transition-transform duration-300 drop-shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-[calc(100%-28px)] sm:translate-x-[calc(100%-32px)]'}`}>
                 <button

@@ -112,5 +112,3 @@ export const UsersPage = (props) => {
         </div>
     )
 }
-
-export const UserManagement = UsersPage

@@ -5,7 +5,7 @@ export const FormField = ({ label, required = true, actionText = '', onAction = 
         {actionText ? (
             <div className="flex justify-between items-center mb-1">
                 <label className="text-[13px] font-medium text-text">
-                    {label} {required && <span className="text-red-500">*</span>}
+                    {label} {required ? <span className="text-red-500">*</span> : null}
                 </label>
                 <button
                     type="button"
@@ -16,7 +16,7 @@ export const FormField = ({ label, required = true, actionText = '', onAction = 
             </div>
         ) : (
             <label className="text-[13px] font-medium text-text mb-1 block">
-                {label} {required && <span className="text-red-500">*</span>}
+                {label} {required ? <span className="text-red-500">*</span> : null}
             </label>
         )}
         {children}

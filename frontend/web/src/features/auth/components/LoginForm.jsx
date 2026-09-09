@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { Icon } from '@/components/ui/Icon'
+import { env } from '@/config/env'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
@@ -19,7 +20,7 @@ export const LoginForm = ({
     onSubmit = noop
 }) => {
     const handleGoogleLogin = useCallback(() => {
-        globalThis.location.href = `${import.meta.env.VITE_API_URL}/auth/google/redirect`
+        globalThis.location.href = `${env.API_URL}/auth/google/redirect`
     }, [])
 
     const handleEmailChange = useCallback(

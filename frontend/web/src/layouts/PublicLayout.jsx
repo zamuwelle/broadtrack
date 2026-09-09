@@ -18,7 +18,7 @@ export const Component = () => {
                 <Outlet />
             </main>
             <LandingFooter />
-            {isOpen && (
+            {isOpen ? (
                 <AuthModal
                     key={`${mode}-${(data ? data.email : '') || ''}`}
                     isOpen={isOpen}
@@ -27,7 +27,7 @@ export const Component = () => {
                     initialData={data}
                     onClose={closeAuth}
                 />
-            )}
+            ) : null}
         </div>
     )
 }

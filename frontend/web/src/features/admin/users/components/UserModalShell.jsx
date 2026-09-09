@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 
-export const ModalShell = ({ title, subtitle, onClose, children, onSubmit, submitLabel, isPending, disabled }) => {
+export const UserModalShell = ({ title, subtitle, onClose, children, onSubmit, submitLabel, isPending, disabled }) => {
     useEscapeKey(onClose)
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">

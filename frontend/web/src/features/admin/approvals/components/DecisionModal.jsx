@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
@@ -21,6 +21,14 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
         errorMessage: ''
     })
     const { text, isSubmitting, errorMessage } = modalState
+    const isMounted = useRef(false)
+
+    useEffect(() => {
+        isMounted.current = true
+        return () => {
+            isMounted.current = false
+        }
+    }, [])
 
     useEscapeKey(onClose)
 
@@ -48,13 +56,19 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                 await (isApprove
                     ? approveMutation.mutateAsync({ bookingId, data: { approval_note: text } })
                     : rejectMutation.mutateAsync({ bookingId, data: { rejection_reason: text } }))
-                onClose()
+                if (isMounted.current) {
+                    onClose()
+                }
             } catch (error) {
-                updateModalState({
-                    errorMessage: (error && error.message) || `Failed to ${type} booking`
-                })
+                if (isMounted.current) {
+                    updateModalState({
+                        errorMessage: (error && error.message) || `Failed to ${type} booking`
+                    })
+                }
             } finally {
-                updateModalState({ isSubmitting: false })
+                if (isMounted.current) {
+                    updateModalState({ isSubmitting: false })
+                }
             }
         },
         [approveMutation, bookingId, isApprove, onClose, rejectMutation, text, type, updateModalState]

@@ -6,7 +6,9 @@ use App\Enums\BookingStatus;
 use App\Enums\EquipmentStatus;
 use App\Models\Booking;
 use App\Models\Equipment;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -19,16 +21,20 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'equipment_ids' => 'required|array|min:1',
-            'equipment_ids.*' => 'exists:equipments,id',
+            'equipment_ids.*' => 'required|integer|distinct|exists:equipments,id',
             'purpose' => 'required|string|max:255',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after:start_date',
         ];
     }
 
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
             $equipmentIds = $this->input('equipment_ids', []);
             $startDate = $this->input('start_date');
             $endDate = $this->input('end_date');
@@ -53,7 +59,7 @@ class StoreBookingRequest extends FormRequest
                     BookingStatus::Approved,
                     BookingStatus::Released,
                 ])
-                ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
+                ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 
             if ($overlapping) {

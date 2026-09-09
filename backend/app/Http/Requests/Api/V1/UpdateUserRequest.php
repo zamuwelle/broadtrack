@@ -25,7 +25,8 @@ class UpdateUserRequest extends FormRequest
             'email' => ['sometimes', 'email', Rule::unique('users')->ignore($this->route('user')), $this->schoolEmailRule()],
             'phone' => 'sometimes|string',
             'role' => ['sometimes', Rule::enum(UserRole::class)],
-            'department' => ['sometimes', 'nullable', Rule::enum(Department::class)],
+            'department' => [Rule::requiredIf(fn (): bool => $this->input('role', $this->route('user')?->role?->value) === UserRole::Borrower->value
+                && $this->input('department', $this->route('user')?->department) === null), 'nullable', Rule::enum(Department::class)],
             'password' => $this->passwordRules('sometimes'),
         ];
     }

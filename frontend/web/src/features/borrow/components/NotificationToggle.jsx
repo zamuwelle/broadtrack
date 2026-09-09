@@ -82,11 +82,13 @@ export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotific
         if ('Notification' in globalThis && globalThis.Notification.permission === 'default') {
             globalThis.Notification.requestPermission()
         }
-        if (!open) {
-            onOpen()
-        }
-        setOpen(!open)
-    }, [open, onOpen, setOpen])
+        setOpen((prev) => {
+            if (!prev) {
+                onOpen()
+            }
+            return !prev
+        })
+    }, [onOpen, setOpen])
 
     return (
         <div className="relative font-['Poppins']" ref={boxRef}>

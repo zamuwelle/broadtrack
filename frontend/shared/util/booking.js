@@ -33,3 +33,21 @@ export const resolveBookingScheduleStatus = (booking = {}) => {
     const status = getBookingStatus(booking)
     return status === 'pending' || status === 'rejected' || status === 'cancelled' ? status : 'active'
 }
+
+export const flattenBookingsByEquipment = (bookings) =>
+    bookings.flatMap((booking) => {
+        const equipments = booking.equipments || []
+        if (equipments.length <= 1) {
+            return [booking]
+        }
+        const flattened = []
+        for (const equipment of equipments) {
+            flattened.push({
+                ...booking,
+                itemKey: `${booking.id}-${equipment.id}`,
+                equipment,
+                equipments: [equipment]
+            })
+        }
+        return flattened
+    })

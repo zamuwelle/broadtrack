@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 
 export const useToast = (duration = 3000) => {
@@ -8,7 +8,10 @@ export const useToast = (duration = 3000) => {
         visible: false
     })
     const { message, type, visible } = toastState
-    const timer = useRef(null)
+
+    const hide = useCallback(() => {
+        updateToastState({ visible: false })
+    }, [updateToastState])
 
     const show = useCallback(
         (nextMessage, nextType = 'success') => {
@@ -17,13 +20,16 @@ export const useToast = (duration = 3000) => {
                 type: nextType,
                 visible: true
             })
-            clearTimeout(timer.current)
-            timer.current = setTimeout(() => updateToastState({ visible: false }), duration)
         },
-        [duration, updateToastState]
+        [updateToastState]
     )
 
-    useEffect(() => () => clearTimeout(timer.current), [])
+    useEffect(() => {
+        if (toastState.visible) {
+            const timer = setTimeout(hide, duration)
+            return () => clearTimeout(timer)
+        }
+    }, [toastState, duration, hide])
 
-    return { message, type, visible, show }
+    return { message, type, visible, show, hide }
 }

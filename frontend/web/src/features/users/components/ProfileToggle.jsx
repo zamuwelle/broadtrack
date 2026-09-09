@@ -1,7 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { ProfileMenu } from '@/features/users/components/ProfileMenu'
-import { WelcomeToast } from '@/components/ui/Toast'
+import { Toast } from '@/components/ui/Toast'
 import { useToggle } from '@/hooks/ui/useToggle'
 import { useToast } from '@/hooks/ui/useToast'
 
@@ -10,18 +10,26 @@ const noop = () => null
 
 export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
     const { open, setOpen, boxRef } = useToggle()
-    const toast = useToast()
+    const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
+
+    useEffect(() => {
+        const welcomeMessage = globalThis.sessionStorage.getItem('welcome_message')
+        if (welcomeMessage) {
+            globalThis.sessionStorage.removeItem('welcome_message')
+            showToast(welcomeMessage, 'welcome')
+        }
+    }, [showToast])
 
     const handleToggle = useCallback(() => {
         if (!open && typeof onOpen === 'function') {
             onOpen()
         }
-        setOpen(!open)
+        setOpen((prev) => !prev)
     }, [open, onOpen, setOpen])
 
     const handleProfileUpdated = useCallback(() => {
-        toast.show('Profile successfully updated!')
-    }, [toast])
+        showToast('Profile successfully updated!')
+    }, [showToast])
 
     const profilePicture = user?.profile_picture ?? null
     const firstName = user?.firstname ?? ''
@@ -52,7 +60,7 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
                     <ProfileMenu user={user} onUpdated={handleProfileUpdated} />
                 </div>
             )}
-            <WelcomeToast show={toast.visible} message={toast.message} />
+            <Toast show={toastVisible} message={toastMessage} type={toastType} />
         </div>
     )
 }

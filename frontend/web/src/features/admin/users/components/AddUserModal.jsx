@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateUser } from '@/api/users/create-user'
 import { formatPhone } from '@shared/util/phone'
@@ -15,7 +15,7 @@ import {
     validatePhone
 } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
-import { ModalShell } from '@/features/admin/users/components/UserModalShell'
+import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 
@@ -35,12 +35,6 @@ const initialFormState = Object.freeze({
 const useAddUserForm = (role, isOpen, onClose, onSuccess) => {
     const [form, setForm] = useSetState(initialFormState)
     const isBorrower = role === 'borrower'
-
-    useEffect(() => {
-        if (isOpen) {
-            setForm(initialFormState)
-        }
-    }, [isOpen, setForm])
 
     const handleClose = useCallback(() => {
         setForm(initialFormState)
@@ -196,7 +190,7 @@ export const AddUserModal = ({
         : 'Create a new BroadTrack administrator account.'
 
     return (
-        <ModalShell
+        <UserModalShell
             title={title}
             subtitle={subtitle}
             onClose={handleClose}
@@ -257,6 +251,6 @@ export const AddUserModal = ({
                 onToggleShow={handleTogglePassword}
                 error={errors.password}
             />
-        </ModalShell>
+        </UserModalShell>
     )
 }

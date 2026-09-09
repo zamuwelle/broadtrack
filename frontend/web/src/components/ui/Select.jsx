@@ -71,7 +71,7 @@ export const Select = ({
                     className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
                 />
             </button>
-            {open && (
+            {open ? (
                 <div
                     className={`absolute bottom-full left-0 right-0 z-30 mb-[1px] rounded-t-[8px] border border-border-subtle ${panelClass}`}>
                     {options.map((option) => (
@@ -84,7 +84,7 @@ export const Select = ({
                         </button>
                     ))}
                 </div>
-            )}
+            ) : null}
         </div>
     )
 }

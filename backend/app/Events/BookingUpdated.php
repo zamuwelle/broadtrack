@@ -2,19 +2,19 @@
 
 namespace App\Events;
 
-use App\Models\Booking;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Queue\SerializesModels;
 
-class BookingUpdated implements ShouldBroadcastNow
+class BookingUpdated implements ShouldBroadcastNow, ShouldDispatchAfterCommit, ShouldRescue
 {
     use SerializesModels;
 
     public function __construct(
         public string $action = 'updated',
-        public ?int $bookingId = null,
-        public ?Booking $booking = null
+        public ?int $bookingId = null
     ) {}
 
     public function broadcastOn(): array

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useCancelBooking } from '@/api/bookings/cancel-booking'
@@ -42,29 +42,20 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
     const { data: bookings = DEFAULT_BOOKINGS, isLoading } = useBookings()
     const cancelMutation = useCancelBooking()
     const urlStatus = searchParams.get('status')
-    const initialStatus = BOOKING_FILTER_OPTIONS.includes(urlStatus) ? urlStatus : 'All Ticket Requests'
+    const selectedStatus =
+        propStatus ?? (BOOKING_FILTER_OPTIONS.includes(urlStatus) ? urlStatus : 'All Ticket Requests')
 
     const [pageState, updatePageState] = useSetState({
-        internalStatus: initialStatus,
         cancellingBookingId: null,
         cancelError: ''
     })
-    const { internalStatus, cancellingBookingId } = pageState
-
-    useEffect(() => {
-        if (urlStatus && BOOKING_FILTER_OPTIONS.includes(urlStatus)) {
-            updatePageState({ internalStatus: urlStatus })
-        }
-    }, [urlStatus, updatePageState])
-
-    const selectedStatus = propStatus ?? internalStatus
+    const { cancellingBookingId } = pageState
 
     const handleStatusChange = useCallback(
         (status) => {
             if (propSetStatus) {
                 propSetStatus(status)
             } else {
-                updatePageState({ internalStatus: status })
                 setSearchParams((prev) => {
                     const next = new URLSearchParams(prev)
                     if (status && status !== 'All Ticket Requests') {
@@ -76,7 +67,7 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                 })
             }
         },
-        [propSetStatus, setSearchParams, updatePageState]
+        [propSetStatus, setSearchParams]
     )
 
     const handleOpenCancelModal = useCallback(
@@ -119,6 +110,9 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
             ? "You haven't made any booking requests yet."
             : `No slips matching the "${selectedStatus}" status.`
 
+    const hasBookings = !isLoading && filteredBookings.length > 0
+    const hasNoBookings = !isLoading && filteredBookings.length === 0
+
     return (
         <div className="flex flex-col gap-6 font-['Poppins']">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -131,7 +125,7 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                 <FilterDropdown value={selectedStatus} onChange={handleStatusChange} options={BOOKING_FILTER_OPTIONS} />
             </div>
 
-            {isLoading && (
+            {isLoading ? (
                 <div className="w-full max-w-[1034px] mx-auto flex flex-wrap items-start justify-start gap-6 lg:gap-8 animate-pulse">
                     {[1, 2].map((placeholderIndex) => (
                         <div
@@ -140,8 +134,8 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                         />
                     ))}
                 </div>
-            )}
-            {!isLoading && filteredBookings.length > 0 && (
+            ) : null}
+            {hasBookings ? (
                 <div className="w-full max-w-[1034px] mx-auto flex flex-wrap items-start justify-start gap-6 lg:gap-8">
                     {filteredBookings.map((booking) => (
                         <BookingSlipCard
@@ -152,10 +146,10 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                         />
                     ))}
                 </div>
-            )}
-            {!isLoading && filteredBookings.length === 0 && (
+            ) : null}
+            {hasNoBookings ? (
                 <EmptyState icon="summary" title="No booking slips found" description={emptyDesc} />
-            )}
+            ) : null}
 
             <CancelBookingModal
                 isOpen={Boolean(cancellingBookingId)}

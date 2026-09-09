@@ -44,7 +44,7 @@ export const InventoryCard = ({
         <div className="bg-white rounded-2xl border border-slate-300 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.15)] flex flex-col h-full font-['Poppins'] relative hover:z-20 focus-within:z-30">
             <div
                 className={`relative h-44 ${optimizedImage ? 'bg-white' : 'bg-slate-100'} border-b border-slate-200 overflow-hidden rounded-t-2xl shrink-0`}>
-                {optimizedImage && (
+                {optimizedImage ? (
                     <div className="absolute inset-0 flex items-center justify-center p-3 pointer-events-none">
                         <img
                             src={optimizedImage}
@@ -55,7 +55,7 @@ export const InventoryCard = ({
                             decoding="async"
                         />
                     </div>
-                )}
+                ) : null}
 
                 <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
                     <button

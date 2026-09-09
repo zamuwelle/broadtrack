@@ -57,11 +57,11 @@ export const DeleteEquipmentModal = ({ isOpen = false, onClose = noop, equipment
             isPending={isDeleting}
             variant="danger"
             maxWidth="max-w-[538px]">
-            {errorMessage && (
+            {errorMessage ? (
                 <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5 w-full">
                     {errorMessage}
                 </p>
-            )}
+            ) : null}
         </ConfirmModal>
     )
 }

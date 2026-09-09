@@ -49,7 +49,7 @@ export const FilterDropdown = ({
                     className={`w-2.5 h-2.5 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                 />
             </button>
-            {isOpen && (
+            {isOpen ? (
                 <div className="absolute top-[41px] left-0 right-0 z-30 max-h-[320px] overflow-y-auto bg-white border border-t-0 border-border-subtle rounded-b-[8px] p-1.5 shadow-lg flex flex-col gap-1">
                     {options.map((optionName) => (
                         <button
@@ -65,7 +65,7 @@ export const FilterDropdown = ({
                         </button>
                     ))}
                 </div>
-            )}
+            ) : null}
         </div>
     )
 }

@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { exportTransactionsCsv, exportTransactionsPdf } from '@/api/bookings/export-transactions'
 import { useSetState } from '@shared/hooks/useSetState'
-import { getBookingStatus, isBookingOverdue } from '@shared/util/booking'
+import { flattenBookingsByEquipment, getBookingStatus, isBookingOverdue } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
 import { TRANSACTION_CATEGORIES } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
@@ -17,24 +17,6 @@ const INITIAL_PAGE_STATE = Object.freeze({
     selectedCategory: 'All',
     selectedTransaction: null
 })
-
-const flattenBookingsByEquipment = (bookings) =>
-    bookings.flatMap((booking) => {
-        const equipments = booking.equipments || []
-        if (equipments.length <= 1) {
-            return [booking]
-        }
-        const flattened = []
-        for (const equipment of equipments) {
-            flattened.push({
-                ...booking,
-                itemKey: `${booking.id}-${equipment.id}`,
-                equipment,
-                equipments: [equipment]
-            })
-        }
-        return flattened
-    })
 
 const matchesTransactionCategory = (status, isOverdue, selectedCategory) => {
     if (status === 'pending') {
@@ -188,5 +170,3 @@ export const TransactionsPage = (props) => {
         </div>
     )
 }
-
-export const Transactions = TransactionsPage

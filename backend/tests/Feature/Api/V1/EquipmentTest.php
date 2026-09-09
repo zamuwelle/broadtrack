@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BookingStatus;
 use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Models\Booking;
@@ -68,6 +69,51 @@ test('admin can update equipment', function () {
     ]);
 });
 
+test('admin selected live equipment status survives refetch', function (EquipmentStatus $status): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $this->actingAs($admin)->putJson("/api/v1/equipment/{$equipment->id}", [
+        'status' => $status->value,
+    ])->assertOk()->assertJsonPath('data.status', $status->value);
+
+    $this->getJson('/api/v1/equipment')
+        ->assertOk()
+        ->assertJsonPath('data.0.status', $status->value);
+
+    expect($equipment->fresh()->status)->toBe($status);
+})->with([
+    'available' => [EquipmentStatus::Available],
+    'booked' => [EquipmentStatus::Booked],
+    'borrowed' => [EquipmentStatus::Borrowed],
+    'maintenance' => [EquipmentStatus::Maintenance],
+]);
+
+test('booking lifecycle still derives live status and restores available after return', function (): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->approved()->create([
+        'start_date' => now()->subHour(),
+        'end_date' => now()->addHour(),
+    ]);
+    $booking->equipments()->attach($equipment->id);
+
+    $this->actingAs($admin)->getJson('/api/v1/equipment')
+        ->assertOk()->assertJsonPath('data.0.status', EquipmentStatus::Booked->value);
+
+    $booking->update(['status' => BookingStatus::Released]);
+
+    $this->getJson('/api/v1/equipment')
+        ->assertOk()->assertJsonPath('data.0.status', EquipmentStatus::Borrowed->value);
+
+    $booking->update(['status' => BookingStatus::Returned]);
+
+    $this->getJson('/api/v1/equipment')
+        ->assertOk()->assertJsonPath('data.0.status', EquipmentStatus::Available->value);
+
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Available);
+});
+
 test('admin can upload equipment image', function () {
     $admin = User::factory()->admin()->create();
     $equipment = Equipment::factory()->create();
@@ -112,7 +158,7 @@ test('equipment helper methods and scopes work correctly', function () {
 
     expect($available->isAvailable())->toBeTrue();
     expect($available->isUnderMaintenance())->toBeFalse();
-    expect($available->imagePublicId())->toBe('sn-cam-00001');
+    expect($available->imagePublicId())->toBe("equipment-{$available->id}");
 
     expect($maintenance->isAvailable())->toBeFalse();
     expect($maintenance->isUnderMaintenance())->toBeTrue();

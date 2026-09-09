@@ -78,7 +78,7 @@ class EquipmentController extends ApiController
                 return $this->error('Cannot delete equipment that has associated booking records.', 422);
             }
 
-            if ($lockedEquipment->image) {
+            if ($lockedEquipment->image && $cloudinary->ownsImage($lockedEquipment->image, $lockedEquipment->imagePublicId())) {
                 $cloudinary->destroy($lockedEquipment->imagePublicId());
             }
 

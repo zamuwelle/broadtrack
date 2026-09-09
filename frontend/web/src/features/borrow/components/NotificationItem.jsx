@@ -14,7 +14,7 @@ export const NotificationItem = ({ item, onClick }) => {
             onClick={handleClick}
             className="flex h-24 w-full shrink-0 cursor-pointer flex-col justify-start items-start gap-[3px] rounded-lg bg-slate-50 p-4 transition-colors hover:bg-slate-200 text-left">
             <div className="inline-flex w-full items-center justify-start gap-1">
-                {icon && <Icon name={icon} className="size-4 shrink-0" />}
+                {icon ? <Icon name={icon} className="size-4 shrink-0" /> : null}
                 <span className="flex-1 text-sm font-normal text-slate-900">{headline}</span>
             </div>
             <div className="flex w-full flex-col items-start justify-start gap-[3px]">

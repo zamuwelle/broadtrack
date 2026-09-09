@@ -10,7 +10,7 @@ export const SelectedEquipmentList = ({ selectedItems = defaultSelectedItems, on
         (event) => {
             const { id } = event.currentTarget.dataset
             if (id) {
-                onRemove(id)
+                onRemove(Number(id))
             }
         },
         [onRemove]

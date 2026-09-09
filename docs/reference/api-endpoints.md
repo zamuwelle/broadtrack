@@ -6,17 +6,17 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 
 ## Authentication & Account Endpoints
 
-| Method | Endpoint                       | Access        | Rate Limit | Description                                                  |
-| ------ | ------------------------------ | ------------- | ---------- | ------------------------------------------------------------ |
-| `POST` | `/api/v1/register`             | Public        | 5/min      | Register a new user account with school email.               |
-| `POST` | `/api/v1/login`                | Public        | 5/min      | Login with email and password; returns Sanctum bearer token. |
-| `POST` | `/api/v1/forgot-password`      | Public        | 5/min      | Send password reset token email.                             |
-| `POST` | `/api/v1/reset-password`       | Public        | 5/min      | Reset password and revoke all existing Sanctum sessions.     |
-| `POST` | `/api/v1/verify-email`         | Public        | 10/min     | Verify user email address with 6-digit OTP verification code. |
+| Method | Endpoint                       | Access        | Rate Limit | Description                                                             |
+| ------ | ------------------------------ | ------------- | ---------- | ----------------------------------------------------------------------- |
+| `POST` | `/api/v1/register`             | Public        | 5/min      | Register a new user account with school email.                          |
+| `POST` | `/api/v1/login`                | Public        | 5/min      | Login with email and password; returns Sanctum bearer token.            |
+| `POST` | `/api/v1/forgot-password`      | Public        | 5/min      | Send password reset token email.                                        |
+| `POST` | `/api/v1/reset-password`       | Public        | 5/min      | Reset password and revoke all existing Sanctum sessions.                |
+| `POST` | `/api/v1/verify-email`         | Public        | 10/min     | Verify user email address with 6-digit OTP verification code.           |
 | `POST` | `/api/v1/resend-verification`  | Public        | 5/min      | Resend 6-digit OTP verification code to unverified user (60s cooldown). |
-| `GET`  | `/api/v1/auth/google/redirect` | Public        | 60/min     | Redirect to Google OAuth consent screen.                     |
-| `GET`  | `/api/v1/auth/google/callback` | Public        | 60/min     | Handle Google OAuth callback with domain restriction.        |
-| `POST` | `/api/v1/logout`               | Authenticated | 60/min     | Revoke current user bearer token.                            |
+| `GET`  | `/api/v1/auth/google/redirect` | Public        | 60/min     | Redirect to Google OAuth consent screen.                                |
+| `GET`  | `/api/v1/auth/google/callback` | Public        | 60/min     | Handle Google OAuth callback with domain restriction.                   |
+| `POST` | `/api/v1/logout`               | Authenticated | 60/min     | Revoke current user bearer token.                                       |
 
 ---
 

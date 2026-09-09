@@ -67,22 +67,24 @@ class BookingReportController extends ApiController
             ]);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
-                    $row['ticket_id'],
-                    $row['borrower'],
-                    $row['phone'],
-                    $row['email'],
-                    $row['department'],
-                    $row['equipment_name'],
-                    $row['category'],
-                    $row['model'],
-                    $row['serial_no'],
-                    $row['borrow_date'],
-                    $row['due_date'],
-                    $row['actual_return_date'],
-                    $row['purpose'],
-                    $row['status_label'],
-                ]);
+                fputcsv($handle, array_map(static fn (mixed $value): mixed => is_string($value) && preg_match('/^[\x00-\x20]*[=+@-]/', $value)
+                    ? "'".$value
+                    : $value, [
+                        $row['ticket_id'],
+                        $row['borrower'],
+                        $row['phone'],
+                        $row['email'],
+                        $row['department'],
+                        $row['equipment_name'],
+                        $row['category'],
+                        $row['model'],
+                        $row['serial_no'],
+                        $row['borrow_date'],
+                        $row['due_date'],
+                        $row['actual_return_date'],
+                        $row['purpose'],
+                        $row['status_label'],
+                    ]));
             }
 
             fclose($handle);
@@ -152,7 +154,7 @@ class BookingReportController extends ApiController
             $phone = $user?->phone ?? 'N/A';
             $email = $user?->email ?? 'N/A';
             $department = $user?->department?->value ?? (string)$user?->department ?? 'N/A';
-            $deptShort = method_exists($user?->department, 'shorthand') ? $user->department->shorthand() : '';
+            $deptShort = $user?->department?->shorthand() ?? '';
             $purpose = $booking->purpose ?: 'N/A';
 
             $equipments = $booking->equipments;

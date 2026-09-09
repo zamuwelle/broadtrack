@@ -77,11 +77,11 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                     </button>
                 </div>
 
-                {errorMessage && (
+                {errorMessage ? (
                     <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
                         {errorMessage}
                     </div>
-                )}
+                ) : null}
 
                 <div className="bg-slate-50 rounded-2xl border border-slate-300 p-4 sm:p-6 flex flex-col gap-4">
                     <div>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { getNotificationConfig } from '@/features/borrow/components/notificationConfig'
 import { useEvents } from '@/hooks/queries/useEvents'
 import { useUser } from '@/lib/auth'
+import { api } from '@/lib/api-client'
 
 const noop = () => null
 
@@ -38,6 +39,7 @@ const resolveNotificationConfig = ({ event, booking, isAdmin, userId }) => {
 export const useBookingNotification = (onNavigate = noop) => {
     const { data: user } = useUser()
     const navigateRef = useRef(onNavigate)
+    const notificationSessionRef = useRef(null)
 
     useEffect(() => {
         navigateRef.current = onNavigate
@@ -46,6 +48,14 @@ export const useBookingNotification = (onNavigate = noop) => {
     const role = user ? user.role : ''
     const isAdmin = role === 'admin' || role === 'sysadmin'
     const userId = user ? user.id : null
+
+    useEffect(() => {
+        const session = { active: true }
+        notificationSessionRef.current = session
+        return () => {
+            session.active = false
+        }
+    }, [isAdmin, userId])
 
     useEffect(() => {
         if (!('Notification' in globalThis) || globalThis.Notification.permission !== 'default') {
@@ -70,9 +80,27 @@ export const useBookingNotification = (onNavigate = noop) => {
     }, [])
 
     const handleNotification = useCallback(
-        (event = {}) => {
-            const booking = event ? event.booking : null
-            if (!booking || !('Notification' in globalThis) || globalThis.Notification.permission !== 'granted') {
+        async (event = {}) => {
+            if (
+                !event.bookingId ||
+                !('Notification' in globalThis) ||
+                globalThis.Notification.permission !== 'granted'
+            ) {
+                return
+            }
+            if (isAdmin && event.action !== 'created' && event.action !== 'cancelled') {
+                return
+            }
+
+            const session = notificationSessionRef.current
+            let booking
+            try {
+                const response = await api.get(`/bookings/${event.bookingId}`)
+                booking = response?.data
+            } catch {
+                return
+            }
+            if (!booking || !session?.active || session !== notificationSessionRef.current) {
                 return
             }
 
@@ -83,7 +111,7 @@ export const useBookingNotification = (onNavigate = noop) => {
                 userId
             })
 
-            if (!config || !config.headline || !config.destination) {
+            if (!config) {
                 return
             }
 

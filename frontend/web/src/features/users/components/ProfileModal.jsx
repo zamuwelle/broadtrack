@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useUser } from '@/lib/auth'
 import { AddPictureModal } from '@/features/users/components/AddPictureModal'
@@ -13,6 +13,15 @@ export const ProfileModal = ({ isOpen = false, onClose = noop, onUpdated = noop 
     const [pictureOpen, setPictureOpen] = useState(false)
     const [pendingPicture, setPendingPicture] = useState(null)
     const [previewUrl, setPreviewUrl] = useState(null)
+
+    useEffect(
+        () => () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+            }
+        },
+        [previewUrl]
+    )
 
     const handleClose = useCallback(() => {
         setPendingPicture(null)

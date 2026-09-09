@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('password');
             $table->string('role')->default(UserRole::Borrower->value);
-            $table->string('department');
+            $table->string('department')->nullable();
             $table->string('profile_picture')->nullable();
             $table->timestamps();
         });

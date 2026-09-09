@@ -38,6 +38,8 @@ const useAuthLoginHandlers = ({
             }
             if (data.user) {
                 queryClient.setQueryData(['me'], data.user)
+                const firstName = data.user.firstname || 'User'
+                globalThis.sessionStorage.setItem('welcome_message', `Welcome back, ${firstName}!`)
                 if (typeof onLoginSuccess === 'function') {
                     onLoginSuccess(data.user)
                 }

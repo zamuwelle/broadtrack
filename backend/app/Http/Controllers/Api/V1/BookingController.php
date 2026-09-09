@@ -11,6 +11,7 @@ use App\Http\Resources\Api\V1\BookingResource;
 use App\Mail\EquipmentReturnReminderMail;
 use App\Models\Booking;
 use App\Models\Equipment;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,15 +52,19 @@ class BookingController extends ApiController
         $startDate = $request->validated('start_date');
         $endDate = $request->validated('end_date');
 
-        return DB::transaction(function () use ($request, $equipmentIds, $startDate, $endDate) {
-            Equipment::whereIn('id', $equipmentIds)->lockForUpdate()->get();
+        return DB::transaction(function () use ($request, $equipmentIds, $startDate, $endDate): JsonResponse {
+            $equipment = Equipment::whereIn('id', $equipmentIds)->orderBy('id')->lockForUpdate()->get();
+
+            if ($equipment->count() !== count($equipmentIds) || $equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
+                return $this->error('One or more selected items are unavailable.', 422);
+            }
 
             $overlapping = Booking::overlapping($startDate, $endDate)
                 ->whereIn('status', [
                     BookingStatus::Approved,
                     BookingStatus::Released,
                 ])
-                ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
+                ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 
             if ($overlapping) {
@@ -94,23 +99,29 @@ class BookingController extends ApiController
     public function approve(ApproveBookingRequest $request, Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
+        $equipmentIds = $booking->equipments()->pluck('equipments.id');
 
-        if ($booking->status !== BookingStatus::Pending) {
-            return $this->error('Only pending bookings can be approved.', 422);
-        }
+        return DB::transaction(function () use ($request, $booking, $equipmentIds): JsonResponse {
+            $equipment = Equipment::whereIn('id', $equipmentIds)->orderBy('id')->lockForUpdate()->get();
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('manage', $booking);
 
-        if ($booking->end_date->isPast()) {
-            return $this->error('Cannot approve a booking whose reservation period has already passed.', 422);
-        }
+            if ($booking->status !== BookingStatus::Pending) {
+                return $this->error('Only pending bookings can be approved.', 422);
+            }
 
-        return DB::transaction(function () use ($request, $booking) {
-            $equipmentIds = $booking->equipments()->pluck('equipments.id');
-            Equipment::whereIn('id', $equipmentIds)->lockForUpdate()->get();
+            if ($booking->end_date->isPast()) {
+                return $this->error('Cannot approve a booking whose reservation period has already passed.', 422);
+            }
+
+            if ($equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
+                return $this->error('Equipment under maintenance cannot be approved.', 422);
+            }
 
             $hasOverlap = Booking::overlapping($booking->start_date, $booking->end_date)
                 ->where('id', '!=', $booking->id)
                 ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
-                ->whereHas('equipments', static fn ($query) => $query->whereIn('equipments.id', $equipmentIds))
+                ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 
             if ($hasOverlap) {
@@ -125,50 +136,70 @@ class BookingController extends ApiController
 
     public function reject(RejectBookingRequest $request, Booking $booking): JsonResponse
     {
-        $this->authorize('manage', $booking);
+        return DB::transaction(function () use ($request, $booking): JsonResponse {
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('manage', $booking);
 
-        if (in_array($booking->status, [BookingStatus::Pending, BookingStatus::Approved], true)) {
-            $booking->reject($request->validated('rejection_reason'));
+            if (in_array($booking->status, [BookingStatus::Pending, BookingStatus::Approved], true)) {
+                $booking->reject($request->validated('rejection_reason'));
 
-            return $this->success(new BookingResource($booking), 'Booking rejected');
-        }
+                return $this->success(new BookingResource($booking), 'Booking rejected');
+            }
 
-        return $this->error('Only pending or approved bookings can be rejected.', 422);
+            return $this->error('Only pending or approved bookings can be rejected.', 422);
+        });
     }
 
     public function release(Booking $booking): JsonResponse
     {
         $this->authorize('manage', $booking);
+        $equipmentIds = $booking->equipments()->pluck('equipments.id');
 
-        if ($booking->status !== BookingStatus::Approved) {
-            return $this->error('Only approved bookings can be released.', 422);
-        }
+        return DB::transaction(function () use ($booking, $equipmentIds): JsonResponse {
+            $equipment = Equipment::whereIn('id', $equipmentIds)->orderBy('id')->lockForUpdate()->get();
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('manage', $booking);
 
-        $booking->release();
+            if ($booking->status !== BookingStatus::Approved) {
+                return $this->error('Only approved bookings can be released.', 422);
+            }
 
-        return $this->success(new BookingResource($booking), 'Booking released');
+            if ($equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
+                return $this->error('Equipment under maintenance cannot be released.', 422);
+            }
+
+            $booking->release();
+
+            return $this->success(new BookingResource($booking), 'Booking released');
+        });
     }
 
     public function markAsReturned(Request $request, Booking $booking): JsonResponse
     {
-        $this->authorize('manage', $booking);
+        return DB::transaction(function () use ($request, $booking): JsonResponse {
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('manage', $booking);
 
-        if (! $booking->isActive()) {
-            return $this->error('Only approved or released bookings can be marked as returned.', 422);
-        }
+            if (! $booking->isActive()) {
+                return $this->error('Only approved or released bookings can be marked as returned.', 422);
+            }
 
-        $booking->markAsReturned($request->user()->id);
+            $booking->markAsReturned($request->user()->id);
 
-        return $this->success(new BookingResource($booking), 'Booking returned');
+            return $this->success(new BookingResource($booking), 'Booking returned');
+        });
     }
 
     public function cancel(Booking $booking): JsonResponse
     {
-        $this->authorize('cancel', $booking);
+        return DB::transaction(function () use ($booking): JsonResponse {
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $this->authorize('cancel', $booking);
 
-        $booking->cancel();
+            $booking->cancel();
 
-        return $this->success(new BookingResource($booking), 'Booking cancelled');
+            return $this->success(new BookingResource($booking), 'Booking cancelled');
+        });
     }
 
     public function markAsRead(Booking $booking): JsonResponse

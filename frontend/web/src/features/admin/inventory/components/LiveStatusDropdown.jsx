@@ -42,6 +42,9 @@ export const LiveStatusDropdown = ({ currentStatus = 'available', onSelectStatus
     const activeConfiguration = STATUS_CONFIGURATIONS[currentStatus] || STATUS_CONFIGURATIONS.available
 
     useEffect(() => {
+        if (!isOpen) {
+            return
+        }
         const handleClickOutside = (event) => {
             if (dropdownReference.current && !dropdownReference.current.contains(event.target)) {
                 setIsOpen(false)
@@ -49,7 +52,7 @@ export const LiveStatusDropdown = ({ currentStatus = 'available', onSelectStatus
         }
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [])
+    }, [isOpen])
 
     const handleToggle = useCallback(() => {
         setIsOpen((prev) => !prev)

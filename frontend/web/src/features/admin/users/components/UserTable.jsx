@@ -59,8 +59,8 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
     const showingEnd = Math.min(startIndex + pageSize, users.length)
 
     const handlePrevPage = useCallback(() => {
-        setCurrentPage((prev) => Math.max(1, prev - 1))
-    }, [])
+        setCurrentPage(Math.max(1, activePage - 1))
+    }, [activePage])
 
     const handleNextPage = useCallback(() => {
         setCurrentPage((prev) => Math.min(totalPages, prev + 1))

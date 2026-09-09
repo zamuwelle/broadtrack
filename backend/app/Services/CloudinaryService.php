@@ -46,6 +46,16 @@ class CloudinaryService
             ]))->json();
     }
 
+    public function ownsImage(string $url, string $rawIdentifier): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        $path = parse_url($url, PHP_URL_PATH);
+
+        return $host === 'res.cloudinary.com'
+            && is_string($path)
+            && preg_match('#^/'.preg_quote((string)$this->cloudName, '#').'/image/upload/(?:v[0-9]+/)?'.preg_quote($this->folder, '#').'/'.$this->hashIdentifier($rawIdentifier).'\.[a-z0-9]+$#', $path) === 1;
+    }
+
     protected function client(): PendingRequest
     {
         return Http::timeout(60)

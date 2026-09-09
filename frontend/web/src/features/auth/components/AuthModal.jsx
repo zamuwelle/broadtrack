@@ -1,11 +1,11 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { X } from 'lucide-react'
 import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@shared/schemas/auth'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useAuthModalActions } from '@/features/auth/components/useAuthModalActions'
-import { WelcomeToast } from '@/components/ui/Toast'
+import { Toast } from '@/components/ui/Toast'
 import { AuthModalHeader } from '@/features/auth/components/AuthModalHeader'
 import { AuthModalBody } from '@/features/auth/components/AuthModalBody'
 
@@ -22,7 +22,7 @@ const initialFormState = Object.freeze({
 const defaultInitialData = Object.freeze({})
 const noop = () => null
 
-const useAuthModalState = ({ mode, initialError, initialData, isOpen, onClose }) => {
+const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
     const [authState, updateAuthState] = useSetState({
         tab: mode,
         showPass: false,
@@ -68,18 +68,6 @@ const useAuthModalState = ({ mode, initialError, initialData, isOpen, onClose })
         updateAuthState((prev) => ({ showPass: !prev.showPass }))
     }, [updateAuthState])
 
-    useEffect(() => {
-        if (isOpen) {
-            updateAuthState({
-                tab: mode,
-                showPass: false,
-                error: initialError,
-                successMessage: '',
-                form: { ...initialFormState, ...initialData }
-            })
-        }
-    }, [isOpen, mode, initialError, initialData, updateAuthState])
-
     return {
         authState,
         updateAuthState,
@@ -102,7 +90,6 @@ export const AuthModal = ({
         mode,
         initialError,
         initialData,
-        isOpen,
         onClose
     })
     const { tab, showPass, error, successMessage, form } = authState
@@ -110,12 +97,6 @@ export const AuthModal = ({
 
     const isVerifyTab = tab === 'verify'
     useEscapeKey(isVerifyTab ? null : onClose)
-
-    useEffect(() => {
-        if (isOpen && initialError) {
-            showToast(initialError, 'danger')
-        }
-    }, [isOpen, initialError, showToast])
 
     const validLogin = loginSchema.safeParse(form).success
     const validRegister = registerSchema.safeParse(form).success
@@ -173,7 +154,7 @@ export const AuthModal = ({
                     />
                 </div>
             </div>
-            <WelcomeToast show={toastVisible} message={toastMessage} type={toastType} />
+            <Toast show={toastVisible} message={toastMessage} type={toastType} />
         </>
     )
 }

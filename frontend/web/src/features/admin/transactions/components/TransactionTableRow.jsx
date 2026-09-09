@@ -41,15 +41,15 @@ export const TransactionTableRow = ({ booking = defaultBooking, onViewDetails = 
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 whitespace-nowrap">
                 <div className="text-xs font-medium text-slate-900">{borrowerName}</div>
-                {borrowerDepartment && (
+                {borrowerDepartment ? (
                     <div className="text-[10px] font-medium text-slate-400 mt-0.5">{borrowerDepartment}</div>
-                )}
+                ) : null}
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 whitespace-nowrap">
                 <div className="text-xs font-medium text-slate-900">{equipmentName}</div>
-                {equipmentModel && (
+                {equipmentModel ? (
                     <div className="text-[10px] font-medium text-slate-400 mt-0.5">{equipmentModel}</div>
-                )}
+                ) : null}
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-xs font-medium text-slate-700 whitespace-nowrap">
                 {borrowDateText}

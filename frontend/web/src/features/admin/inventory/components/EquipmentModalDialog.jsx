@@ -12,23 +12,26 @@ import { EquipmentImageBanner } from '@/features/admin/inventory/components/Equi
 const defaultCategories = Object.freeze([])
 const noop = () => null
 
-const initialFormState = Object.freeze({
-    equipmentName: '',
-    modelCode: '',
-    serialNumber: '',
-    categoryId: '',
-    shortDescription: '',
-    technicalSpecs: '',
-    imageFile: null,
-    previewUrl: '',
-    isSubmitting: false,
-    errorMessage: '',
-    touched: Object.freeze({}),
-    isCategoryOpen: false
-})
+const getInitialFormState = (equipment) => {
+    const item = equipment || {}
+    return {
+        equipmentName: item.name || '',
+        modelCode: item.model || '',
+        serialNumber: item.serial_no || '',
+        categoryId: (typeof item.category === 'string' ? item.category : item.category?.name) || '',
+        shortDescription: item.description || '',
+        technicalSpecs: item.specs || '',
+        imageFile: null,
+        previewUrl: item.image || '',
+        isSubmitting: false,
+        errorMessage: '',
+        touched: Object.freeze({}),
+        isCategoryOpen: false
+    }
+}
 
 const createEquipmentPayload = (formValues, equipment, isEditMode) => {
-    const item = equipment || initialFormState
+    const item = equipment || {}
     return {
         name: formValues.equipmentName.trim(),
         brand: isEditMode && item.brand ? item.brand : formValues.equipmentName.trim(),
@@ -44,11 +47,7 @@ const uploadEquipmentImage = async (equipmentId, file) => {
     if (!file || !equipmentId) {
         return
     }
-    try {
-        await uploadImageApi({ id: equipmentId, file })
-    } catch (uploadError) {
-        console.error('Image upload failed:', uploadError)
-    }
+    await uploadImageApi({ id: equipmentId, file })
 }
 
 const useEquipmentFieldHandlers = (updateFormState) => {
@@ -133,26 +132,27 @@ const useEquipmentFieldHandlers = (updateFormState) => {
 }
 
 const useEquipmentForm = (equipment, onClose, onSuccess) => {
-    const isEditMode = Boolean(equipment && equipment.id)
     const fileInputReference = useRef(null)
-    const [formState, updateFormState] = useSetState(initialFormState)
+    const savedEquipmentReference = useRef(equipment)
+    const isMounted = useRef(false)
+    const isSubmittingReference = useRef(false)
+    const [formState, updateFormState] = useSetState(() => getInitialFormState(equipment))
 
     useEffect(() => {
-        const item = equipment || {}
-        updateFormState({
-            equipmentName: item.name || '',
-            modelCode: item.model || '',
-            serialNumber: item.serial_no || '',
-            categoryId: (typeof item.category === 'string' ? item.category : item.category?.name) || '',
-            shortDescription: item.description || '',
-            technicalSpecs: item.specs || '',
-            imageFile: null,
-            previewUrl: item.image || '',
-            errorMessage: '',
-            touched: {},
-            isCategoryOpen: false
-        })
-    }, [equipment, updateFormState])
+        isMounted.current = true
+        return () => {
+            isMounted.current = false
+        }
+    }, [])
+
+    useEffect(
+        () => () => {
+            if (formState.imageFile) {
+                globalThis.URL.revokeObjectURL(formState.previewUrl)
+            }
+        },
+        [formState.imageFile, formState.previewUrl]
+    )
 
     const fieldHandlers = useEquipmentFieldHandlers(updateFormState)
 
@@ -179,30 +179,44 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
     const handleSubmit = useCallback(
         async (event) => {
             event.preventDefault()
-            if (!formState.equipmentName.trim() || !formState.categoryId || !formState.shortDescription.trim()) {
+            if (
+                isSubmittingReference.current ||
+                !formState.equipmentName.trim() ||
+                !formState.categoryId ||
+                !formState.shortDescription.trim()
+            ) {
                 return
             }
+            isSubmittingReference.current = true
             updateFormState({ isSubmitting: true, errorMessage: '' })
-            const payload = createEquipmentPayload(formState, equipment, isEditMode)
+            const currentEquipment = savedEquipmentReference.current
+            const isEditMode = Boolean(currentEquipment?.id)
+            const payload = createEquipmentPayload(formState, currentEquipment, isEditMode)
             try {
                 const { data: savedEquipment } = isEditMode
-                    ? await updateEquipment({ id: equipment.id, data: payload })
+                    ? await updateEquipment({ id: currentEquipment.id, data: payload })
                     : await createEquipment(payload)
 
-                if (savedEquipment && savedEquipment.id) {
-                    await uploadEquipmentImage(savedEquipment.id, formState.imageFile)
+                savedEquipmentReference.current = savedEquipment || currentEquipment
+                await uploadEquipmentImage(savedEquipmentReference.current?.id, formState.imageFile)
+                if (isMounted.current) {
+                    onSuccess()
+                    onClose()
                 }
-                onSuccess()
-                onClose()
             } catch (error) {
-                updateFormState({
-                    errorMessage: (error && error.message) || 'Failed to save equipment asset'
-                })
+                if (isMounted.current) {
+                    updateFormState({
+                        errorMessage: (error && error.message) || 'Failed to save equipment asset'
+                    })
+                }
             } finally {
-                updateFormState({ isSubmitting: false })
+                isSubmittingReference.current = false
+                if (isMounted.current) {
+                    updateFormState({ isSubmitting: false })
+                }
             }
         },
-        [equipment, formState, isEditMode, onClose, onSuccess, updateFormState]
+        [formState, onClose, onSuccess, updateFormState]
     )
 
     return {

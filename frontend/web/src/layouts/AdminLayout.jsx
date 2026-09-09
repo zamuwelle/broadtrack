@@ -118,7 +118,7 @@ export const Component = ({ onReady, children }) => {
                 />
                 <main ref={mainReference} className="flex-1 overflow-y-auto bg-background">
                     <div className="p-4 sm:p-6 lg:p-8">
-                        {activeTab !== 'User Management' && (
+                        {activeTab === 'User Management' ? null : (
                             <Banner title="Broadtrack Operations">
                                 <span>
                                     Manage equipment inventory, review reservation requests, monitor active

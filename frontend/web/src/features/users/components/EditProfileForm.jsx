@@ -8,6 +8,7 @@ import { updateProfile } from '@/api/users/update-profile'
 import { uploadProfilePicture } from '@/api/users/upload-picture'
 import { ProfileInputField } from '@/features/users/components/ProfileInputField'
 import { ProfileActionButtons } from '@/features/users/components/ProfileActionButtons'
+import { ROLES } from '@shared/constants'
 
 const fields = Object.freeze([
     {
@@ -57,6 +58,20 @@ const noop = () => null
 export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPicture = null, card = false }) => {
     const { data: user } = useUser()
     const queryClient = useQueryClient()
+    const profileFields = useMemo(() => {
+        const resolvedFields = []
+        for (const field of fields) {
+            resolvedFields.push(
+                field.key === 'department'
+                    ? {
+                          ...field,
+                          validate: (value) => (user?.role === ROLES.BORROWER || value ? validateDepartment(value) : '')
+                      }
+                    : field
+            )
+        }
+        return resolvedFields
+    }, [user?.role])
 
     const initial = useMemo(
         () => ({
@@ -90,7 +105,7 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
     )
 
     const { values, errors, valid, isPending, set, setError, handleUpdate } = useUpdateForm({
-        fields,
+        fields: profileFields,
         initial,
         extraDirty: Boolean(pendingPicture),
         update: updateHandler,
@@ -111,7 +126,7 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
                         ? 'flex w-full flex-col gap-2.5 rounded-lg bg-zinc-100/40 p-4 outline outline-1 outline-offset-[-1px] outline-slate-300'
                         : 'flex flex-col gap-3'
                 }>
-                {fields.map((field) => (
+                {profileFields.map((field) => (
                     <ProfileInputField
                         key={field.key}
                         field={field}

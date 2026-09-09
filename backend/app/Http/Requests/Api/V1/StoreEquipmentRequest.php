@@ -21,7 +21,7 @@ class StoreEquipmentRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
-            'serial_no' => 'nullable|string|max:255',
+            'serial_no' => ['nullable', 'string', 'max:255', Rule::unique('equipments')],
             'status' => ['nullable', Rule::enum(EquipmentStatus::class)],
             'description' => 'nullable|string',
             'specs' => 'nullable|string',

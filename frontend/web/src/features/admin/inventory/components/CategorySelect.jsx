@@ -17,6 +17,9 @@ export const CategorySelect = ({
     const dropdownReference = useRef(null)
 
     useEffect(() => {
+        if (!isOpen) {
+            return
+        }
         const handleClickOutside = (event) => {
             if (dropdownReference.current && !dropdownReference.current.contains(event.target)) {
                 onClose()
@@ -24,7 +27,7 @@ export const CategorySelect = ({
         }
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [onClose])
+    }, [isOpen, onClose])
 
     const handleSelect = useCallback(
         (event) => {

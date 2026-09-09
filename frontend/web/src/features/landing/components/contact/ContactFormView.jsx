@@ -69,7 +69,7 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
                                 className={`${fieldClass} ${err ? 'border-red-400' : 'border-transparent'}`}
                             />
                             <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                                {err && <span className="text-[11px] sm:text-[12px] text-red-300">{err}</span>}
+                                {err ? <span className="text-[11px] sm:text-[12px] text-red-300">{err}</span> : null}
                             </div>
                         </div>
                     )
@@ -84,17 +84,17 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
                         className={`${textareaClass} ${messageError ? 'border-red-400' : 'border-transparent'}`}
                     />
                     <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                        {messageError && (
+                        {messageError ? (
                             <span className="text-[11px] sm:text-[12px] text-red-300">{messageError}</span>
-                        )}
+                        ) : null}
                     </div>
                 </div>
                 <div className="h-1" />
-                {error && (
+                {error ? (
                     <p className="text-[13px] text-red-300 text-center">
                         {error.message || 'Something went wrong, try again.'}
                     </p>
-                )}
+                ) : null}
                 <button
                     type="submit"
                     disabled={!isValid || isPending}

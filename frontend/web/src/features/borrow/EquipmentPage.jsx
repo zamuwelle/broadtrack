@@ -100,6 +100,9 @@ export const EquipmentPage = () => {
         [columnCount, filteredEquipment]
     )
 
+    const hasEquipment = !isLoading && filteredEquipment.length > 0
+    const hasNoEquipment = !isLoading && filteredEquipment.length === 0
+
     return (
         <div className="flex flex-col font-['Poppins']">
             <Banner title="Request BAB Equipment">
@@ -112,7 +115,7 @@ export const EquipmentPage = () => {
                 <CategoryButtons categories={CATEGORY_OPTIONS} selected={category} onSelect={handleCategorySelect} />
             </div>
             <div className="mt-8">
-                {!isLoading && filteredEquipment.length > 0 && (
+                {hasEquipment ? (
                     <div className={`grid ${GRID_CLASS_MAP[columnCount]} gap-6 items-start`}>
                         {columns.map((column) => (
                             <div key={column.id} className="flex flex-col gap-6">
@@ -122,13 +125,13 @@ export const EquipmentPage = () => {
                             </div>
                         ))}
                     </div>
-                )}
-                {!isLoading && filteredEquipment.length === 0 && (
+                ) : null}
+                {hasNoEquipment ? (
                     <EmptyState
                         title="No equipment found"
                         description="Try searching for something else or clear the filters"
                     />
-                )}
+                ) : null}
             </div>
         </div>
     )

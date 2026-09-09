@@ -34,10 +34,10 @@ export const ConfirmModal = ({
             <div
                 className={`bg-surface p-5 sm:p-6 rounded-xl border border-slate-200 shadow-2xl w-full ${maxWidth} max-h-[90dvh] overflow-y-scroll my-auto relative z-10 flex flex-col items-center text-center font-['Poppins'] gap-4`}>
                 <XButton onClick={onClose} className="absolute top-5 right-5" />
-                {icon && <div className="mb-1">{icon}</div>}
+                {icon ? <div className="mb-1">{icon}</div> : null}
                 <div className="flex flex-col gap-1 w-full px-6 sm:px-8">
-                    {title && <h3 className="text-lg font-semibold text-slate-900">{title}</h3>}
-                    {description && <p className="text-sm text-slate-500">{description}</p>}
+                    {title ? <h3 className="text-lg font-semibold text-slate-900">{title}</h3> : null}
+                    {description ? <p className="text-sm text-slate-500">{description}</p> : null}
                 </div>
                 {children}
                 <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 pt-2 w-full">

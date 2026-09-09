@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/api/users/update-user'
@@ -16,7 +16,7 @@ import {
     validatePhone
 } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
-import { ModalShell } from '@/features/admin/users/components/UserModalShell'
+import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -24,13 +24,13 @@ import { EDITABLE_ROLES } from '@shared/constants'
 
 const noop = () => null
 
-const INITIAL_FORM_STATE = Object.freeze({
-    firstname: '',
-    lastname: '',
-    email: '',
-    phone: '',
-    role: 'borrower',
-    department: '',
+const getInitialFormState = (user) => ({
+    firstname: user?.firstname || '',
+    lastname: user?.lastname || '',
+    email: user?.email || '',
+    phone: formatPhone(user?.phone || ''),
+    role: user?.role || 'borrower',
+    department: user?.department || '',
     password: '',
     showPassword: false,
     error: ''
@@ -137,28 +137,12 @@ const getEditUserErrors = (form, isBorrower) => ({
 })
 
 const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
-    const [form, setForm] = useSetState(INITIAL_FORM_STATE)
-
-    useEffect(() => {
-        if (isOpen && user) {
-            setForm({
-                firstname: user.firstname || '',
-                lastname: user.lastname || '',
-                email: user.email || '',
-                phone: formatPhone(user.phone || ''),
-                role: user.role || 'borrower',
-                department: user.department || '',
-                password: '',
-                showPassword: false,
-                error: ''
-            })
-        }
-    }, [isOpen, user, setForm])
+    const [form, setForm] = useSetState(() => getInitialFormState(user))
 
     const handleClose = useCallback(() => {
-        setForm(INITIAL_FORM_STATE)
+        setForm(getInitialFormState(user))
         onClose()
-    }, [onClose, setForm])
+    }, [onClose, setForm, user])
 
     const fields = useEditUserFormFields(setForm)
     const updateUserMutation = useUpdateUser()
@@ -177,7 +161,7 @@ const useEditUserForm = (user, isOpen, onClose, onSuccess) => {
                     userId: user.id,
                     data: buildUpdatePayload(form, isBorrower)
                 })
-                setForm(INITIAL_FORM_STATE)
+                setForm(getInitialFormState(user))
                 onSuccess()
                 onClose()
             } catch (error) {
@@ -225,7 +209,7 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
     }
 
     return (
-        <ModalShell
+        <UserModalShell
             title="Edit User"
             subtitle="Update this user's account details."
             onClose={handleClose}
@@ -301,6 +285,6 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 error={errors.password}
                 required={false}
             />
-        </ModalShell>
+        </UserModalShell>
     )
 }

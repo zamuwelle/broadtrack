@@ -66,7 +66,7 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
                 </div>
             </div>
 
-            {isMenuOpen && (
+            {isMenuOpen ? (
                 <>
                     <button
                         type="button"
@@ -96,7 +96,7 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
                         />
                     </div>
                 </>
-            )}
+            ) : null}
         </nav>
     )
 }

@@ -43,10 +43,9 @@ class Equipment extends Model
 
         $source = $this->brand ?: $this->name;
         $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source ?? ''), 0, 3)), 3, 'X');
-        $maxUnit = static::where('name', $this->name)
-            ->whereNotNull('serial_no')
+        $maxUnit = static::where('serial_no', 'like', "SN-{$code}-%")
             ->pluck('serial_no')
-            ->map(static fn ($sn) => (int)substr($sn, -4))
+            ->map(static fn (string $sn): int => (int)substr(strrchr($sn, '-'), 1))
             ->max() ?? 0;
         $unit = $maxUnit + 1;
         $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
@@ -79,7 +78,7 @@ class Equipment extends Model
             $item->status = match (true) {
                 $bookings->contains($isOngoing) => EquipmentStatus::Borrowed,
                 $bookings->contains($isUpcoming) => EquipmentStatus::Booked,
-                default => EquipmentStatus::Available,
+                default => $item->status,
             };
 
             return $item;
@@ -88,7 +87,7 @@ class Equipment extends Model
 
     public function imagePublicId(): string
     {
-        return strtolower($this->serial_no ?: "equipment-{$this->id}");
+        return "equipment-{$this->id}";
     }
 
     public function isAvailable(): bool

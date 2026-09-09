@@ -184,5 +184,3 @@ export const InventoryPage = (props) => {
         </div>
     )
 }
-
-export const Inventory = InventoryPage

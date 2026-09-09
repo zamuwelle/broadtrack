@@ -22,7 +22,7 @@ class UpdateProfileRequest extends FormRequest
             'firstname' => $this->nameRules('sometimes'),
             'lastname' => $this->nameRules('sometimes'),
             'phone' => 'sometimes|string',
-            'department' => ['sometimes', Rule::enum(Department::class)],
+            'department' => ['sometimes', Rule::requiredIf(fn (): bool => $this->user()->isBorrower()), 'nullable', Rule::enum(Department::class)],
             'profile_picture' => 'sometimes|nullable|string',
         ];
     }

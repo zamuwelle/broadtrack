@@ -73,7 +73,7 @@ export const HowItWorks = () => (
                         <div className="w-[80px] h-[80px] flex items-center justify-center rounded-full bg-primary shadow-procedure">
                             <span className="text-surface text-[24px] font-semibold">{step.number}</span>
                         </div>
-                        {step.icon && <Icon name={step.icon} className={step.iconSize} />}
+                        {step.icon ? <Icon name={step.icon} className={step.iconSize} /> : null}
                         <h3 className="text-text text-[18px] font-bold">{step.title}</h3>
                         <p className="text-text text-[14px] text-center whitespace-pre-line">{step.description}</p>
                     </div>

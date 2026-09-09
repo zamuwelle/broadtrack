@@ -14,20 +14,20 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
             return
         }
 
-        const disabledRanges = (excludeDateIntervals || []).map((interval) => {
-            const from = new Date(interval.start)
-            from.setHours(0, 0, 0, 0)
-            const to = new Date(interval.end)
-            to.setHours(23, 59, 59, 999)
-            return { from, to }
-        })
+        const isFullyBookedDay = (date) => {
+            const dayStart = new Date(date)
+            dayStart.setHours(5, 0, 0, 0)
+            const dayEnd = new Date(date)
+            dayEnd.setHours(20, 0, 0, 0)
+            return (excludeDateIntervals || []).some((interval) => interval.start <= dayStart && interval.end >= dayEnd)
+        }
 
         const options = {
             enableTime: true,
             dateFormat: 'Y-m-d\\TH:i',
             minTime: '05:00',
             maxTime: '20:00',
-            disable: disabledRanges,
+            disable: [isFullyBookedDay],
             onChange: (_selectedDates, dateStr) => {
                 if (dateStr) {
                     onChange(dateStr)

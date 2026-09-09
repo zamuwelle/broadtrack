@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Icon } from '@/components/ui/Icon'
 
 const getBackgroundColor = (type, color) => {
@@ -18,6 +18,8 @@ const getBackgroundColor = (type, color) => {
 }
 
 export const Toast = ({ show, message, color, type = 'success' }) => {
+    const [isPresent, setIsPresent] = useState(show)
+    const [isVisible, setIsVisible] = useState(false)
     const isWarning = type === 'warning'
     const isDanger = type === 'danger'
     const isAlert = isWarning || isDanger
@@ -30,9 +32,47 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
     const contentColor = isWelcome ? 'text-primary' : 'text-white'
     const containerStyle = useMemo(() => ({ backgroundColor }), [backgroundColor])
 
+    useEffect(() => {
+        let frame
+        let timer
+
+        if (show) {
+            frame = requestAnimationFrame(() => {
+                setIsPresent(true)
+                frame = requestAnimationFrame(() => setIsVisible(true))
+            })
+        } else {
+            frame = requestAnimationFrame(() => setIsVisible(false))
+            const reducedMotion = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches
+            timer = setTimeout(() => setIsPresent(false), reducedMotion ? 0 : 350)
+        }
+
+        return () => {
+            cancelAnimationFrame(frame)
+            clearTimeout(timer)
+        }
+    }, [show])
+
+    const handleTransitionEnd = useCallback(
+        (event) => {
+            if (show) {
+                return
+            }
+            if (event.target === event.currentTarget && event.propertyName === 'opacity') {
+                setIsPresent(false)
+            }
+        },
+        [show]
+    )
+
+    if (!(show || isPresent)) {
+        return null
+    }
+
     return (
         <div
-            className={`fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 ease-in-out ${show ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            onTransitionEnd={handleTransitionEnd}
+            className={`fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${show && isVisible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
             <div
                 className={`flex items-center gap-2.5 shadow-lg ${contentColor} ${isAlert ? 'h-10 px-3 py-2 rounded-md' : 'h-[50px] px-4 rounded-[8px] justify-center'}`}
                 style={containerStyle}>
@@ -61,5 +101,3 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         </div>
     )
 }
-
-export const WelcomeToast = Toast

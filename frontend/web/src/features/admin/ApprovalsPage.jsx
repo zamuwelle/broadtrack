@@ -7,7 +7,7 @@ import { ConfirmReturnModal } from '@/features/admin/approvals/components/Confir
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useSetState } from '@shared/hooks/useSetState'
-import { getBookingStatus } from '@shared/util/booking'
+import { flattenBookingsByEquipment, getBookingStatus } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
 import { APPROVAL_STATUSES } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
@@ -57,24 +57,6 @@ const sortApprovalBookings = (firstBooking, secondBooking) => {
               new Date(firstBooking.created_at || firstBooking.start_date).getTime()
         : diff
 }
-
-const flattenBookingsByEquipment = (bookings) =>
-    bookings.flatMap((booking) => {
-        const equipments = booking.equipments || []
-        if (equipments.length <= 1) {
-            return [booking]
-        }
-        const flattened = []
-        for (const equipment of equipments) {
-            flattened.push({
-                ...booking,
-                itemKey: `${booking.id}-${equipment.id}`,
-                equipment,
-                equipments: [equipment]
-            })
-        }
-        return flattened
-    })
 
 const filterAndSortBookings = (bookings, selectedStatus, searchText) =>
     bookings
@@ -168,12 +150,14 @@ export const ApprovalsPage = (props) => {
             </div>
 
             <DecisionModal
+                key={`approve-${approvingBooking?.id ?? 'closed'}`}
                 isOpen={Boolean(approvingBooking)}
                 onClose={modalHandlers.handleCloseApprove}
                 booking={approvingBooking}
                 type="approve"
             />
             <DecisionModal
+                key={`reject-${rejectingBooking?.id ?? 'closed'}`}
                 isOpen={Boolean(rejectingBooking)}
                 onClose={modalHandlers.handleCloseReject}
                 booking={rejectingBooking}
@@ -187,5 +171,3 @@ export const ApprovalsPage = (props) => {
         </div>
     )
 }
-
-export const Approvals = ApprovalsPage
