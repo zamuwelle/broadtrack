@@ -23,6 +23,13 @@ class EquipmentController extends ApiController
         return $this->success(EquipmentResource::collection(Equipment::resolveStatuses($equipmentList)));
     }
 
+    public function show(Equipment $equipment): JsonResponse
+    {
+        $resolved = Equipment::resolveStatuses(collect([$equipment]))->first();
+
+        return $this->success(new EquipmentResource($resolved));
+    }
+
     public function store(StoreEquipmentRequest $request): JsonResponse
     {
         $this->authorize('manage', Equipment::class);

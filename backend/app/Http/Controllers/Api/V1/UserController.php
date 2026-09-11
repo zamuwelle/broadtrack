@@ -23,6 +23,13 @@ class UserController extends ApiController
         return $this->success(UserResource::collection($users));
     }
 
+    public function show(User $user): JsonResponse
+    {
+        $this->authorize('view', $user);
+
+        return $this->success(new UserResource($user));
+    }
+
     public function store(StoreUserRequest $request): JsonResponse
     {
         $this->authorize('create', User::class);

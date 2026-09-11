@@ -60,3 +60,10 @@ test('unauthenticated user cannot download borrowing slip', function () {
     $this->getJson("/api/v1/bookings/{$booking->id}/slip/pdf")
         ->assertUnauthorized();
 });
+
+test('unauthenticated user requesting pdf gets 401 instead of route not defined', function () {
+    $booking = Booking::factory()->approved()->create();
+
+    $this->get("/api/v1/bookings/{$booking->id}/slip/pdf", ['Accept' => 'application/pdf'])
+        ->assertUnauthorized();
+});

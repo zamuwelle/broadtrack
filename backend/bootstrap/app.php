@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(static fn ($middleware) => $middleware
         ->trustProxies(at: '*')
         ->alias(['role' => RoleMiddleware::class])
+        ->redirectGuestsTo(static fn () => null)
     )
     ->withExceptions(static fn ($exceptions) => $exceptions
         ->shouldRenderJsonWhen(static fn ($request) => $request->is('api/*') || $request->expectsJson())

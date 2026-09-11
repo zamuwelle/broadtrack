@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
 
         // Equipment
         Route::get('/equipment', [EquipmentController::class, 'index']);
+        Route::get('/equipment/{equipment}', [EquipmentController::class, 'show']);
 
         // Equipment (admin & sysadmin)
         Route::middleware('role:admin')->group(function () {
@@ -68,6 +69,7 @@ Route::prefix('v1')->group(function () {
         // Users (sysadmin only)
         Route::middleware('role:sysadmin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
+            Route::get('/users/{user}', [UserController::class, 'show']);
             Route::post('/users', [UserController::class, 'store']);
             Route::put('/users/{user}', [UserController::class, 'update']);
             Route::delete('/users/{user}', [UserController::class, 'destroy']);

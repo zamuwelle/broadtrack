@@ -11,6 +11,11 @@ class UserPolicy
         return $user->isSysAdmin();
     }
 
+    public function view(User $user): bool
+    {
+        return $user->isSysAdmin();
+    }
+
     public function create(User $user): bool
     {
         return $user->isSysAdmin();

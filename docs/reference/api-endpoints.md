@@ -23,6 +23,7 @@ There are no Google OAuth routes in the current API route file.
 | Method | Endpoint | Access | Purpose |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/equipment` | Authenticated | List equipment. |
+| `GET` | `/api/v1/equipment/{equipment}` | Authenticated | Read a single equipment record with its computed availability status. |
 | `POST` | `/api/v1/equipment` | Admin / Sysadmin | Create equipment. |
 | `PUT` | `/api/v1/equipment/{equipment}` | Admin / Sysadmin | Update equipment. |
 | `POST` | `/api/v1/equipment/{equipment}/upload` | Admin / Sysadmin | Upload an equipment image. |
@@ -56,6 +57,7 @@ There is no release endpoint in the current route file. Booking responses includ
 | Method | Endpoint | Access | Purpose |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/users` | Sysadmin | List users. |
+| `GET` | `/api/v1/users/{user}` | Sysadmin | Read a single user account. |
 | `POST` | `/api/v1/users` | Sysadmin | Create a user account. |
 | `PUT` | `/api/v1/users/{user}` | Sysadmin | Update a user account. |
 | `DELETE` | `/api/v1/users/{user}` | Sysadmin | Delete a user when allowed. |

@@ -126,3 +126,31 @@ test('user mutations succeed when the broadcast transport fails', function (stri
         ? $this->assertDatabaseMissing('users', ['id' => $id])
         : $this->assertDatabaseHas('users', ['id' => $id, 'firstname' => $method === 'POST' ? 'New' : 'Updated']);
 })->with([['POST', 'created', 201], ['PUT', 'updated', 200], ['DELETE', 'deleted', 204]]);
+
+test('sysadmin can view single user', function () {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $user = User::factory()->borrower()->create(['firstname' => 'Specific', 'lastname' => 'Borrower']);
+
+    $response = $this->actingAs($sysadmin)->getJson("/api/v1/users/{$user->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('data.id', $user->id)
+        ->assertJsonPath('data.firstname', 'Specific');
+});
+
+test('non-sysadmin cannot view single user', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->borrower()->create();
+
+    $response = $this->actingAs($admin)->getJson("/api/v1/users/{$user->id}");
+
+    $response->assertForbidden();
+});
+
+test('guest cannot view single user', function () {
+    $user = User::factory()->borrower()->create();
+
+    $response = $this->getJson("/api/v1/users/{$user->id}");
+
+    $response->assertUnauthorized();
+});

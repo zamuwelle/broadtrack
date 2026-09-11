@@ -247,3 +247,22 @@ test('equipment mutations succeed when the broadcast transport fails', function 
         ? $this->assertDatabaseMissing('equipments', ['id' => $id])
         : $this->assertDatabaseHas('equipments', ['id' => $id, 'name' => 'Studio Camera']);
 })->with([['POST', 'created', 201], ['PUT', 'updated', 200], ['DELETE', 'deleted', 204]]);
+
+test('authenticated user can view single equipment', function () {
+    $user = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->create(['name' => 'Specific Camera']);
+
+    $response = $this->actingAs($user)->getJson("/api/v1/equipment/{$equipment->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('data.id', $equipment->id)
+        ->assertJsonPath('data.name', 'Specific Camera');
+});
+
+test('guest cannot view single equipment', function () {
+    $equipment = Equipment::factory()->create();
+
+    $response = $this->getJson("/api/v1/equipment/{$equipment->id}");
+
+    $response->assertUnauthorized();
+});
