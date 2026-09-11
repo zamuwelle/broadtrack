@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { formatPhone } from '@shared/util/phone'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
 import { FormField as Field } from '@/components/ui/form/FormField'
@@ -18,7 +17,6 @@ export const RegisterForm = (props) => {
         firstnameError,
         lastnameError,
         emailError,
-        phoneError,
         departmentError,
         passwordError,
         showPass,
@@ -30,12 +28,12 @@ export const RegisterForm = (props) => {
         onSubmit
     } = props
 
-    const { firstname = '', lastname = '', email = '', phone = '', department = '', password = '' } = form
+    const { firstname = '', lastname = '', email = '', department = '', password = '' } = form
 
     const handleInputChange = useCallback(
         (event) => {
             const { name, value } = event.target
-            onFieldChange(name, name === 'phone' ? formatPhone(value) : value)
+            onFieldChange(name, value)
         },
         [onFieldChange]
     )
@@ -72,16 +70,6 @@ export const RegisterForm = (props) => {
                     value={email}
                     onChange={handleInputChange}
                     error={emailError}
-                    className={inputClassSmall}
-                />
-                <TextInput
-                    label="Phone"
-                    name="phone"
-                    type="tel"
-                    maxLength={20}
-                    value={phone}
-                    onChange={handleInputChange}
-                    error={phoneError}
                     className={inputClassSmall}
                 />
                 <Field label="Department">

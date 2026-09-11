@@ -116,7 +116,6 @@ test('user can re-register with unverified email', function () {
         'lastname' => 'Doe',
         'email' => $user->email,
         'password' => 'newpassword123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 

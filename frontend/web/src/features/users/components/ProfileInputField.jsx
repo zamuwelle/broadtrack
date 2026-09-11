@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { formatPhone } from '@shared/util/phone'
 import { Icon } from '@/components/ui/Icon'
 import { Select } from '@/components/ui/Select'
 import { DEPARTMENTS } from '@shared/constants'
@@ -12,15 +11,14 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
             if (!validate) {
                 return
             }
-            const val = key === 'phone' ? formatPhone(event.target.value) : event.target.value
-            onErrorChange(key, validate(val))
+            onErrorChange(key, validate(event.target.value))
         },
         [key, validate, onErrorChange]
     )
 
     const handleChange = useCallback(
         (event) => {
-            const nextValue = key === 'phone' ? formatPhone(event.target.value) : event.target.value
+            const nextValue = event.target.value
             onValueChange(key, nextValue)
             if (validate) {
                 onErrorChange(key, validate(nextValue))

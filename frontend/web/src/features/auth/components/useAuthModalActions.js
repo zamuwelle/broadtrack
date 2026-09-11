@@ -13,10 +13,9 @@ const hasRegisterMissing = (form) => {
     const fn = (form.firstname || '').trim()
     const ln = (form.lastname || '').trim()
     const em = (form.email || '').trim()
-    const ph = (form.phone || '').trim()
     const dp = (form.department || '').trim()
     const pw = form.password || ''
-    return !fn || !ln || !em || !ph || !dp || !pw
+    return !fn || !ln || !em || !dp || !pw
 }
 
 const useAuthLoginHandlers = ({
@@ -123,9 +122,8 @@ const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToa
             (registerError = {}) => {
                 const errors = registerError.errors || {}
                 const emailMsg = errors.email ? errors.email[0] : null
-                const phoneMsg = errors.phone ? errors.phone[0] : null
                 updateAuthState({
-                    error: emailMsg || phoneMsg || registerError.message || 'Registration failed'
+                    error: emailMsg || registerError.message || 'Registration failed'
                 })
             },
             [updateAuthState]

@@ -2,8 +2,7 @@ import { useCallback } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/api/users/update-user'
-import { formatPhone } from '@shared/util/phone'
-import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword, isValidPhone } from '@shared/schemas/common'
+import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
 import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
@@ -18,7 +17,6 @@ const getInitialFormState = (user) => ({
     firstname: user?.firstname || '',
     lastname: user?.lastname || '',
     email: user?.email || '',
-    phone: formatPhone(user?.phone || ''),
     role: user?.role || 'borrower',
     department: user?.department || '',
     password: '',
@@ -44,13 +42,6 @@ const useEditUserFormFields = (setForm) => {
     const handleEmailChange = useCallback(
         (e) => {
             setForm({ email: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handlePhoneChange = useCallback(
-        (e) => {
-            setForm({ phone: formatPhone(e.target.value), error: '' })
         },
         [setForm]
     )
@@ -84,7 +75,6 @@ const useEditUserFormFields = (setForm) => {
         handleFirstnameChange,
         handleLastnameChange,
         handleEmailChange,
-        handlePhoneChange,
         handleRoleChange,
         handleDepartmentChange,
         handlePasswordChange,
@@ -94,14 +84,13 @@ const useEditUserFormFields = (setForm) => {
 
 const extractFormError = (error) => {
     const errors = error?.errors || {}
-    return errors.email?.[0] || errors.phone?.[0] || error?.message || 'Failed to update user'
+    return errors.email?.[0] || error?.message || 'Failed to update user'
 }
 
 const buildUpdatePayload = (form, isBorrower) => ({
     firstname: form.firstname.trim(),
     lastname: form.lastname.trim(),
     email: form.email.trim(),
-    phone: form.phone.trim(),
     role: form.role,
     department: isBorrower ? form.department : null,
     ...(form.password ? { password: form.password } : {})
@@ -112,7 +101,6 @@ const checkEditUserValid = (form, isBorrower) =>
         isValidName(form.firstname) &&
         isValidName(form.lastname) &&
         isValidEmail(form.email) &&
-        isValidPhone(form.phone) &&
         (!isBorrower || form.department) &&
         (!form.password || isValidPassword(form.password))
     )
@@ -177,7 +165,6 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
         handleFirstnameChange,
         handleLastnameChange,
         handleEmailChange,
-        handlePhoneChange,
         handleRoleChange,
         handleDepartmentChange,
         handlePasswordChange,
@@ -229,16 +216,6 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 error={errors.email}
             />
             <div className="grid grid-cols-2 gap-2.5">
-                <TextInput
-                    autoComplete="off"
-                    label="Phone"
-                    type="tel"
-                    maxLength={20}
-                    name="edit-user-phone"
-                    value={form.phone}
-                    onChange={handlePhoneChange}
-                    error={errors.phone}
-                />
                 <Field label="Role">
                     <Select
                         value={form.role}

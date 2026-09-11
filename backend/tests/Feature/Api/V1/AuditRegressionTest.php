@@ -185,7 +185,7 @@ test('admin user departments may be omitted or cleared', function (): void {
     $sysadmin = User::factory()->sysadmin()->create();
     $response = $this->actingAs($sysadmin)->postJson('/api/v1/users', [
         'firstname' => 'New', 'lastname' => 'Admin', 'email' => 'optional@laverdad.edu.ph',
-        'phone' => '+639123456789', 'password' => 'password123', 'role' => 'admin',
+        'password' => 'password123', 'role' => 'admin',
     ])->assertCreated()->assertJsonPath('data.department', null);
 
     $this->putJson('/api/v1/users/'.$response->json('data.id'), ['department' => null])->assertOk();
@@ -275,7 +275,7 @@ test('booking store rechecks equipment maintenance after validation', function (
 
 test('CSV report neutralizes borrower formulas and supports empty admin departments', function (): void {
     $admin = User::factory()->admin()->create();
-    $borrower = User::factory()->create(['phone' => '=1+1']);
+    $borrower = User::factory()->create();
     Booking::factory()->approved()->create(['user_id' => $borrower->id, 'purpose' => '=1+1']);
 
     $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();

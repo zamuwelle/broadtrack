@@ -23,7 +23,6 @@ class StoreUserRequest extends FormRequest
             'firstname' => $this->nameRules(),
             'lastname' => $this->nameRules(),
             'email' => ['required', 'email', 'unique:users', $this->schoolEmailRule()],
-            'phone' => 'required|string',
             'password' => $this->passwordRules(),
             'role' => ['required', Rule::enum(UserRole::class)],
             'department' => [Rule::requiredIf(fn (): bool => $this->input('role') === UserRole::Borrower->value), 'nullable', Rule::enum(Department::class)],

@@ -4,8 +4,7 @@ import {
     departmentSchema,
     laVerdadEmailSchema,
     nameSchema,
-    passwordSchema,
-    phoneSchema
+    passwordSchema
 } from '@shared/schemas/common'
 
 export const loginSchema = z.object({
@@ -17,7 +16,6 @@ export const registerSchema = z.object({
     firstname: nameSchema,
     lastname: nameSchema,
     email: laVerdadEmailSchema,
-    phone: phoneSchema,
     department: departmentSchema,
     password: passwordSchema
 })

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { Icon } from '@/components/ui/Icon'
@@ -6,6 +6,130 @@ import { env } from '@/config/env'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
+const popupStorageKey = 'google_oauth_popup_nonce'
+const popupMessageType = 'broadtrack:google-oauth'
+
+const isPopupResult = (data, nonce) => {
+    if (!data || data.type !== popupMessageType || data.nonce !== nonce) {
+        return false
+    }
+    if (data.status === 'success') {
+        return (
+            typeof data.token === 'string' && data.token.length > 0 && ['/dashboard', '/equipment'].includes(data.path)
+        )
+    }
+    if (data.status === 'register') {
+        return ['email', 'firstname', 'lastname', 'profile_picture'].every(
+            (key) => typeof data[key] === 'string' && data[key].length <= 2048
+        )
+    }
+    if (data.status === 'error') {
+        return typeof data.error === 'string' && data.error.length <= 512
+    }
+    return data.status === 'cancel'
+}
+
+const handlePopupResult = (result) => {
+    if (result.status === 'success') {
+        globalThis.localStorage.setItem('auth_token', result.token)
+        globalThis.location.assign(result.path)
+        return
+    }
+
+    const params = new URLSearchParams()
+    if (result.status === 'register') {
+        params.set('tab', 'register')
+        for (const key of ['email', 'firstname', 'lastname', 'profile_picture']) {
+            if (result[key]) {
+                params.set(key, result[key])
+            }
+        }
+    } else if (result.status === 'error') {
+        params.set('error', result.error)
+    }
+    const query = params.toString()
+    globalThis.location.assign(query ? `/?${query}` : '/')
+}
+
+const useGooglePopup = () => {
+    const popupRef = useRef(null)
+    const nonceRef = useRef('')
+    const cleanupRef = useRef(noop)
+
+    const clearPopup = useCallback((closePopup = true) => {
+        cleanupRef.current()
+        cleanupRef.current = noop
+        if (closePopup && popupRef.current && !popupRef.current.closed) {
+            popupRef.current.close()
+        }
+        popupRef.current = null
+        nonceRef.current = ''
+    }, [])
+
+    const handlePopupMessage = useCallback(
+        (event) => {
+            const popup = popupRef.current
+            const nonce = nonceRef.current
+            if (
+                event.origin !== globalThis.location.origin ||
+                !popup ||
+                event.source !== popup ||
+                !isPopupResult(event.data, nonce)
+            ) {
+                return
+            }
+
+            const { data: result } = event
+            clearPopup()
+            handlePopupResult(result)
+        },
+        [clearPopup]
+    )
+
+    useEffect(() => () => clearPopup(), [clearPopup])
+
+    const handleGoogleLogin = useCallback(() => {
+        if (popupRef.current) {
+            if (!popupRef.current.closed) {
+                popupRef.current.focus()
+                return
+            }
+            clearPopup(false)
+        }
+
+        const redirectUrl = `${env.API_URL}/auth/google/redirect`
+        const popup = globalThis.open('', '_blank', 'popup,width=520,height=680')
+
+        if (!popup) {
+            globalThis.location.href = redirectUrl
+            return
+        }
+
+        const nonce = globalThis.crypto.randomUUID()
+        try {
+            popup.sessionStorage.setItem(popupStorageKey, nonce)
+        } catch {
+            popup.close()
+            globalThis.location.href = redirectUrl
+            return
+        }
+        popupRef.current = popup
+        nonceRef.current = nonce
+        globalThis.addEventListener('message', handlePopupMessage)
+        const closePoll = globalThis.setInterval(() => {
+            if (popup.closed) {
+                clearPopup(false)
+            }
+        }, 500)
+        cleanupRef.current = () => {
+            globalThis.removeEventListener('message', handlePopupMessage)
+            globalThis.clearInterval(closePoll)
+        }
+        popup.location.href = redirectUrl
+    }, [clearPopup, handlePopupMessage])
+
+    return handleGoogleLogin
+}
 
 export const LoginForm = ({
     form,
@@ -19,14 +143,7 @@ export const LoginForm = ({
     onSwitchTab = noop,
     onSubmit = noop
 }) => {
-    const handleGoogleLogin = useCallback(() => {
-        const redirectUrl = `${env.API_URL}/auth/google/redirect`
-        const popup = globalThis.open(redirectUrl, 'google-login', 'popup,width=520,height=680')
-
-        if (!popup) {
-            globalThis.location.href = redirectUrl
-        }
-    }, [])
+    const handleGoogleLogin = useGooglePopup()
 
     const handleEmailChange = useCallback(
         (event) => {

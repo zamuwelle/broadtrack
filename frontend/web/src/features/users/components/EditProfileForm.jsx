@@ -2,8 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUser } from '@/lib/auth'
 import { useUpdateForm } from '@/hooks/actions/useUpdateForm'
-import { formatPhone } from '@shared/util/phone'
-import { MAX_NAME_LENGTH, validateDepartment, validateName, validatePhone } from '@shared/schemas/common'
+import { MAX_NAME_LENGTH, validateDepartment, validateName } from '@shared/schemas/common'
 import { updateProfile } from '@/api/users/update-profile'
 import { uploadProfilePicture } from '@/api/users/upload-picture'
 import { ProfileInputField } from '@/features/users/components/ProfileInputField'
@@ -34,14 +33,6 @@ const fields = Object.freeze([
         type: 'email',
         maxLength: 255,
         readOnly: true
-    },
-    {
-        label: 'Phone',
-        icon: 'phone',
-        key: 'phone',
-        type: 'tel',
-        maxLength: 20,
-        validate: validatePhone
     },
     {
         label: 'Department',
@@ -78,7 +69,6 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, pendingPictu
             firstname: user?.firstname ?? '',
             lastname: user?.lastname ?? '',
             email: user?.email ?? '',
-            phone: formatPhone(user?.phone ?? ''),
             department: user?.department ?? ''
         }),
         [user]

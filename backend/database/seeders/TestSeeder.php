@@ -36,7 +36,6 @@ class TestSeeder extends Seeder
                         [
                             'firstname' => $member['firstname'],
                             'lastname' => $member['lastname'],
-                            'phone' => '+639999999999',
                             'password' => $defaultPassword,
                             'role' => $roleDefinition['role'],
                             'department' => Department::InformationSystems,

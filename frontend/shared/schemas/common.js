@@ -13,9 +13,6 @@ export const VALIDATION_MESSAGES = Object.freeze({
     INVALID_EMAIL: 'Invalid email address',
     LA_VERDAD_EMAIL: 'Only La Verdad emails allowed',
     LA_VERDAD_EMAIL_PROMPT: 'Please use a valid La Verdad email address.',
-    INVALID_PHONE: 'Invalid phone number',
-    PHONE_PREFIX: 'Must start with 09 or +639',
-    PHONE_DIGITS_ONLY: 'Numbers only',
     PASSWORD_MIN: 'The password must be at least 8 characters.',
     PASSWORD_MAX: 'Password must not exceed 64 characters',
     PASSWORD_MISMATCH: 'Passwords do not match',
@@ -43,26 +40,6 @@ export const laVerdadEmailSchema = anyEmailSchema.refine(
     (email) => /^[^\s@]+@(?:student\.)?laverdad\.edu\.ph$/iu.test(email),
     { message: VALIDATION_MESSAGES.LA_VERDAD_EMAIL }
 )
-
-export const phoneSchema = z
-    .string()
-    .trim()
-    .min(1, VALIDATION_MESSAGES.REQUIRED)
-    .superRefine((val, ctx) => {
-        const cleaned = val.replaceAll(/[\s\-()]/gu, '')
-        if (!/^\+?\d+$/u.test(cleaned)) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: VALIDATION_MESSAGES.PHONE_DIGITS_ONLY })
-            return
-        }
-        if (!/^(?:0|\+?63)/u.test(cleaned)) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: VALIDATION_MESSAGES.PHONE_PREFIX })
-            return
-        }
-        const localPart = cleaned.replace(/^\+?63|^0/u, '')
-        if (!/^\d{10}$/u.test(localPart)) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: VALIDATION_MESSAGES.INVALID_PHONE })
-        }
-    })
 
 export const passwordSchema = z
     .string()
@@ -108,7 +85,6 @@ export const validateField = (schema, value) => {
 export const validateName = (val) => validateField(nameSchema, val)
 export const validateEmail = (val) => validateField(laVerdadEmailSchema, val)
 export const validateAnyEmail = (val) => validateField(anyEmailSchema, val)
-export const validatePhone = (val) => validateField(phoneSchema, val)
 export const validatePassword = (val) => validateField(passwordSchema, val)
 export const validateDepartment = (val) => validateField(departmentSchema, val)
 export const validateMessage = (val) => validateField(messageSchema, val)
@@ -118,7 +94,6 @@ export const validateConfirmPassword = (pw, confirm) =>
 export const isValidName = (val) => nameSchema.safeParse(val).success
 export const isValidEmail = (val) => laVerdadEmailSchema.safeParse(val).success
 export const isValidAnyEmail = (val) => anyEmailSchema.safeParse(val).success
-export const isValidPhone = (val) => phoneSchema.safeParse(val).success
 export const isValidPassword = (val) => passwordSchema.safeParse(val).success
 export const isValidDepartment = (val) => departmentSchema.safeParse(val).success
 export const isValidMessage = (val) => messageSchema.safeParse(val).success

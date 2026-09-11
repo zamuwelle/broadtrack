@@ -13,7 +13,6 @@ const initialFormState = Object.freeze({
     firstname: '',
     lastname: '',
     email: '',
-    phone: '',
     department: '',
     password: '',
     confirmPassword: ''

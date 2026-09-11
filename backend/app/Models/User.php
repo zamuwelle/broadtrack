@@ -19,7 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
 use function Tamtamchik\NameCase\str_name_case;
 
 #[Appends(['full_name'])]
-#[Fillable(['firstname', 'lastname', 'email', 'phone', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_code', 'verification_sent_at', 'created_at'])]
+#[Fillable(['firstname', 'lastname', 'email', 'password', 'role', 'department', 'profile_picture', 'email_verified_at', 'verification_code', 'verification_sent_at', 'created_at'])]
 #[Hidden(['password', 'remember_token', 'verification_code'])]
 #[ObservedBy(UserObserver::class)]
 class User extends Authenticatable
@@ -91,17 +91,4 @@ class User extends Authenticatable
         );
     }
 
-    protected function phone(): Attribute
-    {
-        return Attribute::make(set: static fn ($value) => self::normalizePhone($value) ?? $value);
-    }
-
-    public static function normalizePhone(mixed $phone): ?string
-    {
-        $digits = preg_replace('/[^0-9]/', '', (string)$phone);
-
-        return str_starts_with($digits, '0')
-            ? '+63'.substr($digits, 1)
-            : (str_starts_with($digits, '63') ? '+'.$digits : null);
-    }
 }

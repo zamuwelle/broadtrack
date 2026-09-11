@@ -8,7 +8,51 @@ export const isAdmin = (user) => user?.role === ROLES.ADMIN || user?.role === RO
 export const isSysAdmin = (user) => user?.role === ROLES.SYSADMIN
 export const isBorrower = (user) => user?.role === ROLES.BORROWER
 
+const getGooglePopupResult = () => {
+    const searchParams = new URLSearchParams(globalThis.location.search)
+    const token = searchParams.get('token')
+    if (token) {
+        return { status: 'success', token, path: globalThis.location.pathname }
+    }
+    if (searchParams.get('tab') === 'register') {
+        return {
+            status: 'register',
+            email: searchParams.get('email') || '',
+            firstname: searchParams.get('firstname') || '',
+            lastname: searchParams.get('lastname') || '',
+            profile_picture: searchParams.get('profile_picture') || ''
+        }
+    }
+    const error = searchParams.get('error')
+    return error ? { status: 'error', error } : { status: 'cancel' }
+}
+
+const getGooglePopupNonce = () => {
+    try {
+        return globalThis.sessionStorage?.getItem('google_oauth_popup_nonce') || ''
+    } catch {
+        return ''
+    }
+}
+
+const forwardGooglePopupResult = () => {
+    const nonce = getGooglePopupNonce()
+    if (!nonce || !globalThis.opener) {
+        return false
+    }
+    const result = getGooglePopupResult()
+    globalThis.history?.replaceState({}, '', `${globalThis.location.pathname}${globalThis.location.hash}`)
+    globalThis.opener.postMessage({ type: 'broadtrack:google-oauth', nonce, ...result }, globalThis.location.origin)
+    globalThis.sessionStorage.removeItem('google_oauth_popup_nonce')
+    globalThis.close()
+    return true
+}
+
 const syncTokenFromUrl = () => {
+    if (forwardGooglePopupResult()) {
+        return
+    }
+
     if (!globalThis.location?.search) {
         return
     }

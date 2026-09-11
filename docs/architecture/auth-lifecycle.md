@@ -77,10 +77,11 @@ In [`User.php`](file:///home/sam/git/broadtrack/backend/app/Models/User.php):
 In [`OAuthController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/OAuthController.php):
 
 - Domain Filter: Only accounts with `@student.laverdad.edu.ph` or `@laverdad.edu.ph` emails are allowed to authenticate via `Str::is(...)`. External domains (e.g. `@gmail.com`) are immediately rejected with an error redirect.
-- Unverified Redirect: If an unverified user logs in via Google, they are redirected with a message to check their email for the verification link.
+- Unverified Redirect: If an unverified user logs in via Google, they are redirected with a message to check their email for the six-digit verification code.
+- Selecting Google sign-in opens the API redirect in a separate window. The OAuth callback redirects that window to the frontend; if the browser blocks the window, the login form navigates there instead.
 - Role Redirect:
     ```php
-    $target = $user->isAdmin() ? '/admin' : '/borrow';
+    $target = $user->isAdmin() ? '/dashboard' : '/equipment';
     return redirect($frontendUrl.$target.'?token='.$token);
     ```
 

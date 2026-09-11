@@ -10,7 +10,6 @@ export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
     const borrowerName = user.full_name || 'Borrower'
     const borrowerDepartment = user.department ? `(${user.department})` : ''
     const borrowerEmail = user.email || 'N/A'
-    const borrowerPhone = user.phone || 'N/A'
     const periodText = booking.date_time_range_label ?? ' – '
     const status = getBookingStatus(booking)
     const isCompleted = status === 'returned'
@@ -27,10 +26,6 @@ export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
             <p>
                 <span className="font-semibold text-black">Email: </span>
                 <span className="text-slate-700 font-normal">{borrowerEmail}</span>
-            </p>
-            <p>
-                <span className="font-semibold text-black">Phone: </span>
-                <span className="text-slate-700 font-normal">{borrowerPhone}</span>
             </p>
             <p>
                 <span className="font-semibold text-black">Period: </span>

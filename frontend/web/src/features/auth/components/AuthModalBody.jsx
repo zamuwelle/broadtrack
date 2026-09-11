@@ -1,10 +1,4 @@
-import {
-    validateDepartment,
-    validateEmail,
-    validateName,
-    validatePassword,
-    validatePhone
-} from '@shared/schemas/common'
+import { validateDepartment, validateEmail, validateName, validatePassword } from '@shared/schemas/common'
 import { ForgotForm } from '@/features/auth/components/ForgotForm'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
@@ -12,13 +6,12 @@ import { ResetForm } from '@/features/auth/components/ResetForm'
 import { VerifyOtpForm } from '@/features/auth/components/VerifyOtpForm'
 
 const resolveFormErrors = (form, error, isCredentialError) => {
-    const isPhoneError = error === 'Invalid phone number format' || Boolean(error?.toLowerCase().includes('phone'))
     let emailError = form.email ? validateEmail(form.email) : ''
     let passwordError = form.password ? validatePassword(form.password) : ''
     if (isCredentialError) {
         emailError = error
         passwordError = error
-    } else if (!isPhoneError && error) {
+    } else if (error) {
         emailError = error
     }
 
@@ -26,7 +19,6 @@ const resolveFormErrors = (form, error, isCredentialError) => {
         firstnameError: form.firstname ? validateName(form.firstname) : '',
         lastnameError: form.lastname ? validateName(form.lastname) : '',
         emailError,
-        phoneError: (isPhoneError ? error : '') || (form.phone ? validatePhone(form.phone) : ''),
         passwordError,
         departmentError: form.department ? validateDepartment(form.department) : ''
     }
@@ -48,7 +40,7 @@ export const AuthModalBody = ({
     onSwitchTab
 }) => {
     const isCredentialError = error === 'Email or password is incorrect'
-    const { firstnameError, lastnameError, emailError, phoneError, passwordError, departmentError } = resolveFormErrors(
+    const { firstnameError, lastnameError, emailError, passwordError, departmentError } = resolveFormErrors(
         form,
         error,
         isCredentialError
@@ -78,7 +70,6 @@ export const AuthModalBody = ({
                 firstnameError={firstnameError}
                 lastnameError={lastnameError}
                 emailError={emailError}
-                phoneError={phoneError}
                 departmentError={departmentError}
                 passwordError={passwordError}
                 showPass={showPass}

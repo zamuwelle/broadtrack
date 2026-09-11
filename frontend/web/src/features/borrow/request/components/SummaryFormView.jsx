@@ -42,7 +42,6 @@ export const SummaryFormView = (props) => {
                 <div className="flex w-full flex-col items-start justify-start gap-1 text-xs font-normal text-text">
                     <div>Name: {user?.full_name || user?.name || 'User Name'}</div>
                     <div>Email: {user?.email || 'user.email@student.laverdad.edu.ph'}</div>
-                    <div>Phone: {user?.phone || '+63 9xx xxx xxxx'}</div>
                     <div>Department: {user?.department || 'BS Information Systems'}</div>
                 </div>
             </div>

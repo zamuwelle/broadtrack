@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateUser } from '@/api/users/create-user'
-import { formatPhone } from '@shared/util/phone'
-import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword, isValidPhone } from '@shared/schemas/common'
+import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword } from '@shared/schemas/common'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
 import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
@@ -15,7 +14,6 @@ const initialFormState = Object.freeze({
     firstname: '',
     lastname: '',
     email: '',
-    phone: '',
     department: '',
     password: '',
     showPassword: false,
@@ -52,13 +50,6 @@ const useAddUserForm = (role, onClose, onSuccess) => {
         [setForm]
     )
 
-    const handlePhoneChange = useCallback(
-        (e) => {
-            setForm({ phone: formatPhone(e.target.value), error: '' })
-        },
-        [setForm]
-    )
-
     const handleDepartmentChange = useCallback(
         (value) => {
             setForm({ department: value, error: '' })
@@ -83,7 +74,6 @@ const useAddUserForm = (role, onClose, onSuccess) => {
         isValidName(form.firstname) &&
         isValidName(form.lastname) &&
         isValidEmail(form.email) &&
-        isValidPhone(form.phone) &&
         (!isBorrower || form.department) &&
         isValidPassword(form.password)
     )
@@ -99,7 +89,6 @@ const useAddUserForm = (role, onClose, onSuccess) => {
                     firstname: form.firstname.trim(),
                     lastname: form.lastname.trim(),
                     email: form.email.trim(),
-                    phone: form.phone.trim(),
                     department: isBorrower ? form.department : null,
                     password: form.password,
                     role
@@ -110,9 +99,8 @@ const useAddUserForm = (role, onClose, onSuccess) => {
             } catch (error) {
                 const errors = error?.errors || {}
                 const emailErrorMsg = errors.email ? errors.email[0] : null
-                const phoneErrorMsg = errors.phone ? errors.phone[0] : null
                 setForm({
-                    error: emailErrorMsg || phoneErrorMsg || error?.message || 'Failed to create user'
+                    error: emailErrorMsg || error?.message || 'Failed to create user'
                 })
             }
         },
@@ -131,7 +119,6 @@ const useAddUserForm = (role, onClose, onSuccess) => {
         handleFirstnameChange,
         handleLastnameChange,
         handleEmailChange,
-        handlePhoneChange,
         handleDepartmentChange,
         handlePasswordChange,
         handleTogglePassword,
@@ -156,7 +143,6 @@ export const AddUserModal = ({
         handleFirstnameChange,
         handleLastnameChange,
         handleEmailChange,
-        handlePhoneChange,
         handleDepartmentChange,
         handlePasswordChange,
         handleTogglePassword,
@@ -210,16 +196,6 @@ export const AddUserModal = ({
                 value={form.email}
                 onChange={handleEmailChange}
                 error={errors.email}
-            />
-            <TextInput
-                autoComplete="off"
-                label="Phone"
-                type="tel"
-                maxLength={20}
-                name="new-user-phone"
-                value={form.phone}
-                onChange={handlePhoneChange}
-                error={errors.phone}
             />
             {isBorrower && (
                 <DepartmentSelect value={form.department} onChange={handleDepartmentChange} error={errors.department} />

@@ -21,7 +21,6 @@ class UpdateProfileRequest extends FormRequest
         return [
             'firstname' => $this->nameRules('sometimes'),
             'lastname' => $this->nameRules('sometimes'),
-            'phone' => 'sometimes|string',
             'department' => ['sometimes', Rule::requiredIf(fn (): bool => $this->user()->isBorrower()), 'nullable', Rule::enum(Department::class)],
             'profile_picture' => 'sometimes|nullable|string',
         ];

@@ -43,7 +43,8 @@ Equipment booking and tracking system built with Laravel and React.
 ## Features
 
 - User authentication (register, login, Google OAuth, password reset, email verification)
-- Email verification with 15-minute one-time links (Google sign-ins auto-verified)
+- Email verification with six-digit codes that expire after 15 minutes
+- Google OAuth restricted to institutional email addresses
 - Equipment catalog with categories, locations, descriptions, and specs
 - Real-time equipment status and bookings via Laravel Reverb WebSockets
 - Booking system with approval workflow (approve/reject/release/return/cancel)
@@ -53,7 +54,7 @@ Equipment booking and tracking system built with Laravel and React.
 - Admin dashboard for managing equipment inventory, categories, and approvals
 - Shared API and real-time Echo layer for web and future mobile (Expo) clients
 - RESTful API versioned at `/api/v1/` with Sanctum authentication
-- Automated Feature Test Suite with Pest PHP (62/62 passing)
+- Automated feature tests with Pest PHP
 
 ## Tech Stack
 
@@ -63,7 +64,7 @@ Equipment booking and tracking system built with Laravel and React.
 | Octane (FrankenPHP)          | Vite+ + Tailwind CSS 4        |
 | Laravel Reverb (WebSockets)  | React Router DOM              |
 | Sanctum + Socialite (Google) | TanStack Query + Laravel Echo |
-| Mail (SMTP, queued)          | Bun                           |
+| Brevo API (queued email)     | Bun                           |
 | SQLite                       |                               |
 
 ## Project Structure
@@ -193,7 +194,7 @@ Import it into Postman to test all endpoints out-of-the-box.
 ```bash
 cd frontend
 
-# Run Pest automated feature test suite (52 tests)
+# Run the Pest automated feature test suite
 bun run test:backend
 
 # Linting

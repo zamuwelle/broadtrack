@@ -17,7 +17,6 @@ test('borrower can register with valid student email', function () {
         'lastname' => 'Doe',
         'email' => 'johndoe.test@student.laverdad.edu.ph',
         'password' => 'password123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 
@@ -28,6 +27,21 @@ test('borrower can register with valid student email', function () {
     $this->assertDatabaseHas('users', [
         'email' => 'johndoe.test@student.laverdad.edu.ph',
     ]);
+});
+
+test('borrower can register without a phone number', function () {
+    Mail::fake();
+
+    $response = $this->postJson('/api/v1/register', [
+        'firstname' => 'John',
+        'lastname' => 'Doe',
+        'email' => 'john.no-phone@student.laverdad.edu.ph',
+        'password' => 'password123',
+        'department' => 'BS Information Systems',
+    ]);
+
+    $response->assertCreated();
+    $this->assertDatabaseHas('users', ['email' => 'john.no-phone@student.laverdad.edu.ph']);
 });
 
 test('user can re-register with unverified email', function () {
@@ -47,7 +61,6 @@ test('user can re-register with unverified email', function () {
         'lastname' => 'User',
         'email' => 'reregister.test@student.laverdad.edu.ph',
         'password' => 'newpassword123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 
@@ -74,7 +87,6 @@ test('verified user cannot register again', function () {
         'lastname' => 'Doe',
         'email' => 'verified.test@student.laverdad.edu.ph',
         'password' => 'password123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 
@@ -88,7 +100,6 @@ test('cannot register with non-school email', function () {
         'lastname' => 'Doe',
         'email' => 'johndoe@gmail.com',
         'password' => 'password123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 
@@ -224,7 +235,6 @@ test('cannot register with spoofed domain without at symbol', function () {
         'lastname' => 'User',
         'email' => 'attacker@fake-student.laverdad.edu.ph',
         'password' => 'password123',
-        'phone' => '+639123456789',
         'department' => 'BS Information Systems',
     ]);
 

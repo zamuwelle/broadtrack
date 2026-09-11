@@ -137,7 +137,6 @@
                 <td class="code-font">{{ $row['ticket_id'] }}</td>
                 <td>
                     <div style="font-weight: 700; color: #0f172a; font-size: 9px;">{{ $row['borrower'] }}</div>
-                    <div style="color: #0284c7; font-weight: 600; font-size: 8px;">{{ $row['phone'] }}</div>
                     <div class="sub-text">{{ $row['email'] }} &bull; {{ $row['department_short'] ?: $row['department'] }}</div>
                 </td>
                 <td>

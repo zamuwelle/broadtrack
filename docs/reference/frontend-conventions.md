@@ -36,24 +36,28 @@ Features are located in `frontend/web/src/features/` and organized by domain:
 ```text
 src/features/
 ├── borrow/
-│   ├── EquipmentPage.jsx        # Top-level view for Equipment catalog
-│   ├── CalendarPage.jsx         # Top-level view for Calendar
-│   ├── SlipsPage.jsx            # Top-level view for Booking Slips
-│   ├── equipment/components/    # EquipmentCard, EquipmentExpandedCard
-│   ├── calendar/components/     # CalendarGrid, CalendarHeader
-│   └── slips/components/        # BookingSlipCard, Barcode
+│   ├── equipment/
+│   │   ├── EquipmentPage.jsx
+│   │   └── components/          # EquipmentCard, EquipmentExpandedCard
+│   ├── calendar/
+│   │   ├── CalendarPage.jsx
+│   │   └── components/          # CalendarGrid, CalendarHeader
+│   └── slips/
+│       ├── SlipsPage.jsx
+│       └── components/          # BookingSlipCard, Barcode
 ├── admin/
-│   ├── DashboardPage.jsx        # Top-level view for Admin Dashboard
-│   ├── ApprovalsPage.jsx        # Top-level view for Approvals
-│   ├── InventoryPage.jsx        # Top-level view for Inventory
-│   ├── TransactionsPage.jsx     # Top-level view for Transactions
-│   ├── UsersPage.jsx            # Top-level view for User Management
-│   └── [domain]/components/     # Grouped subcomponents
+│   ├── dashboard/DashboardPage.jsx
+│   ├── approvals/ApprovalsPage.jsx
+│   ├── inventory/InventoryPage.jsx
+│   ├── transactions/TransactionsPage.jsx
+│   └── users/UsersPage.jsx
 └── landing/
-    ├── LandingPage.jsx          # Public home view
-    ├── TermsPage.jsx            # Terms of service
-    └── PrivacyPage.jsx          # Privacy policy
+    ├── LandingPage.jsx
+    ├── TermsPage.jsx
+    └── PrivacyPage.jsx
 ```
+
+Feature pages and their domain components live together in the matching subfeature directory. Layout shells live in `src/layouts/`; their navigation components live in `src/layouts/components/`.
 
 ---
 
@@ -63,7 +67,7 @@ All route files in `src/routes/` are 3-line adapters lazy-loaded by React Router
 
 ```jsx
 // src/routes/borrow/Equipment.jsx
-import { EquipmentPage } from '@/features/borrow/EquipmentPage'
+import { EquipmentPage } from '@/features/borrow/equipment/EquipmentPage'
 
 export const Component = () => <EquipmentPage />
 ```
@@ -83,10 +87,10 @@ Route access is guarded at the router level in `src/app/router.jsx` via `<Protec
 
 BroadTrack uses **Vite+** (`vp` CLI) as its unified frontend toolchain:
 
-- **Centralized Configuration:** All linting and formatting settings live in [`frontend/vite.config.ts`](file:///home/sam/git/broadtrack/frontend/vite.config.ts) under the `lint` and `fmt` blocks.
+- **Centralized Configuration:** All linting and formatting settings live in [`frontend/vite.config.js`](../../frontend/vite.config.js) under the `lint` and `fmt` blocks.
 - **Oxlint:** High-performance Rust-based linter run via `vp lint`. Enforces single-component files (`react/no-multi-comp`), hooks rules, accessibility, and zero-barrel imports (`oxc/no-barrel-file`).
 - **Oxfmt:** Rust-based code formatter run via `vp fmt`. Adheres to Prettier standards (tab width 4, single quotes, no semicolons, no trailing commas).
-- **Automatic Ignore Resolution:** Both Oxlint and Oxfmt automatically respect [`.gitignore`](file:///home/sam/git/broadtrack/.gitignore) out of the box without requiring `.prettierignore`.
+- **Automatic Ignore Resolution:** Both Oxlint and Oxfmt automatically respect [`frontend/.gitignore`](../../frontend/.gitignore) out of the box without requiring `.prettierignore`.
 - **Validation Pipeline:** Run `vp check` to check both formatting and linting concurrently.
 
 ---

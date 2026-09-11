@@ -20,7 +20,8 @@ test('authenticated user can view their profile', function () {
 
     $response->assertOk()
         ->assertJsonPath('data.firstname', 'Alice')
-        ->assertJsonPath('data.lastname', 'Walker');
+        ->assertJsonPath('data.lastname', 'Walker')
+        ->assertJsonMissingPath('data.phone');
 });
 
 test('user can update their profile information', function () {

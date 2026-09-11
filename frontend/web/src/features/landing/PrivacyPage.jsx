@@ -3,7 +3,7 @@ import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 const sections = Object.freeze([
     Object.freeze({
         heading: '1. Information We Collect',
-        body: 'BroadTrack collects your name, La Verdad institutional email, contact number, department affiliation, and equipment borrowing activity records for institutional inventory and accountability purposes.'
+        body: 'BroadTrack collects your name, La Verdad institutional email, department affiliation, and equipment borrowing activity records for institutional inventory and accountability purposes.'
     }),
     Object.freeze({
         heading: '2. Google Account Information',

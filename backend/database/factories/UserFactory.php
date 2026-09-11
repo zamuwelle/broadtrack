@@ -18,7 +18,6 @@ class UserFactory extends Factory
             'firstname' => fake()->firstName(),
             'lastname' => fake()->lastName(),
             'email' => fake()->unique()->userName().'.test@student.laverdad.edu.ph',
-            'phone' => '+639123456789',
             'password' => Hash::make('password123'),
             'role' => UserRole::Borrower,
             'department' => Department::InformationSystems,

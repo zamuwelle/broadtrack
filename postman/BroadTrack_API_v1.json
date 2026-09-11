@@ -158,7 +158,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"email\": \"janedoe.demo@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"phone\": \"+639123456789\",\n  \"department\": \"BS Information Systems\"\n}"
+                            "raw": "{\n  \"firstname\": \"Jane\",\n  \"lastname\": \"Doe\",\n  \"email\": \"janedoe.demo@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"department\": \"BS Information Systems\"\n}"
                         },
                         "url": "{{base_url}}/register"
                     }
@@ -688,7 +688,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"email\": \"alicesmith.demo@laverdad.edu.ph\",\n  \"phone\": \"+639123456780\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
+                            "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Smith\",\n  \"email\": \"alicesmith.demo@laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}"
                         },
                         "url": "{{base_url}}/users"
                     }

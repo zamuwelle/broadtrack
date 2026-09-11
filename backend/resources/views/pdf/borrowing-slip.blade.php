@@ -282,8 +282,6 @@
                             <td class="detail-value">{{ $user?->email ?? 'N/A' }}</td>
                         </tr>
                         <tr>
-                            <td class="detail-label">Phone:</td>
-                            <td class="detail-value">{{ $user?->phone ?? 'N/A' }}</td>
                         </tr>
                     </table>
                 </div>

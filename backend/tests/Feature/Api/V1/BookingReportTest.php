@@ -26,7 +26,6 @@ test('admin can export transactions report as CSV with UTF-8 BOM', function () {
     $borrower = User::factory()->borrower()->create([
         'firstname' => 'Juan',
         'lastname' => 'Dela Cruz',
-        'phone' => '09123456789',
         'email' => 'juan.delacruz@student.laverdad.edu.ph',
     ]);
     $equipment = Equipment::factory()->available()->create([
@@ -48,7 +47,7 @@ test('admin can export transactions report as CSV with UTF-8 BOM', function () {
     expect(substr($content, 0, 3))->toBe(chr(0xEF).chr(0xBB).chr(0xBF));
     expect($content)->toContain('Ticket ID');
     expect($content)->toContain('Borrower Full Name');
-    expect($content)->toContain('Contact Number');
+    expect($content)->not->toContain('Contact Number');
     expect($content)->toContain('Email Address');
     expect($content)->toContain('Department');
     expect($content)->toContain('Equipment Name');
@@ -62,7 +61,7 @@ test('admin can export transactions report as CSV with UTF-8 BOM', function () {
     expect($content)->toContain('Status');
     expect($content)->toContain('BK-TEST-CSV');
     expect($content)->toContain('Juan Dela Cruz');
-    expect($content)->toContain('+639123456789');
+    expect($content)->not->toContain('09123456789');
     expect($content)->toContain('juan.delacruz@student.laverdad.edu.ph');
     expect($content)->toContain('Sony FX3 Cinema Camera');
     expect($content)->toContain('Short Film Project');
@@ -128,16 +127,16 @@ test('transaction exports preserve rows for zero one or multiple equipment', fun
 
     expect($rows)->toHaveCount(max(1, $count));
     foreach ($rows as $index => $row) {
-        expect($row)->toHaveCount(14)
+        expect($row)->toHaveCount(13)
             ->and($row[0])->toBe('REPORT-ROWS')
             ->and($row[1])->toBe('Alice Adams')
-            ->and($row[4])->toBe('')
-            ->and($row[5])->toBe($count ? 'Camera '.$index : 'None')
-            ->and($row[6])->toBe($count ? 'Camera' : 'N/A')
-            ->and($row[7])->toBe('')
-            ->and($row[8])->toBe($count ? 'REPORT-'.$index : 'N/A')
-            ->and($row[12])->toBe("'=1+1")
-            ->and($row[13])->toBe('Returned');
+            ->and($row[3])->toBe('')
+            ->and($row[4])->toBe($count ? 'Camera '.$index : 'None')
+            ->and($row[5])->toBe($count ? 'Camera' : 'N/A')
+            ->and($row[6])->toBe('')
+            ->and($row[7])->toBe($count ? 'REPORT-'.$index : 'N/A')
+            ->and($row[11])->toBe("'=1+1")
+            ->and($row[12])->toBe('Returned');
     }
     $this->get('/api/v1/bookings/reports/pdf')->assertOk()->assertHeader('content-type', 'application/pdf');
 })->with([0, 1, 2]);

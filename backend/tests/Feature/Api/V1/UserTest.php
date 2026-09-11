@@ -22,7 +22,6 @@ test('sysadmin can create new admin user', function () {
         'firstname' => 'New',
         'lastname' => 'Admin',
         'email' => 'newadmin.test@laverdad.edu.ph',
-        'phone' => '+639123456789',
         'password' => 'password123',
         'role' => 'admin',
         'department' => 'BS Information Systems',
@@ -35,6 +34,22 @@ test('sysadmin can create new admin user', function () {
         'email' => 'newadmin.test@laverdad.edu.ph',
         'role' => 'admin',
     ]);
+});
+
+test('sysadmin can create a user without a phone number', function () {
+    $sysadmin = User::factory()->sysadmin()->create();
+
+    $response = $this->actingAs($sysadmin)->postJson('/api/v1/users', [
+        'firstname' => 'New',
+        'lastname' => 'Admin',
+        'email' => 'newadmin.no-phone@laverdad.edu.ph',
+        'password' => 'password123',
+        'role' => 'admin',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonMissingPath('data.phone');
+    $this->assertDatabaseHas('users', ['email' => 'newadmin.no-phone@laverdad.edu.ph']);
 });
 
 test('sysadmin can update user', function () {
@@ -100,7 +115,7 @@ test('user mutations succeed when the broadcast transport fails', function (stri
     config(['broadcasting.default' => 'audit-failing', 'broadcasting.connections.audit-failing' => ['driver' => 'audit-failing']]);
     $uri = $method === 'POST' ? '/api/v1/users' : "/api/v1/users/{$user->id}";
     $data = $method === 'POST'
-        ? ['firstname' => 'New', 'lastname' => 'Admin', 'email' => 'broadcast@laverdad.edu.ph', 'phone' => '+639123456789', 'password' => 'password123', 'role' => 'admin']
+        ? ['firstname' => 'New', 'lastname' => 'Admin', 'email' => 'broadcast@laverdad.edu.ph', 'password' => 'password123', 'role' => 'admin']
         : ['firstname' => 'Updated'];
 
     $response = $this->actingAs($sysadmin)->json($method, $uri, $data)->assertStatus($status);

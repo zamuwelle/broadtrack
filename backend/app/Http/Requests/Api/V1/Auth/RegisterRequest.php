@@ -27,7 +27,6 @@ class RegisterRequest extends FormRequest
                 Rule::unique('users')->whereNotNull('email_verified_at'),
                 $this->schoolEmailRule(),
             ],
-            'phone' => 'required|string',
             'password' => $this->passwordRules(),
             'department' => ['required', Rule::enum(Department::class)],
             'profile_picture' => 'nullable|string',

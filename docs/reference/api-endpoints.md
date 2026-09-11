@@ -25,7 +25,7 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 | Method | Endpoint                  | Access        | Rate Limit | Description                                            |
 | ------ | ------------------------- | ------------- | ---------- | ------------------------------------------------------ |
 | `GET`  | `/api/v1/me`              | Authenticated | 60/min     | Fetch authenticated user profile and permissions.      |
-| `PUT`  | `/api/v1/profile`         | Authenticated | 60/min     | Update user profile details (name, phone, department). |
+| `PUT`  | `/api/v1/profile`         | Authenticated | 60/min     | Update user profile details (name, department). |
 | `POST` | `/api/v1/profile/picture` | Authenticated | 60/min     | Upload user profile picture to Cloudinary.             |
 | `POST` | `/api/v1/contact`         | Public        | 5/min      | Send contact inquiry email to administrators.          |
 
@@ -44,6 +44,8 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 ---
 
 ## Booking Endpoints
+
+Booking responses include Manila-formatted `date_range_label` and `date_time_range_label` fields alongside the raw ISO date values in `start_date`, `end_date`, and `return_date`.
 
 | Method | Endpoint                              | Access           | Rate Limit | Description                                                                 |
 | ------ | ------------------------------------- | ---------------- | ---------- | --------------------------------------------------------------------------- |

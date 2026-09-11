@@ -52,7 +52,6 @@ class BookingReportController extends ApiController
             fputcsv($handle, [
                 'Ticket ID',
                 'Borrower Full Name',
-                'Contact Number',
                 'Email Address',
                 'Department',
                 'Equipment Name',
@@ -72,7 +71,6 @@ class BookingReportController extends ApiController
                     : $value, [
                         $row['ticket_id'],
                         $row['borrower'],
-                        $row['phone'],
                         $row['email'],
                         $row['department'],
                         $row['equipment_name'],
@@ -123,8 +121,7 @@ class BookingReportController extends ApiController
                     ->orWhereHas('user', static function ($userQuery) use ($search) {
                         $userQuery->where('firstname', 'like', "%{$search}%")
                             ->orWhere('lastname', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%");
+                            ->orWhere('email', 'like', "%{$search}%");
                     })
                     ->orWhereHas('equipments', static function ($equipQuery) use ($search) {
                         $equipQuery->where('name', 'like', "%{$search}%")
@@ -151,7 +148,6 @@ class BookingReportController extends ApiController
 
             $user = $booking->user;
             $borrowerName = $user?->full_name ?? 'N/A';
-            $phone = $user?->phone ?? 'N/A';
             $email = $user?->email ?? 'N/A';
             $department = $user?->department?->value ?? (string)$user?->department ?? 'N/A';
             $deptShort = $user?->department?->shorthand() ?? '';
@@ -162,7 +158,6 @@ class BookingReportController extends ApiController
                 $rows[] = [
                     'ticket_id' => $booking->ticket_id,
                     'borrower' => $borrowerName,
-                    'phone' => $phone,
                     'email' => $email,
                     'department' => $department,
                     'department_short' => $deptShort,
