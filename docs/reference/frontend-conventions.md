@@ -1,104 +1,40 @@
-# Frontend Architecture & Conventions
+# Frontend Architecture and Conventions
 
-BroadTrack's frontend is a React 19 Single Page Application built on Vite, adhering to strict Zero-Barrel Direct Import and Feature-Grouped architectural rules.
+The web app is in [`frontend/web`](../../frontend/web/); browser-shared code is in [`frontend/shared`](../../frontend/shared/).
 
----
+## Feature and route structure
 
-## 1. Zero Barrels & Direct File Imports
+Organize routed pages by business feature in `web/src/features`, with page components named `*Page.jsx`. Route adapters live in `web/src/routes`, are lazy-loaded by [`router.jsx`](../../frontend/web/src/app/router.jsx), and export a `Component` that renders the feature page. Keep route paths in [`paths.js`](../../frontend/web/src/config/paths.js). Route access is checked by [`ProtectedRoute`](../../frontend/web/src/app/authorization.jsx); keep feature behavior in the feature and use layouts for the application shell and navigation.
 
-- Never create or use barrel files (`index.js` or `index.jsx`).
-- Every import must point directly to its exact file name:
-    ```javascript
-    // Bad (Barrel import)
-    import { Button, FormField } from '@/components/ui'
-    import { formatDate } from '@shared'
+Keep one React component per `.jsx` file. Name component exports to match their files. Local helpers may stay beside a component when that keeps the code clear. Import directly from defining files rather than adding barrel files. Use `@/` for web modules and `@shared/` for shared modules.
 
-    // Good (Direct file import)
-    import { Button } from '@/components/ui/Button'
-    import { FormField } from '@/components/ui/form/FormField'
-    import { formatDate } from '@shared/util/date'
-    ```
+## API data and shared code
 
----
+TanStack Query hooks and mutations are grouped by domain in `web/src/api`; the `QueryClient` is configured in [`provider.jsx`](../../frontend/web/src/app/provider.jsx). The [`api-client.js`](../../frontend/web/src/lib/api-client.js) module creates the Axios HTTP client. Keep state used by one screen with that feature. Reuse domain API hooks where screens share server data.
 
-## 2. Path Aliases
+Platform-independent helpers belong in `frontend/shared`. Existing sources include [`constants.js`](../../frontend/shared/constants.js), [`schemas/`](../../frontend/shared/schemas/), [`util/date.js`](../../frontend/shared/util/date.js), [`util/booking.js`](../../frontend/shared/util/booking.js), [`util/search.js`](../../frontend/shared/util/search.js), [`util/image.js`](../../frontend/shared/util/image.js), [`useSetState.js`](../../frontend/shared/hooks/useSetState.js), and the [`axios.js`](../../frontend/shared/lib/axios.js) and [`echo.js`](../../frontend/shared/lib/echo.js) client factories. The image helper uses the browser `Image` API to preload images; reuse it instead of duplicating that behavior.
 
-- In `frontend/web`: Always use the `@/...` alias for internal web modules.
-- In `frontend/shared`: Always use the `@shared/...` alias for shared platform-agnostic modules.
-- Never use relative imports (`./` or `../`).
+## Existing UI building blocks
 
----
+Check the nearest component under [`components/ui`](../../frontend/web/src/components/ui/) before adding a new primitive.
 
-## 3. Feature Directory Organization
+| Need | Existing component or hook |
+| --- | --- |
+| Labeled form control | [`FormField`](../../frontend/web/src/components/ui/form/FormField.jsx) |
+| Text or password input | [`TextInput`](../../frontend/web/src/components/ui/form/TextInput.jsx), [`PasswordInput`](../../frontend/web/src/components/ui/form/PasswordInput.jsx) |
+| Field error | [`ErrorText`](../../frontend/web/src/components/ui/form/ErrorText.jsx); the two inputs above already render it and reserve its row |
+| Button or select | [`Button`](../../frontend/web/src/components/ui/Button.jsx), [`Select`](../../frontend/web/src/components/ui/Select.jsx) |
+| Toast | [`Toast`](../../frontend/web/src/components/ui/Toast.jsx) with [`useToast`](../../frontend/web/src/hooks/ui/useToast.js) |
+| Confirmation dialog | [`ConfirmModal`](../../frontend/web/src/components/ui/ConfirmModal.jsx) |
 
-Features are located in `frontend/web/src/features/` and organized by domain:
+`ConfirmModal` handles focus and Escape for confirmation dialogs. Other modal shells have feature-specific behavior; check their implementation before relying on the same keyboard handling.
 
-```text
-src/features/
-├── borrow/
-│   ├── equipment/
-│   │   ├── EquipmentPage.jsx
-│   │   └── components/          # EquipmentCard, EquipmentExpandedCard
-│   ├── calendar/
-│   │   ├── CalendarPage.jsx
-│   │   └── components/          # CalendarGrid, CalendarHeader
-│   └── slips/
-│       ├── SlipsPage.jsx
-│       └── components/          # BookingSlipCard, Barcode
-├── admin/
-│   ├── dashboard/DashboardPage.jsx
-│   ├── approvals/ApprovalsPage.jsx
-│   ├── inventory/InventoryPage.jsx
-│   ├── transactions/TransactionsPage.jsx
-│   └── users/UsersPage.jsx
-└── landing/
-    ├── LandingPage.jsx
-    ├── TermsPage.jsx
-    └── PrivacyPage.jsx
-```
+## Dates and time
 
-Feature pages and their domain components live together in the matching subfeature directory. Layout shells live in `src/layouts/`; their navigation components live in `src/layouts/components/`.
+[`frontend/shared/util/date.js`](../../frontend/shared/util/date.js) parses booking dates and formats date labels and calendar keys in `Asia/Manila`. Use its helpers for booking dates, including API timestamps that serialize with a UTC `Z`; do not slice the timestamp text to derive a Manila calendar day. The booking table uses timezone-naive `DATETIME` fields, so those database values are not inherently UTC.
 
----
+The booking request summary uses [`useBookingDateDefaults`](../../frontend/web/src/features/borrow/request/useBookingDateDefaults.js). Its automatic start tracks the current minute while open; the automatic end is the next full hour. Manual choices are preserved while the summary stays open, and closing it resets the defaults.
 
-## 4. Thin Route Adapters
+## Tooling
 
-All route files in `src/routes/` are 3-line adapters lazy-loaded by React Router:
-
-```jsx
-// src/routes/borrow/Equipment.jsx
-import { EquipmentPage } from '@/features/borrow/equipment/EquipmentPage'
-
-export const Component = () => <EquipmentPage />
-```
-
----
-
-## 5. Router-Level Protection
-
-Route access is guarded at the router level in `src/app/router.jsx` via `<ProtectedRoute allowedRoles={...} />`.
-
-- Intercepts unauthenticated or unauthorized users before layouts or data-fetching hooks ever mount.
-- Prevents unauthorized layout renders and eliminates N+1 flash redirects.
-
----
-
-## 6. Toolchain, Linting & Formatting (Vite+)
-
-BroadTrack uses **Vite+** (`vp` CLI) as its unified frontend toolchain:
-
-- **Centralized Configuration:** All linting and formatting settings live in [`frontend/vite.config.js`](../../frontend/vite.config.js) under the `lint` and `fmt` blocks.
-- **Oxlint:** High-performance Rust-based linter run via `vp lint`. Enforces single-component files (`react/no-multi-comp`), hooks rules, accessibility, and zero-barrel imports (`oxc/no-barrel-file`).
-- **Oxfmt:** Rust-based code formatter run via `vp fmt`. Adheres to Prettier standards (tab width 4, single quotes, no semicolons, no trailing commas).
-- **Automatic Ignore Resolution:** Both Oxlint and Oxfmt automatically respect [`frontend/.gitignore`](../../frontend/.gitignore) out of the box without requiring `.prettierignore`.
-- **Validation Pipeline:** Run `vp check` to check both formatting and linting concurrently.
-
----
-
-## 7. Campus Timezone & Date Standardization
-
-Because BroadTrack manages physical media equipment located on campus, all date formatting and calculation functions in [`frontend/shared/util/date.js`](file:///home/sam/git/broadtrack/frontend/shared/util/date.js) strictly enforce the Philippine campus timezone:
-
-- **Target Timezone:** `Asia/Manila` (UTC+8).
-- **Wall-Clock Consistency:** Dates and times are displayed in campus local time regardless of the browser or operating system's local timezone.
-- **Intl Formatter:** Uses native `Intl.DateTimeFormat` with `{ timeZone: 'Asia/Manila' }` across `formatDate`, `formatDateTime`, `formatSimpleDate`, `formatDateRange`, and `getTodayDateString`.
+The frontend configuration is [`vite.config.js`](../../frontend/vite.config.js). From `frontend/`, use `vp check` for lint and formatting checks, `vp lint` for linting, `vp fmt` for formatting, and `vp -C web build` to build the web app. `bun run check` formats the repository and runs frontend checks/build/browser checks; it can modify files. It does not run backend tests.

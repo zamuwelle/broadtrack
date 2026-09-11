@@ -1,73 +1,65 @@
 # API Endpoints Reference
 
-All BroadTrack API endpoints are versioned under `/api/v1` and return standardized JSON resources.
+The Laravel routes are defined in [`backend/routes/api.php`](../../backend/routes/api.php) under `/api/v1`. Protected routes use Sanctum authentication. The `admin` role middleware allows administrators and system administrators; user-management routes require `sysadmin`.
 
----
+## Authentication and account
 
-## Authentication & Account Endpoints
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/register` | Public | Register an account. |
+| `POST` | `/api/v1/login` | Public | Sign in and receive a token. |
+| `POST` | `/api/v1/forgot-password` | Public | Request a password reset email. |
+| `POST` | `/api/v1/reset-password` | Public | Reset a password. |
+| `POST` | `/api/v1/resend-verification` | Public | Request another email verification code. |
+| `POST` | `/api/v1/verify-email` | Public | Verify an email address. |
+| `POST` | `/api/v1/logout` | Authenticated | Revoke the current token. |
+| `GET` | `/api/v1/me` | Authenticated | Read the current user's profile. |
+| `POST` | `/api/v1/contact` | Public | Submit a contact inquiry. |
 
-| Method | Endpoint                       | Access        | Rate Limit | Description                                                             |
-| ------ | ------------------------------ | ------------- | ---------- | ----------------------------------------------------------------------- |
-| `POST` | `/api/v1/register`             | Public        | 5/min      | Register a new user account with school email.                          |
-| `POST` | `/api/v1/login`                | Public        | 5/min      | Login with email and password; returns Sanctum bearer token.            |
-| `POST` | `/api/v1/forgot-password`      | Public        | 5/min      | Send password reset token email.                                        |
-| `POST` | `/api/v1/reset-password`       | Public        | 5/min      | Reset password and revoke all existing Sanctum sessions.                |
-| `POST` | `/api/v1/verify-email`         | Public        | 10/min     | Verify user email address with 6-digit OTP verification code.           |
-| `POST` | `/api/v1/resend-verification`  | Public        | 5/min      | Resend 6-digit OTP verification code to unverified user (60s cooldown). |
-| `GET`  | `/api/v1/auth/google/redirect` | Public        | 60/min     | Redirect to Google OAuth consent screen.                                |
-| `GET`  | `/api/v1/auth/google/callback` | Public        | 60/min     | Handle Google OAuth callback with domain restriction.                   |
-| `POST` | `/api/v1/logout`               | Authenticated | 60/min     | Revoke current user bearer token.                                       |
+There are no Google OAuth routes in the current API route file.
 
----
+## Equipment
 
-## Profile & Contact Endpoints
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/equipment` | Authenticated | List equipment. |
+| `POST` | `/api/v1/equipment` | Admin / Sysadmin | Create equipment. |
+| `PUT` | `/api/v1/equipment/{equipment}` | Admin / Sysadmin | Update equipment. |
+| `POST` | `/api/v1/equipment/{equipment}/upload` | Admin / Sysadmin | Upload an equipment image. |
+| `DELETE` | `/api/v1/equipment/{equipment}` | Admin / Sysadmin | Delete equipment when allowed by its booking history. |
 
-| Method | Endpoint          | Access        | Rate Limit | Description                                       |
-| ------ | ----------------- | ------------- | ---------- | ------------------------------------------------- |
-| `GET`  | `/api/v1/me`      | Authenticated | 60/min     | Fetch authenticated user profile and permissions. |
-| `POST` | `/api/v1/contact` | Public        | 5/min      | Send contact inquiry email to administrators.     |
+## Bookings
 
----
+`GET /api/v1/bookings` accepts the optional query parameter `view=calendar`. The request is authenticated and validated by [`IndexBookingRequest`](../../backend/app/Http/Requests/Api/V1/IndexBookingRequest.php); other `view` values return a validation error (422). Without the parameter, a borrower receives their own bookings, including all statuses. With `view=calendar`, a borrower receives approved bookings across users. Admins receive all bookings in either view. The server applies this scope; the parameter does not grant access. The calendar response still includes booking IDs, ticket IDs, equipment, and dates. The resource hides personal details for bookings the current user does not own.
 
-## Equipment Endpoints
+The calendar, schedule notice, and booking summary use this same `view=calendar` query, represented as a distinct TanStack Query key from the default booking list. Booking broadcasts invalidate booking and equipment queries; equipment broadcasts invalidate equipment queries. See [`useEvents`](../../frontend/web/src/hooks/queries/useEvents.js).
 
-| Method   | Endpoint                               | Access           | Rate Limit | Description                                                |
-| -------- | -------------------------------------- | ---------------- | ---------- | ---------------------------------------------------------- |
-| `GET`    | `/api/v1/equipment`                    | Authenticated    | 60/min     | List all equipment items with category, status, and specs. |
-| `POST`   | `/api/v1/equipment`                    | Admin / Sysadmin | 60/min     | Create a new equipment item with generated serial number.  |
-| `PUT`    | `/api/v1/equipment/{equipment}`        | Admin / Sysadmin | 60/min     | Update equipment details, category, or status.             |
-| `POST`   | `/api/v1/equipment/{equipment}/upload` | Admin / Sysadmin | 60/min     | Upload or update equipment photo on Cloudinary.            |
-| `DELETE` | `/api/v1/equipment/{equipment}`        | Admin / Sysadmin | 60/min     | Delete equipment item (blocked if tied to bookings).       |
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/bookings` | Authenticated | List bookings; see the view behavior above. |
+| `POST` | `/api/v1/bookings` | Borrower | Create bookings for requested equipment. |
+| `GET` | `/api/v1/bookings/{booking}` | Authenticated, policy checked | Read a booking the user may view. |
+| `GET` | `/api/v1/bookings/{booking}/slip/pdf` | Authenticated, policy checked | Download a booking slip. |
+| `GET` | `/api/v1/bookings/reports/pdf` | Admin / Sysadmin | Export a booking report as PDF. |
+| `GET` | `/api/v1/bookings/reports/csv` | Admin / Sysadmin | Export a booking report as CSV. |
+| `PUT` | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin | Approve a pending booking. |
+| `PUT` | `/api/v1/bookings/{booking}/reject` | Admin / Sysadmin | Reject a pending booking. |
+| `PUT` | `/api/v1/bookings/{booking}/return` | Admin / Sysadmin | Mark a booking returned. |
+| `PUT` | `/api/v1/bookings/{booking}/cancel` | Authenticated, policy checked | Cancel a booking when allowed. |
+| `PUT` | `/api/v1/bookings/{booking}/read` | Borrower | Mark a booking notification as read. |
+| `POST` | `/api/v1/bookings/{booking}/remind` | Admin / Sysadmin | Queue a manual return reminder for an eligible booking. |
 
----
+There is no release endpoint in the current route file. Booking responses include formatted Manila date labels and raw date fields; date storage and serialization details are described in the [borrowing lifecycle](../workflows/borrowing-lifecycle.md).
 
-## Booking Endpoints
+## Users
 
-Booking responses include Manila-formatted `date_range_label` and `date_time_range_label` fields alongside the raw ISO date values in `start_date`, `end_date`, and `return_date`.
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/v1/users` | Sysadmin | List users. |
+| `POST` | `/api/v1/users` | Sysadmin | Create a user account. |
+| `PUT` | `/api/v1/users/{user}` | Sysadmin | Update a user account. |
+| `DELETE` | `/api/v1/users/{user}` | Sysadmin | Delete a user when allowed. |
 
-| Method | Endpoint                              | Access           | Rate Limit | Description                                                                 |
-| ------ | ------------------------------------- | ---------------- | ---------- | --------------------------------------------------------------------------- |
-| `GET`  | `/api/v1/bookings`                    | Authenticated    | 60/min     | List bookings (borrower sees own; admin sees all).                          |
-| `POST` | `/api/v1/bookings`                    | Borrower         | 60/min     | Submit new booking cart request with date validation.                       |
-| `GET`  | `/api/v1/bookings/{booking}`          | Borrower / Admin | 60/min     | View single booking details, items, and return notes.                       |
-| `GET`  | `/api/v1/bookings/{booking}/slip/pdf` | Borrower / Admin | 60/min     | Export official A4 portrait borrowing slip PDF with barcode manifest.       |
-| `GET`  | `/api/v1/bookings/reports/pdf`        | Admin / Sysadmin | 60/min     | Export filtered transaction history as A4 landscape PDF report.             |
-| `GET`  | `/api/v1/bookings/reports/csv`        | Admin / Sysadmin | 60/min     | Export filtered transaction history as UTF-8 BOM CSV spreadsheet.           |
-| `PUT`  | `/api/v1/bookings/{booking}/approve`  | Admin / Sysadmin | 60/min     | Approve pending booking request (blocked if reservation period has passed). |
-| `PUT`  | `/api/v1/bookings/{booking}/reject`   | Admin / Sysadmin | 60/min     | Reject pending booking request with rejection reason.                       |
-| `PUT`  | `/api/v1/bookings/{booking}/release`  | Admin / Sysadmin | 60/min     | Mark approved booking equipment as released to borrower.                    |
-| `PUT`  | `/api/v1/bookings/{booking}/return`   | Admin / Sysadmin | 60/min     | Mark released booking equipment as returned.                                |
-| `PUT`  | `/api/v1/bookings/{booking}/cancel`   | Borrower / Admin | 60/min     | Cancel pending or approved booking request before physical release.         |
-| `PUT`  | `/api/v1/bookings/{booking}/read`     | Borrower         | 60/min     | Mark booking notification status as read.                                   |
-| `POST` | `/api/v1/bookings/{booking}/remind`   | Admin / Sysadmin | 60/min     | Send manual return reminder email for released booking.                     |
+## Responses and failures
 
----
-
-## User Management Endpoints
-
-| Method   | Endpoint               | Access   | Rate Limit | Description                                        |
-| -------- | ---------------------- | -------- | ---------- | -------------------------------------------------- |
-| `GET`    | `/api/v1/users`        | Sysadmin | 60/min     | List all users excluding other sysadmin accounts.  |
-| `POST`   | `/api/v1/users`        | Sysadmin | 60/min     | Manually create pre-verified user account.         |
-| `PUT`    | `/api/v1/users/{user}` | Sysadmin | 60/min     | Update user account, role, or department.          |
-| `DELETE` | `/api/v1/users/{user}` | Sysadmin | 60/min     | Delete user account (blocked if tied to bookings). |
+The [`ApiController`](../../backend/app/Http/Controllers/Api/ApiController.php) helpers provide success responses with `message` and `status`, and optional `data`; error helpers provide `message` and optional `errors`. Some routes return downloads or no content, and framework-generated errors may use Laravel's JSON exception format instead of these helpers. Queued mail responses mean the mail was enqueued, not delivered. If the manual reminder or contact endpoint cannot enqueue mail, it logs the failure and returns HTTP 500. A password-reset mail queue failure is logged, but the forgot-password handler still returns its success response for a known email.

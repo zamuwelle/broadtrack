@@ -1,124 +1,33 @@
-# Backend Architecture & Conventions
+# Backend Architecture and Conventions
 
-BroadTrack's backend is a Laravel 13 REST API using PHP Attributes, thin controllers, and domain separation.
+The Laravel API, routes, and tests live in [`backend/`](../../backend/). Follow nearby code when adding or changing a feature; current conventions do not mean every existing controller follows one pattern.
 
----
+## Requests, controllers, and responses
 
-## 1. PHP Imports & Code Cleanliness
+Use Form Requests for request validation, policies for authorization, and API Resources for response shaping where those patterns fit. Keep controllers focused and inspect the full flow before moving existing transactions or queries. Put PHP imports at the top of the file. Give new or changed methods, functions, and closures explicit parameter and return types.
 
-- **Top-Level Imports Only:** Never use inline PHP imports (e.g. `\App\Models\User`, `\Illuminate\Support\Str`). All `use` statements must be declared at the top of the file.
-- **Truthy-First Conditions:** Always prefer positive/truthy conditions first. Avoid unnecessary negations or double-negative logic.
+The [`ApiController`](../../backend/app/Http/Controllers/Api/ApiController.php) helpers return success `message` and `status`, with optional `data`; error helpers return `message` and optional `errors`. Framework-generated JSON exceptions, downloads, and 204 responses can use different response shapes. Resources should use `whenLoaded(...)` for optional relationships instead of querying relationships during serialization.
 
----
+## Models and domain values
 
-## 2. Thin Controllers & Form Requests
+Inspect [`backend/app/Enums/`](../../backend/app/Enums/) for existing backed enums before adding domain strings. Current booking values are `pending`, `approved`, `rejected`, `returned`, and `cancelled`; equipment values are `available`, `booked`, `borrowed`, and `maintenance`. See [`BookingStatus`](../../backend/app/Enums/BookingStatus.php) and [`EquipmentStatus`](../../backend/app/Enums/EquipmentStatus.php).
 
-Controllers never perform raw validation, manual database queries, or authorization logic inline:
+Models use PHP attributes for configuration and the `casts()` method for casts; see [`User`](../../backend/app/Models/User.php), [`Booking`](../../backend/app/Models/Booking.php), and [`Equipment`](../../backend/app/Models/Equipment.php). Reuse shared request rules such as [`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php) and follow the unique-update pattern in [`UpdateUserRequest`](../../backend/app/Http/Requests/Api/V1/UpdateUserRequest.php). For an unshipped schema change, update its original migration during development.
 
-```php
-// app/Http/Controllers/Api/V1/EquipmentController.php
-class EquipmentController extends ApiController
-{
-    public function store(StoreEquipmentRequest $request): JsonResponse
-    {
-        $this->authorize('create', Equipment::class);
-        $equipment = Equipment::create($request->validated());
+## Booking integrity and dates
 
-        return $this->created(new EquipmentResource($equipment));
-    }
-}
-```
+Booking transitions lock equipment and recheck overlapping approved bookings inside transactions. Preserve those checks when changing booking behavior. An approved booking contributes to the computed `booked` equipment status, except when equipment is under maintenance. The application does not automatically transition equipment to `borrowed` when a booking time arrives.
 
-- **Authorization:** Handled via `$this->authorize(...)` and auto-discovered Policies.
-- **Validation:** Delegated to dedicated Form Request classes (`app/Http/Requests/Api/V1/`).
-- **Shared Rules:** Reusable validation concerns (e.g., `HasUserRules`) for common rules.
+Booking database columns use timezone-naive `DATETIME` values. The frontend treats input without a timezone as Manila local time; Laravel parses that request under its configured timezone (`APP_TIMEZONE`, falling back to UTC). Eloquent date casts serialize as UTC ISO timestamps ending in `Z`. Format returned values with the API/frontend date helpers; do not slice the UTC timestamp to get a Manila calendar day. The booking migration and [`BookingTest`](../../backend/tests/Feature/Api/V1/BookingTest.php) show these storage and serialization details.
 
----
+## Events and queued work
 
-## 3. Eloquent Models & Laravel 13 Attributes
+Inspect event contracts and observers before changing side effects. Booking and equipment observers broadcast updates; they do not invalidate cache. [`BookingUpdated`](../../backend/app/Events/BookingUpdated.php) dispatches after commit, while [`EquipmentUpdated`](../../backend/app/Events/EquipmentUpdated.php) has a different dispatch contract. A queued mail call means the message was accepted for queuing, not delivered. Keep reminder cache locks and write success markers only after enqueue succeeds so failures can retry.
 
-Class configuration is declared via PHP Attributes directly above the class instead of scattered protected properties:
+Keep [`routes/console.php`](../../backend/routes/console.php) as the schedule map and put command logic in command classes. Use Eloquent `Prunable` on models that define pruning.
 
-```php
-namespace App\Models;
+## Tests and checks
 
-use App\Observers\UserObserver;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
-use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+Pest feature tests use [`tests/Pest.php`](../../backend/tests/Pest.php), which configures `RefreshDatabase` for Feature tests and defines `fakeImage()`. Put API feature tests under `backend/tests/Feature/Api/V1`; console command tests may live elsewhere under Feature.
 
-#[ObservedBy(UserObserver::class)]
-#[Fillable(['firstname', 'lastname', 'email', 'password', 'role', 'department'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Prunable;
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'role' => UserRole::class,
-            'department' => Department::class,
-        ];
-    }
-
-    public function prunable(): Builder
-    {
-        return static::whereNull('email_verified_at')
-            ->where('created_at', '<=', now()->subHours(24));
-    }
-}
-```
-
----
-
-## 4. Backed Enums for Domain Values
-
-Never use raw string literals (e.g., `'pending'`, `'admin'`) across models, queries, validation rules, or controllers. Always use backed Enums:
-
-- `BookingStatus` (`Pending`, `Approved`, `Released`, `Returned`, `Rejected`, `Cancelled`)
-- `EquipmentStatus` (`Available`, `UnderMaintenance`, `Retired`)
-- `UserRole` (`Borrower`, `Admin`, `SysAdmin`)
-- `Department` (`BSIS`, `BSAIS`, `BAB`, etc.)
-
----
-
-## 5. Observers & Real-Time Broadcasting
-
-Model lifecycle side-effects (cache invalidation, WebSockets, notifications) are handled in dedicated Observers:
-
-- Attached via `#[ObservedBy(ModelObserver::class)]`.
-- Broadcast typed WebSocket events via Laravel Reverb on `created`, `updated`, and `deleted`.
-
----
-
-## 6. Console Schedulers & Commands
-
-- **`routes/console.php`:** Strictly a thin scheduler map containing only `Schedule::command(...)` calls.
-- **`app/Console/Commands/`:** Business logic encapsulated into dedicated Command classes using PHP attributes (`#[Signature]`, `#[Description]`).
-- **`Prunable`:** Models define their own cleanup conditions via `prunable()` instead of writing custom cleanup commands.
-
----
-
-## 7. Testing with Pest PHP
-
-All backend tests are written as expressive Feature tests in `tests/Feature/Api/V1/` using Pest:
-
-```php
-test('user can re-register with unverified email', function () {
-    $user = User::factory()->unverified()->create();
-
-    $response = $this->postJson('/api/v1/register', [
-        'firstname' => 'Jane',
-        'lastname' => 'Doe',
-        'email' => $user->email,
-        'password' => 'newpassword123',
-        'department' => 'BS Information Systems',
-    ]);
-
-    $response->assertCreated();
-});
-```
+From `frontend/`, run `bun run test:backend` for backend tests and `bun run lint:backend` for Pint checks. These commands do not establish production behavior or mail delivery.

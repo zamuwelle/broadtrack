@@ -1,102 +1,33 @@
-# Authentication & User Lifecycle
+# Authentication and User Lifecycle
 
-BroadTrack restricts user authentication to institution email domains (`@student.laverdad.edu.ph` and `@laverdad.edu.ph`). Unverified registrations are kept for 24 hours before automated deletion.
+Authentication and account routes are defined in [`backend/routes/api.php`](../../backend/routes/api.php). Protected API routes use Sanctum bearer tokens. The registered user roles are defined in [`UserRole`](../../backend/app/Enums/UserRole.php).
 
----
+Registration, login, forgot-password, and resend-verification requests accept only `@student.laverdad.edu.ph` and `@laverdad.edu.ph` addresses. Registration shares its domain rule through [`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php); the other requests declare the same suffix rule in their Form Requests. Email or code validation failures return 422, and a resend inside the 60-second cooldown returns 429. See [`RegisterRequest`](../../backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php), [`LoginRequest`](../../backend/app/Http/Requests/Api/V1/Auth/LoginRequest.php), [`ForgotPasswordRequest`](../../backend/app/Http/Requests/Api/V1/Auth/ForgotPasswordRequest.php), and [`ResendVerificationRequest`](../../backend/app/Http/Requests/Api/V1/Auth/ResendVerificationRequest.php).
 
-## Registration & Verification Lifecycle
+## Registration and verification
+
+Registration creates an unverified account and queues a six-digit verification email. Verification codes expire after 15 minutes. An unverified account can register again with the same email; the existing record is updated and its creation time is refreshed. A verification resend has a 60-second cooldown. These rules are implemented in [`AuthController`](../../backend/app/Http/Controllers/Api/V1/Auth/AuthController.php) and [`VerificationController`](../../backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> FormSubmitted: User Submits Register Form
-    FormSubmitted --> UnverifiedCreated: Create Account (email_verified_at = NULL)
-    UnverifiedCreated --> EmailDispatched: 6-Digit Verification Code Dispatched
-
-    state UnverifiedCreated {
-        [*] --> WaitingForVerification
-        WaitingForVerification --> ReRegistered: User Submits Form Again (within 24h)
-        ReRegistered --> WaitingForVerification: Updated Credentials + Fresh 6-Digit Code
-        WaitingForVerification --> Pruned: 24 Hours Elapsed Without Verification
-    }
-
-    EmailDispatched --> VerifiedAccount: User Submits Valid Code Within 15 Min
-    VerifiedAccount --> [*]: Permanent Borrower Access
-    Pruned --> [*]: Permanently Deleted from Database
+    [*] --> Unverified: Register
+    Unverified --> Unverified: Re-register or resend code
+    Unverified --> Verified: Submit valid code within 15 minutes
+    Unverified --> Pruned: Unverified for 24 hours
+    Verified --> [*]
+    Pruned --> [*]
 ```
 
----
+[`User::prunable`](../../backend/app/Models/User.php) selects unverified users at least 24 hours old. The daily `model:prune` task runs this model's query. The scheduler is configured in [`routes/console.php`](../../backend/routes/console.php).
 
-## 1. Domain Validation & Anchoring
+## Login and tokens
 
-In [`HasUserRules.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Concerns/HasUserRules.php):
+Login rejects an unverified user and sends another verification code. On successful login, the application deletes the user's existing Sanctum tokens and creates a new `auth-token`. Logout deletes the current token. The configured Sanctum expiration is 24 hours, and the daily `sanctum:prune-expired --hours=24` task removes expired token records according to Sanctum's command behavior.
 
-- Student and employee email rules explicitly enforce the `@` anchor to prevent domain suffix spoofing:
-    ```php
-    protected function schoolEmailRule(): string
-    {
-        return 'ends_with:@student.laverdad.edu.ph,@laverdad.edu.ph';
-    }
-    ```
-- This rule is enforced across [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php), [`LoginRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/LoginRequest.php), and [`ForgotPasswordRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/ForgotPasswordRequest.php).
+## Password reset
 
----
+Forgot-password requests return a not-found response for an unknown email. For a known email, the controller creates a reset token that expires after 15 minutes and queues a reset email. If queuing throws, the failure is logged; the controller still returns the success response. Resetting a password deletes all of that user's Sanctum tokens and removes the reset-token record. These responses do not provide a uniform generic response for known and unknown email addresses; see [`PasswordResetController`](../../backend/app/Http/Controllers/Api/V1/Auth/PasswordResetController.php) before changing this behavior.
 
-## 2. Unverified Registration Handling & OTP Verification
+## OAuth
 
-In [`RegisterRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php), [`VerifyEmailRequest.php`](file:///home/sam/git/broadtrack/backend/app/Http/Requests/Api/V1/Auth/VerifyEmailRequest.php), and [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php):
-
-- Email uniqueness is enforced only against verified accounts:
-    ```php
-    Rule::unique('users')->whereNotNull('email_verified_at')
-    ```
-- When a user registers, BroadTrack generates a cryptographic 6-digit code via `random_int(100000, 999999)` stored in `verification_code` alongside a `verification_sent_at` timestamp.
-- If a user registered previously but did not verify within the 15-minute window, submitting the registration form again updates their unverified record, refreshes `created_at = now()`, and issues a fresh 6-digit OTP code.
-- Verification is submitted directly inside the authentication modal via `POST /api/v1/verify-email`. [`VerificationController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php) validates the code using timing-safe `hash_equals()` and rejects expired codes (>15 minutes) or invalid submissions with a 422 Unprocessable Entity status.
-- Resend requests (`POST /api/v1/resend-verification`) enforce a 60-second cooldown period, returning HTTP 429 if called within 60 seconds of dispatch.
-
----
-
-## 3. 24-Hour Model Pruning
-
-In [`User.php`](file:///home/sam/git/broadtrack/backend/app/Models/User.php):
-
-- Implements Laravel's `Prunable` trait:
-    ```php
-    public function prunable(): Builder
-    {
-        return static::whereNull('email_verified_at')
-            ->where('created_at', '<=', now()->subHours(24));
-    }
-    ```
-- Unverified accounts older than 24 hours are removed by the daily `model:prune` task scheduled in `routes/console.php`.
-
----
-
-## 4. Google OAuth Domain Verification
-
-In [`OAuthController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/OAuthController.php):
-
-- Domain Filter: Only accounts with `@student.laverdad.edu.ph` or `@laverdad.edu.ph` emails are allowed to authenticate via `Str::is(...)`. External domains (e.g. `@gmail.com`) are immediately rejected with an error redirect.
-- Unverified Redirect: If an unverified user logs in via Google, they are redirected with a message to check their email for the six-digit verification code.
-- Selecting Google sign-in opens the API redirect in a separate window. The OAuth callback redirects that window to the frontend; if the browser blocks the window, the login form navigates there instead.
-- Role Redirect:
-    ```php
-    $target = $user->isAdmin() ? '/dashboard' : '/equipment';
-    return redirect($frontendUrl.$target.'?token='.$token);
-    ```
-
----
-
-## 5. Token Revocation & Password Reset
-
-In [`PasswordResetController.php`](file:///home/sam/git/broadtrack/backend/app/Http/Controllers/Api/V1/Auth/PasswordResetController.php):
-
-- When a borrower or administrator successfully resets their password, all active personal access tokens are immediately revoked:
-    ```php
-    $user->tokens()->delete();
-    ```
-- Token Lifetime: Configured in `config/sanctum.php` as 24 hours (`60 * 24`).
-- Pruning Schedule: Configured in `routes/console.php`:
-    ```php
-    Schedule::command('sanctum:prune-expired --hours=24')->daily()->timezone('Asia/Manila');
-    ```
+The login form currently displays a Google sign-in option in [`LoginForm.jsx`](../../frontend/web/src/features/auth/components/LoginForm.jsx), but the current [`api.php`](../../backend/routes/api.php) does not define OAuth endpoints. Google sign-in is therefore not an available API flow.
