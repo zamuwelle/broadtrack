@@ -1,5 +1,3 @@
-import { formatDateRange } from '@shared/util/date'
-
 const defaultTransactions = Object.freeze([])
 const defaultBooking = Object.freeze({})
 
@@ -46,7 +44,7 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
     const equipmentTitle = equipments[0]?.name || 'Equipment'
     const borrowerInfo = getBorrowerInfo(booking)
     const statusBadge = getStatusBadge(booking)
-    const timelineRange = formatDateRange(booking.start_date, booking.end_date)
+    const timelineRange = booking.date_range_label ?? '---'
 
     return (
         <div className="rounded-md border border-gray-200 p-3.5 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">

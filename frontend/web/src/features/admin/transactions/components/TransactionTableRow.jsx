@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { getBookingStatus, getBookingStatusBadge } from '@shared/util/booking'
-import { formatDateRange, formatSimpleDate } from '@shared/util/date'
+import { formatSimpleDate } from '@shared/util/date'
 
 const defaultBooking = Object.freeze({})
 const noop = () => null
@@ -24,13 +24,12 @@ export const TransactionTableRow = ({ booking = defaultBooking, onViewDetails = 
         onViewDetails(booking)
     }, [booking, onViewDetails])
 
-    const equipment = booking.equipments ? booking.equipments[0] : null
-    const equipmentName = equipment ? equipment.name || 'Equipment' : 'Equipment'
-    const equipmentModel = equipment ? equipment.model || '' : ''
+    const equipment = booking.equipments?.[0] || {}
+    const equipmentName = equipment.name || 'Equipment'
+    const equipmentModel = equipment.model || ''
     const borrowerName = booking.user?.full_name || 'Borrower'
-    const borrowerDepartment = booking.user ? booking.user.department || '' : ''
+    const borrowerDepartment = booking.user?.department || ''
     const statusBadge = getBookingStatusBadge(booking)
-    const borrowDateText = formatDateRange(booking.start_date, booking.end_date)
     const returnDateText = formatReturnDate(booking)
     const badgeClass = statusBadgeStyles[statusBadge.variant] ?? statusBadgeStyles.confirmed
 
@@ -52,7 +51,7 @@ export const TransactionTableRow = ({ booking = defaultBooking, onViewDetails = 
                 ) : null}
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-xs font-medium text-slate-700 whitespace-nowrap">
-                {borrowDateText}
+                {booking.date_range_label ?? '---'}
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-xs font-medium text-slate-700 whitespace-nowrap">
                 {returnDateText}

@@ -1,3 +1,3 @@
-import { DashboardPage } from '@/features/admin/DashboardPage'
+import { DashboardPage } from '@/features/admin/dashboard/DashboardPage'
 
 export const Component = () => <DashboardPage />

@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useToggle } from '@/hooks/ui/useToggle'
 import { Icon } from '@/components/ui/Icon'
-import { getNotificationConfig } from '@/features/borrow/components/notificationConfig'
-import { NotificationItem } from '@/features/borrow/components/NotificationItem'
+import { getNotificationConfig } from '@/features/borrow/notifications/notificationConfig'
+import { NotificationItem } from '@/features/borrow/notifications/NotificationItem'
 import { useMarkBookingAsRead } from '@/api/bookings/read-booking'
 
 const defaultBookings = Object.freeze([])

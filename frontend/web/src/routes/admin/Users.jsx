@@ -1,3 +1,3 @@
-import { UsersPage } from '@/features/admin/UsersPage'
+import { UsersPage } from '@/features/admin/users/UsersPage'
 
 export const Component = () => <UsersPage />

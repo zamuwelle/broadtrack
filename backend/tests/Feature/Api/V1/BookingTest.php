@@ -3,11 +3,58 @@
 use App\Enums\BookingStatus;
 use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
+use App\Http\Resources\Api\V1\BookingResource;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+
+test('booking resource formats booking date labels in Manila and keeps missing date fallbacks', function () {
+    $borrower = User::factory()->borrower()->create();
+    $booking = Booking::factory()->create([
+        'user_id' => $borrower->id,
+        'start_date' => Carbon::parse('2026-12-01 08:00:00', 'Asia/Manila'),
+        'end_date' => Carbon::parse('2026-12-03 17:00:00', 'Asia/Manila'),
+    ]);
+
+    $response = $this->actingAs($borrower)->getJson("/api/v1/bookings/{$booking->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('data.date_range_label', 'December 1-3, 2026')
+        ->assertJsonPath(
+            'data.date_time_range_label',
+            'December 1, 2026, 08:00 AM – December 3, 2026, 05:00 PM'
+        );
+
+    $emptyBooking = new Booking;
+    $emptyData = (new BookingResource($emptyBooking))->toArray(Request::create('/'));
+
+    $startOnlyBooking = new Booking;
+    $startOnlyBooking->setRawAttributes([
+        'start_date' => Carbon::parse('2026-12-01T08:00:00+08:00'),
+    ], true);
+    $startOnlyData = (new BookingResource($startOnlyBooking))->toArray(Request::create('/'));
+
+    $utcBooking = new Booking;
+    $utcBooking->setRawAttributes([
+        'start_date' => Carbon::parse('2026-11-30T16:30:00Z'),
+        'end_date' => Carbon::parse('2026-12-02T09:00:00Z'),
+    ], true);
+    $utcData = (new BookingResource($utcBooking))->toArray(Request::create('/'));
+
+    expect($emptyData['date_range_label'])->toBe('---')
+        ->and($emptyData['date_time_range_label'])->toBe(' – ')
+        ->and($emptyData['start_date'])->toBeNull()
+        ->and($emptyData['end_date'])->toBeNull()
+        ->and($startOnlyData['date_range_label'])->toBe('December 1, 2026')
+        ->and($startOnlyData['date_time_range_label'])->toBe('December 1, 2026, 08:00 AM – ')
+        ->and($utcData['date_time_range_label'])
+        ->toBe('December 1, 2026, 12:30 AM – December 2, 2026, 05:00 PM')
+        ->and($utcData['start_date']->toJSON())->toBe('2026-11-30T16:30:00.000000Z')
+        ->and($utcData['start_date']->timezoneName)->toBe('Z');
+});
 
 test('borrower can create booking request', function () {
     $borrower = User::factory()->borrower()->create();

@@ -3,7 +3,7 @@ import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { ProfileToggle } from '@/features/users/components/ProfileToggle'
 import { useUser } from '@/lib/auth'
-import { AdminMobileLinkItem } from '@/features/admin/components/AdminMobileLinkItem'
+import { AdminMobileLinkItem } from '@/layouts/components/AdminMobileLinkItem'
 
 const defaultSidebarLinks = Object.freeze([])
 const noop = () => null

@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class BookingResource extends JsonResource
 {
@@ -21,6 +22,8 @@ class BookingResource extends JsonResource
             'returned_by_user_id' => $isOwnerOrAdmin ? $this->returned_by_user_id : null,
             'returned_by_user' => $isOwnerOrAdmin ? new UserResource($this->whenLoaded('returnedByUser')) : null,
             'purpose' => $isOwnerOrAdmin ? $this->purpose : null,
+            'date_range_label' => $this->formatDateRangeLabel($this->start_date, $this->end_date),
+            'date_time_range_label' => $this->formatDateTimeRangeLabel($this->start_date, $this->end_date),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'return_date' => $this->return_date,
@@ -31,5 +34,50 @@ class BookingResource extends JsonResource
             'isRead' => $isOwnerOrAdmin ? $this->isRead : false,
             'created_at' => $this->created_at,
         ];
+    }
+
+    private function formatDateRangeLabel(?Carbon $startDate, ?Carbon $endDate): string
+    {
+        if (! $startDate) {
+            return '---';
+        }
+
+        $startDate = $startDate->copy()->timezone('Asia/Manila');
+
+        if (! $endDate) {
+            return $startDate->format('F j, Y');
+        }
+
+        $endDate = $endDate->copy()->timezone('Asia/Manila');
+        $startMonth = $startDate->format('F');
+        $endMonth = $endDate->format('F');
+        $startYear = $startDate->format('Y');
+        $endYear = $endDate->format('Y');
+        $startDay = $startDate->format('j');
+        $endDay = $endDate->format('j');
+
+        if ($startMonth === $endMonth && $startYear === $endYear) {
+            if ($startDay === $endDay) {
+                return "{$startMonth} {$startDay}, {$startYear}";
+            }
+
+            return "{$startMonth} {$startDay}-{$endDay}, {$startYear}";
+        }
+
+        return "{$startMonth} {$startDay}, {$startYear} – {$endMonth} {$endDay}, {$endYear}";
+    }
+
+    private function formatDateTimeRangeLabel(?Carbon $startDate, ?Carbon $endDate): string
+    {
+        return $this->formatDateTimeLabel($startDate).' – '.$this->formatDateTimeLabel($endDate);
+    }
+
+    private function formatDateTimeLabel(?Carbon $date): string
+    {
+        if (! $date) {
+            return '';
+        }
+
+        return $date->copy()->timezone('Asia/Manila')->format('F j, Y, h:i A');
     }
 }

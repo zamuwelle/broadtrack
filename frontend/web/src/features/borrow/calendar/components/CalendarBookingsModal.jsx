@@ -1,6 +1,6 @@
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { XButton } from '@/components/ui/XButton'
-import { BookingCardItem } from '@/features/borrow/components/BookingCardItem'
+import { BookingCardItem } from '@/features/borrow/calendar/components/BookingCardItem'
 
 const defaultBookings = Object.freeze([])
 const noop = () => null

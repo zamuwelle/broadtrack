@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 import { EditProfileForm } from '@/features/users/components/EditProfileForm'
 import { XButton } from '@/components/ui/XButton'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
-import { useBorrowSummaryLogic } from '@/hooks/actions/useBorrowSummaryLogic'
-import { SubmittedView } from '@/features/borrow/components/SubmittedView'
-import { EmptyView } from '@/features/borrow/components/EmptyView'
-import { SummaryFormView } from '@/features/borrow/components/SummaryFormView'
+import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummaryLogic'
+import { SubmittedView } from '@/features/borrow/request/components/SubmittedView'
+import { EmptyView } from '@/features/borrow/request/components/EmptyView'
+import { SummaryFormView } from '@/features/borrow/request/components/SummaryFormView'
 
 const noop = () => null
 

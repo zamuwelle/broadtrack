@@ -95,36 +95,6 @@ export const formatDateTime = (dateValue) => {
     return `${datePart} ${timePart}`
 }
 
-export const formatDateRange = (startDate, endDate) => {
-    const start = parseBookingDate(startDate)
-    if (!start || Number.isNaN(start.getTime())) {
-        return '---'
-    }
-    if (!endDate) {
-        return formatSimpleDate(startDate)
-    }
-
-    const end = parseBookingDate(endDate)
-    if (!end || Number.isNaN(end.getTime())) {
-        return formatSimpleDate(startDate)
-    }
-
-    const startMonth = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
-    const endMonth = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
-    const startYear = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
-    const endYear = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
-    const startDay = start.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
-    const endDay = end.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
-
-    if (startMonth === endMonth && startYear === endYear) {
-        if (startDay === endDay) {
-            return `${startMonth} ${startDay}, ${startYear}`
-        }
-        return `${startMonth} ${startDay}-${endDay}, ${startYear}`
-    }
-    return `${startMonth} ${startDay}, ${startYear} – ${endMonth} ${endDay}, ${endYear}`
-}
-
 export const getOverdueDuration = (endDate) => {
     const parsedEnd = parseBookingDate(endDate)
     if (!parsedEnd || Number.isNaN(parsedEnd.getTime())) {

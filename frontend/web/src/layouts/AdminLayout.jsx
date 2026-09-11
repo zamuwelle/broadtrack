@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { AdminNavbar } from '@/features/admin/components/AdminNavbar'
+import { AdminNavbar } from '@/layouts/components/AdminNavbar'
 import { Sidebar } from '@/components/ui/Sidebar'
 import { Banner } from '@/components/ui/Banner'
 import { useEquipment } from '@/api/equipment/get-equipment'

@@ -1,3 +1,3 @@
-import { TransactionsPage } from '@/features/admin/TransactionsPage'
+import { TransactionsPage } from '@/features/admin/transactions/TransactionsPage'
 
 export const Component = () => <TransactionsPage />

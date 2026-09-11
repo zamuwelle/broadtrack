@@ -1,6 +1,6 @@
 import { Icon } from '@/components/ui/Icon'
-import { SelectedEquipmentList } from '@/features/borrow/components/SelectedEquipmentList'
-import { BookingDateInputs } from '@/features/borrow/components/BookingDateInputs'
+import { SelectedEquipmentList } from '@/features/borrow/request/components/SelectedEquipmentList'
+import { BookingDateInputs } from '@/features/borrow/request/components/BookingDateInputs'
 import { XButton } from '@/components/ui/XButton'
 
 export const SummaryFormView = (props) => {

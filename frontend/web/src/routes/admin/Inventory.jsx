@@ -1,3 +1,3 @@
-import { InventoryPage } from '@/features/admin/InventoryPage'
+import { InventoryPage } from '@/features/admin/inventory/InventoryPage'
 
 export const Component = () => <InventoryPage />

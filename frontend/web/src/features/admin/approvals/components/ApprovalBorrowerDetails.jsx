@@ -11,7 +11,7 @@ export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
     const borrowerDepartment = user.department ? `(${user.department})` : ''
     const borrowerEmail = user.email || 'N/A'
     const borrowerPhone = user.phone || 'N/A'
-    const periodText = `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
+    const periodText = booking.date_time_range_label ?? ' – '
     const status = getBookingStatus(booking)
     const isCompleted = status === 'returned'
     const processedByName = getProcessedByName(booking)

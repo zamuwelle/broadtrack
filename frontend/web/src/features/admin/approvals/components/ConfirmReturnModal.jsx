@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { Check, X } from 'lucide-react'
-import { formatDate } from '@shared/util/date'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useReturnBooking } from '@/api/bookings/return-booking'
 
@@ -17,7 +16,7 @@ const getConfirmModalDetails = (booking) => {
         borrowerDepartment: borrower.department ? ` (${borrower.department})` : '',
         equipments,
         equipmentName: equipment?.name || 'Equipment',
-        timelineText: `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
+        timelineText: booking.date_time_range_label ?? ' – '
     }
 }
 

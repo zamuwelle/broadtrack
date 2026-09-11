@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { getNotificationConfig } from '@/features/borrow/components/notificationConfig'
+import { getNotificationConfig } from '@/features/borrow/notifications/notificationConfig'
 import { useEvents } from '@/hooks/queries/useEvents'
 import { useUser } from '@/lib/auth'
 import { api } from '@/lib/api-client'
