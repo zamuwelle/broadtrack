@@ -55,10 +55,7 @@ class StoreBookingRequest extends FormRequest
             }
 
             $overlapping = Booking::overlapping($startDate, $endDate)
-                ->whereIn('status', [
-                    BookingStatus::Approved,
-                    BookingStatus::Released,
-                ])
+                ->where('status', BookingStatus::Approved)
                 ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 

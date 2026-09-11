@@ -4,7 +4,7 @@ const defaultBooking = Object.freeze({})
 
 export const ApprovalNotesDetails = ({ booking = defaultBooking }) => {
     const status = getBookingStatus(booking)
-    const isConfirmed = status === 'approved' || status === 'released'
+    const isConfirmed = status === 'approved'
     const isRejected = status === 'rejected'
 
     return (

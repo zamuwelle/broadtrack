@@ -41,7 +41,7 @@ export const BOOKING_FILTER_OPTIONS = Object.freeze([
     'Rejected'
 ])
 
-export const ACTIVE_BOOKING_STATUSES = Object.freeze(['pending', 'approved', 'released', 'overdue'])
+export const ACTIVE_BOOKING_STATUSES = Object.freeze(['pending', 'approved', 'overdue'])
 
 export const EDITABLE_ROLES = Object.freeze(['borrower', 'admin'])
 

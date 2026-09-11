@@ -65,7 +65,6 @@ Equipment booking and tracking system built with Laravel and React.
 | Laravel Reverb (WebSockets)  | React Router DOM              |
 | Sanctum + Socialite (Google) | TanStack Query + Laravel Echo |
 | Brevo API (queued email)     | Bun                           |
-| SQLite                       |                               |
 
 ## Project Structure
 

@@ -217,7 +217,6 @@ test('stale booking transitions cannot overwrite a terminal state', function (st
                 $request->setUserResolver(fn (): User => $admin);
                 $request->validateResolved();
             }), $stale),
-            'release' => $controller->release($stale),
             'return' => $controller->markAsReturned(tap(HttpRequest::create('/'), static fn (HttpRequest $request) => $request->setUserResolver(static fn (): User => $admin)), $stale),
             'cancel' => $controller->cancel($stale),
         };
@@ -230,12 +229,11 @@ test('stale booking transitions cannot overwrite a terminal state', function (st
 })->with([
     ['approve', BookingStatus::Pending],
     ['reject', BookingStatus::Approved],
-    ['release', BookingStatus::Approved],
-    ['return', BookingStatus::Released],
+    ['return', BookingStatus::Approved],
     ['cancel', BookingStatus::Approved],
 ]);
 
-test('maintenance equipment cannot be approved or released', function (string $transition, BookingStatus $status): void {
+test('maintenance equipment cannot be approved', function (string $transition, BookingStatus $status): void {
     $admin = User::factory()->admin()->create();
     $equipment = Equipment::factory()->maintenance()->create();
     $booking = Booking::factory()->create(['status' => $status]);
@@ -243,7 +241,7 @@ test('maintenance equipment cannot be approved or released', function (string $t
 
     $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/{$transition}")->assertUnprocessable();
     expect($booking->fresh()->status)->toBe($status);
-})->with([['approve', BookingStatus::Pending], ['release', BookingStatus::Approved]]);
+})->with([['approve', BookingStatus::Pending]]);
 
 test('booking store rechecks equipment maintenance after validation', function (): void {
     $borrower = User::factory()->borrower()->create();

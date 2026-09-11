@@ -74,7 +74,6 @@
             letter-spacing: 0.4px;
         }
         .badge-approved { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .badge-released { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
         .badge-returned { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .badge-overdue  { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .badge-cancelled{ background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }

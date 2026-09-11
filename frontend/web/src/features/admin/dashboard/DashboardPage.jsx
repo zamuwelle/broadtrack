@@ -32,7 +32,7 @@ export const DashboardPage = (props) => {
         () =>
             bookings.filter((booking) => {
                 const status = getBookingStatus(booking)
-                return status === 'approved' || status === 'released'
+                return status === 'approved'
             }).length,
         [bookings]
     )

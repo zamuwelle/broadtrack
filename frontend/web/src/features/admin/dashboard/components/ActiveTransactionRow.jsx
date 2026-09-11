@@ -15,10 +15,6 @@ const statusBadgeMap = Object.freeze({
     approved: {
         label: 'Approved',
         className: 'bg-green-50 rounded-[10px] border border-green-200 text-green-600'
-    },
-    released: {
-        label: 'Active / Released',
-        className: 'bg-blue-50 rounded-[10px] border border-blue-200 text-blue-600'
     }
 })
 

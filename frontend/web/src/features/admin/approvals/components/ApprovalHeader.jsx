@@ -4,7 +4,7 @@ import { getBookingStatus } from '@shared/util/booking'
 const defaultBooking = Object.freeze({})
 
 const getBadgeConfig = (status) => {
-    if (status === 'approved' || status === 'released') {
+    if (status === 'approved') {
         return { bg: 'bg-green-100', text: 'text-green-500', label: 'Confirmed' }
     }
     if (status === 'rejected') {

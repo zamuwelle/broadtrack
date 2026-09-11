@@ -95,19 +95,18 @@ class BookingReportController extends ApiController
 
         $category = $request->query('category', 'All');
         if ($category === 'Active') {
-            $query->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+            $query->where('status', BookingStatus::Approved)
                 ->where('end_date', '>=', now());
         } elseif ($category === 'Completed') {
             $query->where('status', BookingStatus::Returned);
         } elseif ($category === 'Overdue') {
-            $query->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+            $query->where('status', BookingStatus::Approved)
                 ->where('end_date', '<', now());
         } elseif ($category === 'Cancelled') {
             $query->whereIn('status', [BookingStatus::Cancelled, BookingStatus::Rejected]);
         } else {
             $query->whereIn('status', [
                 BookingStatus::Approved,
-                BookingStatus::Released,
                 BookingStatus::Returned,
                 BookingStatus::Cancelled,
                 BookingStatus::Rejected,

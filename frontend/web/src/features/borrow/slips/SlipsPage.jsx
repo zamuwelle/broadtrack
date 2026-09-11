@@ -18,7 +18,7 @@ const DEFAULT_EMPTY_USER = Object.freeze({})
 const matchStatusFilter = (booking, selectedStatus) => {
     const status = getBookingStatus(booking)
     if (selectedStatus === 'Approved') {
-        return status === 'approved' || status === 'released'
+        return status === 'approved'
     }
     if (selectedStatus === 'Pending') {
         return status === 'pending'

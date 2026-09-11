@@ -2,7 +2,7 @@ import { getBookingStatus } from '@shared/util/booking'
 
 export const getNotificationConfig = (booking = {}) => {
     const status = getBookingStatus(booking)
-    if (status === 'approved' || status === 'released') {
+    if (status === 'approved') {
         return {
             filterStatus: 'Approved',
             icon: 'notificationApproved',

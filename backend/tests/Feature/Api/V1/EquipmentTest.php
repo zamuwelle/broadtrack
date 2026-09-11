@@ -91,7 +91,7 @@ test('admin selected live equipment status survives refetch', function (Equipmen
     'maintenance' => [EquipmentStatus::Maintenance],
 ]);
 
-test('booking lifecycle still derives live status and restores available after return', function (): void {
+test('active approved booking keeps equipment booked until returned', function (): void {
     $admin = User::factory()->admin()->create();
     $equipment = Equipment::factory()->available()->create();
     $booking = Booking::factory()->approved()->create([
@@ -102,11 +102,6 @@ test('booking lifecycle still derives live status and restores available after r
 
     $this->actingAs($admin)->getJson('/api/v1/equipment')
         ->assertOk()->assertJsonPath('data.0.status', EquipmentStatus::Booked->value);
-
-    $booking->update(['status' => BookingStatus::Released]);
-
-    $this->getJson('/api/v1/equipment')
-        ->assertOk()->assertJsonPath('data.0.status', EquipmentStatus::Borrowed->value);
 
     $booking->update(['status' => BookingStatus::Returned]);
 
@@ -199,26 +194,17 @@ test('admin cannot delete equipment with historical bookings', function () {
     $this->assertDatabaseHas('equipments', ['id' => $equipment->id]);
 });
 
-test('resolveStatuses marks approved booking within window as booked and released booking as borrowed', function () {
-    $equipment1 = Equipment::factory()->available()->create(['name' => 'Camera Alpha']);
-    $equipment2 = Equipment::factory()->available()->create(['name' => 'Camera Beta']);
-
-    $approvedBooking = Booking::factory()->approved()->create([
+test('resolveStatuses keeps active approved bookings booked until they are returned', function (): void {
+    $equipment = Equipment::factory()->available()->create(['name' => 'Camera Alpha']);
+    $booking = Booking::factory()->approved()->create([
         'start_date' => now()->subHour(),
         'end_date' => now()->addHours(2),
     ]);
-    $approvedBooking->equipments()->attach($equipment1->id);
+    $booking->equipments()->attach($equipment->id);
 
-    $releasedBooking = Booking::factory()->released()->create([
-        'start_date' => now()->subHour(),
-        'end_date' => now()->addHours(2),
-    ]);
-    $releasedBooking->equipments()->attach($equipment2->id);
+    $resolved = Equipment::resolveStatuses(collect([$equipment]));
 
-    $resolved = Equipment::resolveStatuses(collect([$equipment1, $equipment2]));
-
-    expect($resolved->firstWhere('id', $equipment1->id)->status)->toBe(EquipmentStatus::Booked);
-    expect($resolved->firstWhere('id', $equipment2->id)->status)->toBe(EquipmentStatus::Borrowed);
+    expect($resolved->first()->status)->toBe(EquipmentStatus::Booked);
 });
 
 test('generateSerial computes unit number based on count rather than id', function () {

@@ -36,11 +36,6 @@ class BookingFactory extends Factory
         ]);
     }
 
-    public function released(): static
-    {
-        return $this->state(fn () => ['status' => BookingStatus::Released]);
-    }
-
     public function returned(): static
     {
         return $this->state(fn () => [

@@ -486,37 +486,13 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"approval_note\": \"Approved. Please bring student ID upon gear release.\"\n}"
+                            "raw": "{\n  \"approval_note\": \"Approved. Please bring student ID upon equipment pickup.\"\n}"
                         },
                         "url": "{{base_url}}/bookings/{{booking_id}}/approve"
                     }
                 },
                 {
-                    "name": "Step 5: Release Equipment to Borrower (Admin)",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Equipment released\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            { "key": "Accept", "value": "application/json" },
-                            { "key": "Authorization", "value": "Bearer {{token}}" }
-                        ],
-                        "url": "{{base_url}}/bookings/{{booking_id}}/release"
-                    }
-                },
-                {
-                    "name": "Step 6: Send Return Due Email Reminder (Admin)",
+                    "name": "Step 5: Send Return Due Email Reminder (Admin)",
                     "event": [
                         {
                             "listen": "test",
@@ -540,7 +516,7 @@
                     }
                 },
                 {
-                    "name": "Step 7: Confirm Equipment Return (Admin)",
+                    "name": "Step 6: Confirm Equipment Return (Admin)",
                     "event": [
                         {
                             "listen": "test",

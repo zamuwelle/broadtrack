@@ -60,10 +60,7 @@ class BookingController extends ApiController
             }
 
             $overlapping = Booking::overlapping($startDate, $endDate)
-                ->whereIn('status', [
-                    BookingStatus::Approved,
-                    BookingStatus::Released,
-                ])
+                ->where('status', BookingStatus::Approved)
                 ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 
@@ -120,7 +117,7 @@ class BookingController extends ApiController
 
             $hasOverlap = Booking::overlapping($booking->start_date, $booking->end_date)
                 ->where('id', '!=', $booking->id)
-                ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+                ->where('status', BookingStatus::Approved)
                 ->whereHas('equipments', static fn (Builder $query): Builder => $query->whereIn('equipments.id', $equipmentIds))
                 ->exists();
 
@@ -150,30 +147,6 @@ class BookingController extends ApiController
         });
     }
 
-    public function release(Booking $booking): JsonResponse
-    {
-        $this->authorize('manage', $booking);
-        $equipmentIds = $booking->equipments()->pluck('equipments.id');
-
-        return DB::transaction(function () use ($booking, $equipmentIds): JsonResponse {
-            $equipment = Equipment::whereIn('id', $equipmentIds)->orderBy('id')->lockForUpdate()->get();
-            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
-            $this->authorize('manage', $booking);
-
-            if ($booking->status !== BookingStatus::Approved) {
-                return $this->error('Only approved bookings can be released.', 422);
-            }
-
-            if ($equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
-                return $this->error('Equipment under maintenance cannot be released.', 422);
-            }
-
-            $booking->release();
-
-            return $this->success(new BookingResource($booking), 'Booking released');
-        });
-    }
-
     public function markAsReturned(Request $request, Booking $booking): JsonResponse
     {
         return DB::transaction(function () use ($request, $booking): JsonResponse {
@@ -181,7 +154,7 @@ class BookingController extends ApiController
             $this->authorize('manage', $booking);
 
             if (! $booking->isActive()) {
-                return $this->error('Only approved or released bookings can be marked as returned.', 422);
+                return $this->error('Only approved bookings can be marked as returned.', 422);
             }
 
             $booking->markAsReturned($request->user()->id);

@@ -22,10 +22,10 @@ All BroadTrack API endpoints are versioned under `/api/v1` and return standardiz
 
 ## Profile & Contact Endpoints
 
-| Method | Endpoint         | Access        | Rate Limit | Description                                       |
-| ------ | ---------------- | ------------- | ---------- | ------------------------------------------------- |
-| `GET`  | `/api/v1/me`       | Authenticated | 60/min     | Fetch authenticated user profile and permissions. |
-| `POST` | `/api/v1/contact`  | Public        | 5/min      | Send contact inquiry email to administrators.      |
+| Method | Endpoint          | Access        | Rate Limit | Description                                       |
+| ------ | ----------------- | ------------- | ---------- | ------------------------------------------------- |
+| `GET`  | `/api/v1/me`      | Authenticated | 60/min     | Fetch authenticated user profile and permissions. |
+| `POST` | `/api/v1/contact` | Public        | 5/min      | Send contact inquiry email to administrators.     |
 
 ---
 

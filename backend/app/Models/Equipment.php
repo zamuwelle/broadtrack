@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\BookingStatus;
 use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Observers\EquipmentObserver;
@@ -72,14 +71,7 @@ class Equipment extends Model
             }
 
             $bookings = $bookingsByEquipmentId->get($item->id, collect());
-            $isOngoing = static fn (Booking $booking) => $booking->status === BookingStatus::Released;
-            $isUpcoming = static fn (Booking $booking) => $booking->status === BookingStatus::Approved && $booking->end_date->isFuture();
-
-            $item->status = match (true) {
-                $bookings->contains($isOngoing) => EquipmentStatus::Borrowed,
-                $bookings->contains($isUpcoming) => EquipmentStatus::Booked,
-                default => $item->status,
-            };
+            $item->status = $bookings->isNotEmpty() ? EquipmentStatus::Booked : $item->status;
 
             return $item;
         });

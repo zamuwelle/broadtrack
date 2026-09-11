@@ -60,7 +60,7 @@ class Booking extends Model
 
     public function isActive(): bool
     {
-        return in_array($this->status, [BookingStatus::Approved, BookingStatus::Released], true);
+        return $this->status === BookingStatus::Approved;
     }
 
     protected function isOverdue(): Attribute
@@ -103,11 +103,6 @@ class Booking extends Model
         ]);
     }
 
-    public function release(): bool
-    {
-        return $this->update(['status' => BookingStatus::Released]);
-    }
-
     public function markAsReturned(int $returnedByUserId): bool
     {
         return $this->update([
@@ -133,7 +128,7 @@ class Booking extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereIn('status', [BookingStatus::Approved, BookingStatus::Released]);
+        return $query->where('status', BookingStatus::Approved);
     }
 
     public function scopeOverlapping(Builder $query, DateTimeInterface|string $startDate, DateTimeInterface|string $endDate): Builder

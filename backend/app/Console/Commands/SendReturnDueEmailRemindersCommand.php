@@ -28,7 +28,7 @@ class SendReturnDueEmailRemindersCommand extends Command
     private function sendDueSoonReminders(): int
     {
         $bookings = Booking::with(['user', 'equipments'])
-            ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+            ->where('status', BookingStatus::Approved)
             ->whereNull('return_date')
             ->where('end_date', '>=', now())
             ->where('end_date', '<=', now()->addHours(24))
@@ -57,7 +57,7 @@ class SendReturnDueEmailRemindersCommand extends Command
     private function sendOverdueAlerts(): int
     {
         $bookings = Booking::with(['user', 'equipments'])
-            ->whereIn('status', [BookingStatus::Approved, BookingStatus::Released])
+            ->where('status', BookingStatus::Approved)
             ->whereNull('return_date')
             ->where('end_date', '<', now())
             ->get();

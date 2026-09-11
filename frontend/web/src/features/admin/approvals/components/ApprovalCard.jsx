@@ -9,7 +9,7 @@ const defaultBooking = Object.freeze({})
 const noop = () => null
 
 const getAccentColor = (status) => {
-    if (status === 'approved' || status === 'released') {
+    if (status === 'approved') {
         return 'bg-green-500'
     }
     if (status === 'rejected') {
@@ -35,7 +35,7 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
 
     const status = getBookingStatus(booking)
     const isPending = status === 'pending'
-    const isConfirmed = status === 'approved' || status === 'released'
+    const isConfirmed = status === 'approved'
 
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking

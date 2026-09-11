@@ -111,22 +111,22 @@ test('admin can approve pending booking', function () {
     ]);
 });
 
-test('admin can release approved booking', function () {
+test('admin release action is unavailable while approved bookings can be returned', function (): void {
     $admin = User::factory()->admin()->create();
-    $equipment = Equipment::factory()->create(['status' => EquipmentStatus::Booked]);
     $booking = Booking::factory()->approved()->create();
-    $booking->equipments()->attach($equipment->id);
 
-    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/release");
+    $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/release")
+        ->assertNotFound();
 
-    $response->assertOk()
-        ->assertJsonPath('data.status', 'released');
+    $this->putJson("/api/v1/bookings/{$booking->id}/return")
+        ->assertOk()
+        ->assertJsonPath('data.status', 'returned');
 });
 
-test('admin can return released booking', function () {
+test('admin can return approved booking', function (): void {
     $admin = User::factory()->admin()->create();
     $equipment = Equipment::factory()->borrowed()->create();
-    $booking = Booking::factory()->released()->create();
+    $booking = Booking::factory()->approved()->create();
     $booking->equipments()->attach($equipment->id);
 
     $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");
@@ -245,33 +245,13 @@ test('admin can reject pending booking', function () {
     ]);
 });
 
-test('admin cannot approve non-pending booking', function () {
+test('admin cannot approve non-pending booking', function (): void {
     $admin = User::factory()->admin()->create();
-    $booking = Booking::factory()->released()->create();
+    $booking = Booking::factory()->approved()->create();
 
     $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/approve");
 
     $response->assertStatus(422);
-});
-
-test('admin cannot release non-approved booking', function () {
-    $admin = User::factory()->admin()->create();
-    $booking = Booking::factory()->pending()->create();
-
-    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/release");
-
-    $response->assertStatus(422);
-});
-
-test('admin can return approved booking', function () {
-    $admin = User::factory()->admin()->create();
-    $booking = Booking::factory()->approved()->create();
-
-    $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");
-
-    $response->assertOk()
-        ->assertJsonPath('data.status', 'returned');
-    expect($booking->fresh()->status)->toBe(BookingStatus::Returned);
 });
 
 test('admin cannot return pending or cancelled booking', function () {
@@ -289,7 +269,7 @@ test('admin cannot return pending or cancelled booking', function () {
 test('returning booking preserves equipment under maintenance', function () {
     $admin = User::factory()->admin()->create();
     $brokenEquipment = Equipment::factory()->maintenance()->create();
-    $booking = Booking::factory()->released()->create();
+    $booking = Booking::factory()->approved()->create();
     $booking->equipments()->attach($brokenEquipment->id);
 
     $response = $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return");

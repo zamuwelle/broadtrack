@@ -92,7 +92,6 @@
             letter-spacing: 0.4px;
         }
         .badge-approved  { background-color: #e0f2fe; color: #0369a1; }
-        .badge-released  { background-color: #e0e7ff; color: #3730a3; }
         .badge-returned  { background-color: #dcfce7; color: #15803d; }
         .badge-overdue   { background-color: #fee2e2; color: #b91c1c; border: 0.5px solid #fca5a5; }
         .badge-cancelled { background-color: #f1f5f9; color: #475569; }

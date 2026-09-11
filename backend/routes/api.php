@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    // Auth routes
+    // Public routes
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware('throttle:5,1');
@@ -61,7 +61,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/bookings/reports/csv', [BookingReportController::class, 'exportCsv']);
             Route::put('/bookings/{booking}/approve', [BookingController::class, 'approve']);
             Route::put('/bookings/{booking}/reject', [BookingController::class, 'reject']);
-            Route::put('/bookings/{booking}/release', [BookingController::class, 'release']);
             Route::put('/bookings/{booking}/return', [BookingController::class, 'markAsReturned']);
             Route::post('/bookings/{booking}/remind', [BookingController::class, 'remind']);
         });

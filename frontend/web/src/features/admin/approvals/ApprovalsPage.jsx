@@ -16,7 +16,7 @@ const resolveStatusPriority = (status) => {
     if (status === 'pending') {
         return 1
     }
-    if (status === 'approved' || status === 'released') {
+    if (status === 'approved') {
         return 2
     }
     return 3
@@ -38,7 +38,7 @@ const matchStatus = (status, selectedStatus) => {
         return status === 'pending'
     }
     if (selectedStatus === 'Confirmed') {
-        return status === 'approved' || status === 'released'
+        return status === 'approved'
     }
     if (selectedStatus === 'Rejected') {
         return status === 'rejected'

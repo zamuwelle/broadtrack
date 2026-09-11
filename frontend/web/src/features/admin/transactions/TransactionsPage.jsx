@@ -23,7 +23,7 @@ const matchesTransactionCategory = (status, isOverdue, selectedCategory) => {
         return false
     }
     if (selectedCategory === 'Active') {
-        return !isOverdue && (status === 'approved' || status === 'released')
+        return !isOverdue && status === 'approved'
     }
     if (selectedCategory === 'Completed') {
         return status === 'returned'

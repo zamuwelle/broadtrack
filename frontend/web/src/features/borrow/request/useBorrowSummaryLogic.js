@@ -9,7 +9,7 @@ import { useSetState } from '@shared/hooks/useSetState'
 
 const filterParams = Object.freeze({ public: 1 })
 
-const isBookedStatus = (status) => status === 'approved' || status === 'released'
+const isBookedStatus = (status) => status === 'approved'
 
 const checkEquipmentMatch = (bookingEquipments, selectedId) => {
     if (!bookingEquipments) {

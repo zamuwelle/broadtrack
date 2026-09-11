@@ -62,9 +62,7 @@ export const SlipStatusNotices = ({ booking, status }) => {
     const isApproved = status === 'approved'
     const isReturned = status === 'returned'
     const isRejected = status === 'rejected'
-    const isReleased = status === 'released'
-
-    const showPickup = (isApproved || isReleased || isReturned) && Boolean(booking.approval_note)
+    const showPickup = (isApproved || isReturned) && Boolean(booking.approval_note)
     const showRefusal = isRejected && Boolean(booking.rejection_reason)
 
     return (

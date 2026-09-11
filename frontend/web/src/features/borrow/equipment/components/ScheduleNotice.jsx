@@ -7,7 +7,7 @@ import { useBookings } from '@/api/bookings/get-bookings'
 const filterParams = Object.freeze({ public: 1 })
 const defaultEquipment = Object.freeze({})
 
-const isBookedStatus = (status) => status === 'approved' || status === 'released'
+const isBookedStatus = (status) => status === 'approved'
 
 export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
     const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : 'available'

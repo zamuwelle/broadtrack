@@ -28,11 +28,6 @@ const statusBadgeMap = Object.freeze({
         bg: 'bg-red-500/20',
         outline: 'outline-red-400',
         text: 'text-red-700'
-    },
-    released: {
-        bg: 'bg-sky-500/20',
-        outline: 'outline-sky-500',
-        text: 'text-sky-600'
     }
 })
 
