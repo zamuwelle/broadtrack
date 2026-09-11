@@ -20,7 +20,12 @@ export const LoginForm = ({
     onSubmit = noop
 }) => {
     const handleGoogleLogin = useCallback(() => {
-        globalThis.location.href = `${env.API_URL}/auth/google/redirect`
+        const redirectUrl = `${env.API_URL}/auth/google/redirect`
+        const popup = globalThis.open(redirectUrl, 'google-login', 'popup,width=520,height=680')
+
+        if (!popup) {
+            globalThis.location.href = redirectUrl
+        }
     }, [])
 
     const handleEmailChange = useCallback(
