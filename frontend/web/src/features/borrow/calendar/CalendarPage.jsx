@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { formatDate } from '@shared/util/date'
+import { formatDate, getBookingDateKey } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useEquipment } from '@/api/equipment/get-equipment'
 import { useBookings } from '@/api/bookings/get-bookings'
@@ -17,8 +17,8 @@ const filterParams = Object.freeze({ public: 1 })
 const normalizeBookingItem = (booking, equipment) => {
     const borrowerName = booking.user?.full_name || 'Borrower'
     const borrowerDepartment = booking.user ? booking.user.department || '' : ''
-    const startDate = booking.start_date ? String(booking.start_date).slice(0, 10) : ''
-    const endDate = booking.end_date ? String(booking.end_date).slice(0, 10) : ''
+    const startDate = getBookingDateKey(booking.start_date)
+    const endDate = getBookingDateKey(booking.end_date)
     const periodText = `${formatDate(booking.start_date)} – ${formatDate(booking.end_date)}`
     const status = getBookingStatus(booking)
 

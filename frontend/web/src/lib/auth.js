@@ -71,7 +71,7 @@ const syncTokenFromUrl = () => {
 
 syncTokenFromUrl()
 
-export const getUser = async () => {
+export const fetchCurrentUser = async () => {
     syncTokenFromUrl()
     if (!globalThis.localStorage?.getItem('auth_token')) {
         return null
@@ -90,7 +90,7 @@ export const useUser = (options = {}) => {
 
     return useQuery({
         queryKey: ['me'],
-        queryFn: getUser,
+        queryFn: fetchCurrentUser,
         retry: false,
         staleTime: Number.POSITIVE_INFINITY,
         refetchOnWindowFocus: false,

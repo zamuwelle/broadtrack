@@ -41,7 +41,7 @@ const useInventoryModals = (updatePageState, queryClient) => {
         [updatePageState]
     )
 
-    const handleEdit = useCallback(
+    const handleOpenEditEquipmentModal = useCallback(
         (itemToEdit) =>
             updatePageState({
                 selectedEquipment: itemToEdit,
@@ -50,7 +50,7 @@ const useInventoryModals = (updatePageState, queryClient) => {
         [updatePageState]
     )
 
-    const handleDelete = useCallback(
+    const handleOpenDeleteEquipmentModal = useCallback(
         (itemToDelete) =>
             updatePageState({
                 deletingEquipment: itemToDelete
@@ -73,8 +73,8 @@ const useInventoryModals = (updatePageState, queryClient) => {
 
     return {
         handleOpenAddModal,
-        handleEdit,
-        handleDelete,
+        handleOpenEditEquipmentModal,
+        handleOpenDeleteEquipmentModal,
         handleCloseEquipmentModal,
         handleCloseDeleteModal,
         handleRefresh
@@ -161,8 +161,8 @@ export const InventoryPage = (props) => {
             <div className="mt-8">
                 <InventoryGrid
                     equipment={filteredEquipment}
-                    onEdit={modals.handleEdit}
-                    onDelete={modals.handleDelete}
+                    onEdit={modals.handleOpenEditEquipmentModal}
+                    onDelete={modals.handleOpenDeleteEquipmentModal}
                     onUpdateStatus={handleUpdateStatus}
                 />
             </div>

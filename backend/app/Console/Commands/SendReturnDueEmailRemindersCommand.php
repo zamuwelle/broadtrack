@@ -43,12 +43,20 @@ class SendReturnDueEmailRemindersCommand extends Command
             }
 
             $cacheKey = "booking_reminder_{$booking->id}_near_deadline";
-            if (! Cache::add($cacheKey, true, now()->addDays(14))) {
+            $lock = Cache::lock("{$cacheKey}_lock", 30);
+            if (! $lock->get()) {
                 continue;
             }
-
-            $this->dispatchEmail($booking, 'near_deadline', 0);
-            $sentCount++;
+            try {
+                if (Cache::has($cacheKey)) {
+                    continue;
+                }
+                $this->dispatchEmail($booking, 'near_deadline', 0);
+                Cache::put($cacheKey, true, now()->addDays(14));
+                $sentCount++;
+            } finally {
+                $lock->release();
+            }
         }
 
         return $sentCount;
@@ -71,14 +79,21 @@ class SendReturnDueEmailRemindersCommand extends Command
             }
 
             $cacheKey = "booking_reminder_{$booking->id}_overdue_".now()->format('Y-m-d');
-            if (! Cache::add($cacheKey, true, now()->addDays(14))) {
+            $lock = Cache::lock("{$cacheKey}_lock", 30);
+            if (! $lock->get()) {
                 continue;
             }
-
-            $daysOverdue = max(1, (int)($booking->end_date->diffInDays(now())));
-
-            $this->dispatchEmail($booking, 'overdue', $daysOverdue);
-            $sentCount++;
+            try {
+                if (Cache::has($cacheKey)) {
+                    continue;
+                }
+                $daysOverdue = max(1, (int)($booking->end_date->diffInDays(now())));
+                $this->dispatchEmail($booking, 'overdue', $daysOverdue);
+                Cache::put($cacheKey, true, now()->addDays(14));
+                $sentCount++;
+            } finally {
+                $lock->release();
+            }
         }
 
         return $sentCount;

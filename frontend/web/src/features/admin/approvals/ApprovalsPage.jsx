@@ -96,8 +96,9 @@ const useApprovalModals = (updatePageState) => {
 export const ApprovalsPage = (props) => {
     useDocumentTitle('Booking Approvals')
     const { bookings: propBookings } = props
-    const { data: hookBookings = [] } = useBookings()
+    const { data: hookBookings = [], isLoading, isError } = useBookings()
     const bookings = propBookings ?? hookBookings
+    const showEmpty = Boolean(propBookings ?? (!isLoading && !isError))
 
     const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
     const { searchText, selectedStatus, approvingBooking, rejectingBooking, returningBooking } = pageState
@@ -131,22 +132,21 @@ export const ApprovalsPage = (props) => {
             </div>
 
             <div className="mt-6 lg:mt-8 flex flex-col gap-6">
-                {filteredBookings.length > 0 ? (
-                    filteredBookings.map((booking) => (
-                        <ApprovalCard
-                            key={booking.itemKey ?? booking.id}
-                            booking={booking}
-                            onApprove={modalHandlers.handleApprove}
-                            onReject={modalHandlers.handleReject}
-                            onReturn={modalHandlers.handleReturn}
-                        />
-                    ))
-                ) : (
+                {filteredBookings.map((booking) => (
+                    <ApprovalCard
+                        key={booking.itemKey ?? booking.id}
+                        booking={booking}
+                        onApprove={modalHandlers.handleApprove}
+                        onReject={modalHandlers.handleReject}
+                        onReturn={modalHandlers.handleReturn}
+                    />
+                ))}
+                {showEmpty && filteredBookings.length === 0 ? (
                     <EmptyState
                         title="No matching requests"
                         description="No reservations fit this filter or search string."
                     />
-                )}
+                ) : null}
             </div>
 
             <DecisionModal

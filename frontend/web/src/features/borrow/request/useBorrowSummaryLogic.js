@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getTodayDateString } from '@shared/util/date'
+import { getBookingDateKey, getBookingDateTimeValue, getTodayDateString, parseBookingDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useUser } from '@/lib/auth'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
@@ -11,7 +11,7 @@ const filterParams = Object.freeze({ public: 1 })
 
 const isBookedStatus = (status) => status === 'approved'
 
-const checkEquipmentMatch = (bookingEquipments, selectedId) => {
+const hasEquipment = (bookingEquipments, selectedId) => {
     if (!bookingEquipments) {
         return false
     }
@@ -25,40 +25,31 @@ const checkEquipmentMatch = (bookingEquipments, selectedId) => {
 
 const hasEquipmentOverlap = (booking, selectedItems) => {
     for (const selected of selectedItems) {
-        if (checkEquipmentMatch(booking.equipments, selected.id)) {
+        if (hasEquipment(booking.equipments, selected.id)) {
             return true
         }
     }
     return false
 }
 
-const findLatestDate = (dateList) => {
-    let latest = null
-    for (const dateString of dateList) {
-        if (!latest || dateString > latest) {
-            latest = dateString
-        }
-    }
-    return latest
-}
-
 const computeMinStartDate = (remoteBookings, selectedItems, todayDateString) => {
     const activeItemEndDates = []
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
-        const startDatePrefix = booking.start_date ? String(booking.start_date).slice(0, 10) : ''
+        const startDatePrefix = getBookingDateKey(booking.start_date)
         const isOngoing = isBookedStatus(status) && startDatePrefix <= todayDateString
         if (isOngoing && hasEquipmentOverlap(booking, selectedItems) && booking.end_date) {
             activeItemEndDates.push(booking.end_date)
         }
     }
 
-    const latestActiveEndDate = findLatestDate(activeItemEndDates)
-    if (latestActiveEndDate && latestActiveEndDate > `${todayDateString}T00:00`) {
-        if (latestActiveEndDate.includes('T')) {
-            return latestActiveEndDate.slice(0, 16)
-        }
-        return `${latestActiveEndDate.slice(0, 10)}T00:00`
+    const latestActiveEndDate = activeItemEndDates
+        .map((dateValue) => ({ dateValue, timestamp: parseBookingDate(dateValue)?.getTime() }))
+        .filter(({ timestamp }) => Number.isFinite(timestamp))
+        .toSorted((first, second) => second.timestamp - first.timestamp)[0]?.dateValue
+    const todayStart = parseBookingDate(`${todayDateString}T00:00`)
+    if (latestActiveEndDate && parseBookingDate(latestActiveEndDate)?.getTime() > todayStart?.getTime()) {
+        return getBookingDateTimeValue(latestActiveEndDate)
     }
     return `${todayDateString}T00:00`
 }
@@ -82,18 +73,33 @@ const computeExcludeDateIntervals = (remoteBookings, selectedItems) => {
     return intervals
 }
 
+const isOverlappingInterval = (booking, startDate, endDate) => {
+    const bookingStart = parseBookingDate(booking.start_date)?.getTime()
+    const bookingEnd = parseBookingDate(booking.end_date)?.getTime()
+    const requestedStart = parseBookingDate(startDate)?.getTime()
+    const requestedEnd = parseBookingDate(endDate)?.getTime()
+    return (
+        Number.isFinite(bookingStart) &&
+        Number.isFinite(bookingEnd) &&
+        Number.isFinite(requestedStart) &&
+        Number.isFinite(requestedEnd) &&
+        bookingStart < requestedEnd &&
+        requestedStart < bookingEnd
+    )
+}
+
 const checkScheduleConflict = (startDate, endDate, remoteBookings, selectedItems) => {
     if (!startDate || !endDate) {
         return false
     }
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
-        if (isBookedStatus(status) && hasEquipmentOverlap(booking, selectedItems)) {
-            const bookingStart = booking.start_date ? String(booking.start_date).slice(0, 16) : ''
-            const bookingEnd = booking.end_date ? String(booking.end_date).slice(0, 16) : ''
-            if (bookingStart < endDate && startDate < bookingEnd) {
-                return true
-            }
+        if (
+            isBookedStatus(status) &&
+            hasEquipmentOverlap(booking, selectedItems) &&
+            isOverlappingInterval(booking, startDate, endDate)
+        ) {
+            return true
         }
     }
     return false

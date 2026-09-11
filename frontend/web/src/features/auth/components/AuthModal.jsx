@@ -30,7 +30,7 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
         form: { ...initialFormState, ...initialData }
     })
 
-    const set = useCallback(
+    const updateFormField = useCallback(
         (key, value) => {
             updateAuthState((prev) => ({
                 form: { ...prev.form, [key]: value },
@@ -70,7 +70,7 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
     return {
         authState,
         updateAuthState,
-        set,
+        updateFormField,
         switchTab,
         handleClose,
         toggleShowPass
@@ -85,7 +85,7 @@ export const AuthModal = ({
     initialError = '',
     initialData = defaultInitialData
 }) => {
-    const { authState, updateAuthState, set, switchTab, handleClose, toggleShowPass } = useAuthModalState({
+    const { authState, updateAuthState, updateFormField, switchTab, handleClose, toggleShowPass } = useAuthModalState({
         mode,
         initialError,
         initialData,
@@ -131,6 +131,7 @@ export const AuthModal = ({
                 <div className="bg-surface p-5 sm:p-6 rounded-[8px] w-full max-w-[420px] max-h-[90dvh] overflow-y-scroll my-auto relative z-10 font-['Poppins']">
                     <button
                         type="button"
+                        aria-label="Close dialog"
                         onClick={handleClose}
                         className="absolute top-5 right-5 text-text/60 hover:text-text cursor-pointer">
                         <X size={18} />
@@ -147,7 +148,7 @@ export const AuthModal = ({
                         validForgot={validForgot}
                         validReset={validReset}
                         actions={actions}
-                        onFieldChange={set}
+                        onFieldChange={updateFormField}
                         onToggleShowPass={toggleShowPass}
                         onSwitchTab={switchTab}
                     />

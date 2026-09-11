@@ -52,7 +52,7 @@ export const EquipmentPage = () => {
         searchText: ''
     })
     const { category, searchText } = filterState
-    const { data: equipment = DEFAULT_EQUIPMENT_LIST, isLoading } = useEquipment()
+    const { data: equipment = DEFAULT_EQUIPMENT_LIST, isLoading, isError } = useEquipment()
 
     const handleSearchChange = useCallback(
         (newSearchText) => {
@@ -101,7 +101,7 @@ export const EquipmentPage = () => {
     )
 
     const hasEquipment = !isLoading && filteredEquipment.length > 0
-    const hasNoEquipment = !isLoading && filteredEquipment.length === 0
+    const hasNoEquipment = !isLoading && !isError && filteredEquipment.length === 0
 
     return (
         <div className="flex flex-col font-['Poppins']">

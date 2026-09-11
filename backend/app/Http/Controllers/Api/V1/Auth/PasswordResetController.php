@@ -10,8 +10,10 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PasswordResetController extends ApiController
 {
@@ -36,7 +38,11 @@ class PasswordResetController extends ApiController
 
         try {
             Mail::to($validated['email'])->queue(new ResetPasswordMail($resetUrl, $user->firstname));
-        } catch (\Throwable) {
+        } catch (Throwable $exception) {
+            Log::error('Failed to queue password reset email.', [
+                'user_id' => $user->id,
+                'exception' => $exception,
+            ]);
         }
 
         return $this->success(message: 'Reset link sent to your email.');

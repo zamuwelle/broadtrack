@@ -8,8 +8,12 @@ use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use RuntimeException;
 
 test('booking resource formats booking date labels in Manila and keeps missing date fallbacks', function () {
     $borrower = User::factory()->borrower()->create();
@@ -134,6 +138,21 @@ test('admin can return approved booking', function (): void {
     $response->assertOk()
         ->assertJsonPath('data.status', 'returned')
         ->assertJsonPath('data.returned_by_user_id', $admin->id);
+});
+
+test('failed manual return reminder queue returns an error and logs the failure', function (): void {
+    $admin = User::factory()->admin()->create();
+    $borrower = User::factory()->borrower()->create();
+    $booking = Booking::factory()->approved()->create(['user_id' => $borrower->id]);
+    $pendingMail = Mockery::mock(PendingMail::class);
+    $pendingMail->shouldReceive('queue')->once()->andThrow(new RuntimeException('queue unavailable'));
+    Mail::shouldReceive('to')->once()->with($borrower->email)->andReturn($pendingMail);
+    Log::shouldReceive('error')->once()->withArgs(static fn (string $message, array $context): bool => $message === 'Failed to queue a manual return reminder.' && $context['booking_id'] === $booking->id
+    );
+
+    $this->actingAs($admin)->postJson("/api/v1/bookings/{$booking->id}/remind")
+        ->assertStatus(500)
+        ->assertJsonPath('message', 'Failed to queue return reminder.');
 });
 
 test('borrower can cancel their own pending booking', function () {

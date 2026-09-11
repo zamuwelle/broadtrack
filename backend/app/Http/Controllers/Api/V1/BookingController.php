@@ -16,7 +16,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class BookingController extends ApiController
 {
@@ -220,7 +222,13 @@ class BookingController extends ApiController
                 $daysOverdue,
                 $startDate
             ));
-        } catch (\Throwable) {
+        } catch (Throwable $exception) {
+            Log::error('Failed to queue a manual return reminder.', [
+                'booking_id' => $booking->id,
+                'exception' => $exception,
+            ]);
+
+            return $this->error('Failed to queue return reminder.', 500);
         }
 
         return $this->success();

@@ -29,6 +29,39 @@ export const parseBookingDate = (dateValue) => {
     return Number.isNaN(date.getTime()) ? new Date(str) : date
 }
 
+export const getBookingDateKey = (dateValue) => {
+    const date = parseBookingDate(dateValue)
+    if (!date || Number.isNaN(date.getTime())) {
+        return ''
+    }
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: PH_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date)
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+    return `${values.year}-${values.month}-${values.day}`
+}
+
+export const getBookingDateTimeValue = (dateValue) => {
+    const date = parseBookingDate(dateValue)
+    if (!date || Number.isNaN(date.getTime())) {
+        return ''
+    }
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: PH_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+    }).formatToParts(date)
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`
+}
+
 export const formatDate = (dateValue) => {
     const date = parseBookingDate(dateValue)
     if (!date || Number.isNaN(date.getTime())) {

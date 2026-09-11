@@ -2,12 +2,15 @@
 
 use App\Mail\VerifyEmailMail;
 use App\Models\User;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use RuntimeException;
 
 test('borrower can register with valid student email', function () {
     Mail::fake();
@@ -345,6 +348,43 @@ test('contact endpoint is throttled after five requests', function () {
         'email' => 'john.doe@student.laverdad.edu.ph',
         'message' => 'Hello there',
     ])->assertStatus(429);
+});
+
+test('contact endpoint reports and logs queue failures', function (): void {
+    config(['contact.recipients' => ['support@example.test']]);
+    $pendingMail = Mockery::mock(PendingMail::class);
+    $pendingMail->shouldReceive('queue')->once()->andThrow(new RuntimeException('queue unavailable'));
+    Mail::shouldReceive('to')->once()->with('support@example.test')->andReturn($pendingMail);
+    Log::shouldReceive('error')->once()->withArgs(static fn (string $message): bool => $message === 'Failed to queue contact message.'
+    );
+
+    $this->postJson('/api/v1/contact', [
+        'firstname' => 'John',
+        'lastname' => 'Doe',
+        'email' => 'john.doe@student.laverdad.edu.ph',
+        'message' => 'Hello there',
+    ])->assertStatus(500)->assertJsonPath('message', 'Failed to send contact message.');
+});
+
+test('forgot password keeps its success response and logs queue failures for existing accounts', function (): void {
+    $user = User::factory()->borrower()->create([
+        'email' => 'reset.queue@student.laverdad.edu.ph',
+    ]);
+    $pendingMail = Mockery::mock(PendingMail::class);
+    $pendingMail->shouldReceive('queue')->once()->andThrow(new RuntimeException('queue unavailable'));
+    Mail::shouldReceive('to')->once()->with($user->email)->andReturn($pendingMail);
+    Log::shouldReceive('error')->once()->withArgs(static fn (string $message, array $context): bool => $message === 'Failed to queue password reset email.' && $context['user_id'] === $user->id
+    );
+
+    $this->postJson('/api/v1/forgot-password', ['email' => $user->email])
+        ->assertOk()
+        ->assertJsonPath('message', 'Reset link sent to your email.');
+});
+
+test('forgot password retains the not found response for an unknown account', function (): void {
+    $this->postJson('/api/v1/forgot-password', ['email' => 'missing@student.laverdad.edu.ph'])
+        ->assertNotFound()
+        ->assertJsonPath('message', 'No account found with this email.');
 });
 
 test('resending verification for non-existent email returns generic success message', function () {

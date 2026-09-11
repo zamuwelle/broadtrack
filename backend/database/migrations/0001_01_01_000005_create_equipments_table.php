@@ -12,7 +12,6 @@ return new class extends Migration
         Schema::create('equipments', static function ($table) {
             $table->id();
             $table->string('category')->default(EquipmentCategory::Support->value)->index();
-            // $table->foreignId('location_id')->nullable()->constrained();
             $table->string('name');
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
