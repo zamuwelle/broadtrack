@@ -9,6 +9,8 @@ import { RemoveUserModal } from '@/features/admin/users/components/RemoveUserMod
 import { Icon } from '@/components/ui/Icon'
 import { matchesUserSearch } from '@shared/util/search'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
+import { Toast } from '@/components/ui/Toast'
+import { useToast } from '@/hooks/ui/useToast'
 
 export const UsersPage = (props) => {
     useDocumentTitle('User Management')
@@ -17,11 +19,30 @@ export const UsersPage = (props) => {
     const [search, setSearch] = useState('')
     const [modal, setModal] = useState(null)
     const [selectedUser, setSelectedUser] = useState(null)
+    const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
 
     const { data: hookUsers = [], isLoading } = useUsers()
     const users = propUsers ?? hookUsers
 
     const handleInvalidate = useCallback(() => queryClient.invalidateQueries({ queryKey: ['users'] }), [queryClient])
+
+    const handleUserAdded = useCallback(
+        (message) => {
+            handleInvalidate()
+            showToast(message)
+        },
+        [handleInvalidate, showToast]
+    )
+
+    const handleUserEdited = useCallback(
+        (updatedUser) => {
+            handleInvalidate()
+            const updatedName = [updatedUser?.firstname, updatedUser?.lastname].filter(Boolean).join(' ').trim()
+            const selectedName = [selectedUser?.firstname, selectedUser?.lastname].filter(Boolean).join(' ').trim()
+            showToast(`User (${updatedName || selectedName || 'User'}) edited successfully!`)
+        },
+        [handleInvalidate, selectedUser, showToast]
+    )
 
     const handleOpenAddBorrower = useCallback(() => setModal('addBorrower'), [])
     const handleOpenAddAdmin = useCallback(() => setModal('addAdmin'), [])
@@ -91,7 +112,7 @@ export const UsersPage = (props) => {
                     isOpen
                     onClose={handleCloseModal}
                     userRole="borrower"
-                    onSuccess={handleInvalidate}
+                    onSuccess={handleUserAdded}
                 />
             )}
             {isAddAdmin && (
@@ -100,15 +121,16 @@ export const UsersPage = (props) => {
                     isOpen
                     onClose={handleCloseModal}
                     userRole="admin"
-                    onSuccess={handleInvalidate}
+                    onSuccess={handleUserAdded}
                 />
             )}
             {isEdit && (
-                <EditUserModal isOpen onClose={handleCloseModal} user={selectedUser} onSuccess={handleInvalidate} />
+                <EditUserModal isOpen onClose={handleCloseModal} user={selectedUser} onSuccess={handleUserEdited} />
             )}
             {isRemove && (
                 <RemoveUserModal isOpen onClose={handleCloseModal} user={selectedUser} onSuccess={handleInvalidate} />
             )}
+            <Toast show={toastVisible} message={toastMessage} type={toastType} />
         </div>
     )
 }

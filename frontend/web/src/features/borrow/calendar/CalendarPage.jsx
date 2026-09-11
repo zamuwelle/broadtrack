@@ -12,7 +12,7 @@ import { Icon } from '@/components/ui/Icon'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const defaultEmptyArray = Object.freeze([])
-const filterParams = Object.freeze({ public: 1 })
+const filterParams = Object.freeze({ view: 'calendar' })
 
 const normalizeBookingItem = (booking, equipment) => {
     const borrowerName = booking.user?.full_name || 'Borrower'

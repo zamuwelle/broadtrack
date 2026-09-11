@@ -1,6 +1,7 @@
 import { SelectedEquipmentList } from '@/features/borrow/request/components/SelectedEquipmentList'
 import { BookingDateInputs } from '@/features/borrow/request/components/BookingDateInputs'
 import { XButton } from '@/components/ui/XButton'
+import { ErrorText } from '@/components/ui/form/ErrorText'
 
 export const SummaryFormView = (props) => {
     const {
@@ -43,15 +44,18 @@ export const SummaryFormView = (props) => {
             <SelectedEquipmentList selectedItems={selectedItems} onRemove={onRemoveItem} />
 
             <div className="flex w-full flex-col items-start justify-start gap-3">
-                <BookingDateInputs
-                    startDate={startDate}
-                    endDate={endDate}
-                    minStartDate={minStartDate}
-                    excludeDateIntervals={excludeDateIntervals}
-                    hasScheduleConflict={hasScheduleConflict}
-                    onStartDateChange={onStartDateChange}
-                    onEndDateChange={onEndDateChange}
-                />
+                <div className="w-full">
+                    <BookingDateInputs
+                        startDate={startDate}
+                        endDate={endDate}
+                        minStartDate={minStartDate}
+                        excludeDateIntervals={excludeDateIntervals}
+                        hasScheduleConflict={hasScheduleConflict}
+                        onStartDateChange={onStartDateChange}
+                        onEndDateChange={onEndDateChange}
+                    />
+                    <ErrorText message={errorMessage} />
+                </div>
 
                 <div className="flex w-full flex-col items-start justify-start gap-1.5">
                     <div className="text-xs font-normal text-black font-['Poppins']">
@@ -65,9 +69,6 @@ export const SummaryFormView = (props) => {
                         className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-400 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
                     />
                 </div>
-                {errorMessage ? (
-                    <div className="w-full text-xs text-red-500 font-normal font-['Poppins']">{errorMessage}</div>
-                ) : null}
             </div>
 
             <div className="flex w-full items-center justify-end gap-3">

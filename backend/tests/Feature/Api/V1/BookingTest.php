@@ -81,6 +81,38 @@ test('borrower can create booking request', function () {
     ]);
 });
 
+test('borrower cannot request a booking that already started today', function (): void {
+    $borrower = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $this->travelTo(Carbon::parse('2026-10-17 14:00:00', 'Asia/Manila'));
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Final Year Project',
+        'start_date' => '2026-10-17 13:59:00',
+        'end_date' => '2026-10-17 15:00:00',
+        'equipment_ids' => [$equipment->id],
+    ]);
+
+    $response->assertUnprocessable()->assertJsonValidationErrors(['start_date']);
+});
+
+test('borrower can request a booking starting in the current minute', function (): void {
+    $borrower = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $this->travelTo(Carbon::parse('2026-10-17 14:00:30', 'Asia/Manila'));
+
+    $response = $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Final Year Project',
+        'start_date' => '2026-10-17 14:00:00',
+        'end_date' => '2026-10-17 15:00:00',
+        'equipment_ids' => [$equipment->id],
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.purpose', 'Final Year Project')
+        ->assertJsonPath('data.status', 'pending');
+});
+
 test('cannot book equipment under maintenance', function () {
     $borrower = User::factory()->borrower()->create();
     $equipment = Equipment::factory()->maintenance()->create();
@@ -195,7 +227,7 @@ test('admin sees all bookings', function () {
     Booking::factory()->pending()->create(['user_id' => $user1->id]);
     Booking::factory()->pending()->create(['user_id' => $user2->id]);
 
-    $response = $this->actingAs($admin)->getJson('/api/v1/bookings');
+    $response = $this->actingAs($admin)->getJson('/api/v1/bookings?view=calendar');
 
     $response->assertOk()
         ->assertJsonCount(2, 'data');
@@ -353,7 +385,7 @@ test('borrower and admin can cancel approved booking', function () {
         ->assertJsonPath('data.status', 'cancelled');
 });
 
-test('borrower can fetch public bookings with sanitized details', function () {
+test('borrower can fetch calendar bookings with sanitized details', function () {
     $borrower = User::factory()->borrower()->create();
     $otherUser = User::factory()->borrower()->create();
     $equipment = Equipment::factory()->available()->create();
@@ -364,7 +396,10 @@ test('borrower can fetch public bookings with sanitized details', function () {
     ]);
     $otherBooking->equipments()->attach($equipment->id);
 
-    $response = $this->actingAs($borrower)->getJson('/api/v1/bookings?public=1');
+    $otherPendingBooking = Booking::factory()->pending()->create(['user_id' => $otherUser->id]);
+    $otherPendingBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($borrower)->getJson('/api/v1/bookings?view=calendar');
 
     $response->assertOk();
     $item = collect($response->json('data'))->firstWhere('id', $otherBooking->id);
@@ -372,6 +407,31 @@ test('borrower can fetch public bookings with sanitized details', function () {
     expect($item['purpose'])->toBeNull();
     expect($item['user'])->toBeNull();
     expect($item['user_id'])->toBeNull();
+    expect(collect($response->json('data'))->pluck('id'))->not->toContain($otherPendingBooking->id);
+});
+
+test('borrower booking list stays private unless calendar view is requested', function () {
+    $borrower = User::factory()->borrower()->create();
+    $otherUser = User::factory()->borrower()->create();
+
+    $ownBooking = Booking::factory()->pending()->create(['user_id' => $borrower->id]);
+    $otherBooking = Booking::factory()->approved()->create(['user_id' => $otherUser->id]);
+
+    $this->actingAs($borrower)->getJson('/api/v1/bookings')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $ownBooking->id])
+        ->assertJsonMissing(['id' => $otherBooking->id]);
+
+    $this->actingAs($borrower)->getJson('/api/v1/bookings?public=1')
+        ->assertOk()
+        ->assertJsonFragment(['id' => $ownBooking->id])
+        ->assertJsonMissing(['id' => $otherBooking->id]);
+});
+
+test('booking list rejects unsupported view values', function () {
+    $borrower = User::factory()->borrower()->create();
+
+    $this->actingAs($borrower)->getJson('/api/v1/bookings?view=public')->assertUnprocessable();
 });
 
 test('approving or returning booking does not mutate equipment table status', function () {

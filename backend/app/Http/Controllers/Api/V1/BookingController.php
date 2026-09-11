@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ApproveBookingRequest;
+use App\Http\Requests\Api\V1\IndexBookingRequest;
 use App\Http\Requests\Api\V1\RejectBookingRequest;
 use App\Http\Requests\Api\V1\StoreBookingRequest;
 use App\Http\Resources\Api\V1\BookingResource;
@@ -22,16 +23,16 @@ use Throwable;
 
 class BookingController extends ApiController
 {
-    public function index(Request $request): JsonResponse
+    public function index(IndexBookingRequest $request): JsonResponse
     {
         $user = $request->user();
 
         if ($user && $user->isAdmin()) {
             $query = Booking::query();
-        } elseif ($request->boolean('public')) {
+        } elseif ($request->validated('view') === 'calendar') {
             $query = Booking::active();
         } else {
-            $query = $user ? $user->bookings() : Booking::query();
+            $query = $user->bookings();
         }
 
         return $this->success(BookingResource::collection(

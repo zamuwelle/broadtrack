@@ -1,13 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getBookingDateKey, getBookingDateTimeValue, getTodayDateString, parseBookingDate } from '@shared/util/date'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import {
+    addBookingMinutes,
+    getBookingDateKey,
+    getBookingDateTimeValue,
+    getCurrentBookingDateTimeValue,
+    getNextBookingHourValue,
+    parseBookingDate
+} from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useUser } from '@/lib/auth'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { useBookings } from '@/api/bookings/get-bookings'
 import { useCreateBooking } from '@/api/bookings/create-booking'
+import { useBookingDateDefaults } from '@/features/borrow/request/useBookingDateDefaults'
 import { useSetState } from '@shared/hooks/useSetState'
 
-const filterParams = Object.freeze({ public: 1 })
+const filterParams = Object.freeze({ view: 'calendar' })
 
 const isBookedStatus = (status) => status === 'approved'
 
@@ -32,12 +40,12 @@ const hasEquipmentOverlap = (booking, selectedItems) => {
     return false
 }
 
-const computeMinStartDate = (remoteBookings, selectedItems, todayDateString) => {
+const computeMinStartDate = (remoteBookings, selectedItems, minimumDateTime) => {
     const activeItemEndDates = []
     for (const booking of remoteBookings) {
         const status = getBookingStatus(booking)
         const startDatePrefix = getBookingDateKey(booking.start_date)
-        const isOngoing = isBookedStatus(status) && startDatePrefix <= todayDateString
+        const isOngoing = isBookedStatus(status) && startDatePrefix <= minimumDateTime.slice(0, 10)
         if (isOngoing && hasEquipmentOverlap(booking, selectedItems) && booking.end_date) {
             activeItemEndDates.push(booking.end_date)
         }
@@ -47,11 +55,8 @@ const computeMinStartDate = (remoteBookings, selectedItems, todayDateString) => 
         .map((dateValue) => ({ dateValue, timestamp: parseBookingDate(dateValue)?.getTime() }))
         .filter(({ timestamp }) => Number.isFinite(timestamp))
         .toSorted((first, second) => second.timestamp - first.timestamp)[0]?.dateValue
-    const todayStart = parseBookingDate(`${todayDateString}T00:00`)
-    if (latestActiveEndDate && parseBookingDate(latestActiveEndDate)?.getTime() > todayStart?.getTime()) {
-        return getBookingDateTimeValue(latestActiveEndDate)
-    }
-    return `${todayDateString}T00:00`
+    const latestActiveEndDateTime = latestActiveEndDate ? getBookingDateTimeValue(latestActiveEndDate) : ''
+    return latestActiveEndDateTime > minimumDateTime ? latestActiveEndDateTime : minimumDateTime
 }
 
 const computeExcludeDateIntervals = (remoteBookings, selectedItems) => {
@@ -165,63 +170,27 @@ const useBorrowSubmitHandler = ({
         setErrorMessage
     ])
 
-const enforceSchoolHours = (dateString) => {
-    if (!dateString) {
-        return dateString
-    }
-    const [datePart, timePart] = dateString.split('T')
-    if (!timePart) {
-        return dateString
-    }
-    if (timePart < '05:00') {
-        return `${datePart}T05:00`
-    }
-    if (timePart > '20:00') {
-        return `${datePart}T20:00`
-    }
-    return dateString
-}
-
-const addMinutesToIso = (isoStr, minutesToAdd) => {
-    if (!isoStr) {
-        return isoStr
-    }
-    const [datePart, timePart] = isoStr.split('T')
-    if (!datePart || !timePart) {
-        return isoStr
-    }
-    const [yyyy, mm, dd] = datePart.split('-')
-    const [hours, mins] = timePart.split(':')
-    const date = new Date(yyyy, mm - 1, dd, hours, mins)
-    date.setMinutes(date.getMinutes() + minutesToAdd)
-
-    const nyyyy = date.getFullYear()
-    const nmm = String(date.getMonth() + 1).padStart(2, '0')
-    const ndd = String(date.getDate()).padStart(2, '0')
-    const nh = String(date.getHours()).padStart(2, '0')
-    const nm = String(date.getMinutes()).padStart(2, '0')
-    return `${nyyyy}-${nmm}-${ndd}T${nh}:${nm}`
-}
-
 const useBorrowFieldHandlers = ({
     updateSummaryState,
     removeItem,
     selectedItems,
     summaryState,
     remoteBookings,
-    setErrorMessage
+    setErrorMessage,
+    startDateIsAutomaticRef,
+    endDateIsAutomaticRef
 }) => {
     const handleStartDateChange = useCallback(
         (event) => {
-            let selectedDate = event?.target?.value ?? event
-            selectedDate &&= enforceSchoolHours(selectedDate)
-
+            const selectedDate = event?.target?.value ?? event
             let newEndDate = summaryState.endDate
-            if (summaryState.endDate && selectedDate >= summaryState.endDate) {
-                newEndDate = enforceSchoolHours(addMinutesToIso(selectedDate, 60))
+            if (endDateIsAutomaticRef.current || (summaryState.endDate && selectedDate >= summaryState.endDate)) {
+                newEndDate = getNextBookingHourValue(selectedDate)
             }
 
-            if (checkScheduleConflict(selectedDate, newEndDate, remoteBookings, selectedItems)) {
+            const hasConflict = checkScheduleConflict(selectedDate, newEndDate, remoteBookings, selectedItems)
+            startDateIsAutomaticRef.current = false
+            if (hasConflict) {
                 setErrorMessage('Selected date conflicts with an existing reservation.')
                 updateSummaryState({
                     startDate: selectedDate,
@@ -236,20 +205,31 @@ const useBorrowFieldHandlers = ({
                 endDate: newEndDate
             })
         },
-        [updateSummaryState, summaryState.endDate, remoteBookings, selectedItems, setErrorMessage]
+        [
+            updateSummaryState,
+            summaryState.endDate,
+            remoteBookings,
+            selectedItems,
+            setErrorMessage,
+            startDateIsAutomaticRef,
+            endDateIsAutomaticRef
+        ]
     )
 
     const handleEndDateChange = useCallback(
         (event) => {
-            let selectedDate = event?.target?.value ?? event
-            selectedDate &&= enforceSchoolHours(selectedDate)
-
+            const selectedDate = event?.target?.value ?? event
             let newStartDate = summaryState.startDate
             if (summaryState.startDate && selectedDate <= summaryState.startDate) {
-                newStartDate = enforceSchoolHours(addMinutesToIso(selectedDate, -60))
+                newStartDate = addBookingMinutes(selectedDate, -60)
             }
 
-            if (checkScheduleConflict(newStartDate, selectedDate, remoteBookings, selectedItems)) {
+            const hasConflict = checkScheduleConflict(newStartDate, selectedDate, remoteBookings, selectedItems)
+            if (newStartDate !== summaryState.startDate) {
+                startDateIsAutomaticRef.current = false
+            }
+            endDateIsAutomaticRef.current = false
+            if (hasConflict) {
                 setErrorMessage('Selected date conflicts with an existing reservation.')
                 updateSummaryState({
                     endDate: selectedDate,
@@ -264,7 +244,15 @@ const useBorrowFieldHandlers = ({
                 startDate: newStartDate
             })
         },
-        [updateSummaryState, summaryState.startDate, remoteBookings, selectedItems, setErrorMessage]
+        [
+            updateSummaryState,
+            summaryState.startDate,
+            remoteBookings,
+            selectedItems,
+            setErrorMessage,
+            startDateIsAutomaticRef,
+            endDateIsAutomaticRef
+        ]
     )
 
     const handleRemoveItem = useCallback(
@@ -301,6 +289,9 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     const { data: remoteBookings = [] } = useBookings({ params: filterParams })
     const createBookingMutation = useCreateBooking()
     const [errorMessage, setErrorMessage] = useState('')
+    const [minuteTick, setMinuteTick] = useState(Date.now)
+    const startDateIsAutomaticRef = useRef(true)
+    const endDateIsAutomaticRef = useRef(true)
 
     const [summaryState, updateSummaryState] = useSetState({
         ...initialSummaryState,
@@ -308,10 +299,21 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     })
     const { modalView, startDate, endDate, purpose, isSubmitting } = summaryState
 
-    const todayDateString = getTodayDateString()
+    const minimumDateTime = getCurrentBookingDateTimeValue(new Date(minuteTick))
+    useBookingDateDefaults({
+        isOpen,
+        modalView,
+        minuteTick,
+        selectedItemCount: selectedItems.length,
+        updateSummaryState,
+        setMinuteTick,
+        startDateIsAutomaticRef,
+        endDateIsAutomaticRef
+    })
+
     const minStartDate = useMemo(
-        () => computeMinStartDate(remoteBookings, selectedItems, todayDateString),
-        [remoteBookings, selectedItems, todayDateString]
+        () => computeMinStartDate(remoteBookings, selectedItems, minimumDateTime),
+        [remoteBookings, selectedItems, minimumDateTime]
     )
 
     const excludeDateIntervals = useMemo(
@@ -324,34 +326,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         [startDate, endDate, remoteBookings, selectedItems]
     )
 
-    useEffect(() => {
-        if (isOpen) {
-            const offset = new Date().getTimezoneOffset()
-            const adjusted = new Date(Date.now() - offset * 60 * 1000)
-            const localIsoStr = adjusted.toISOString().slice(0, 16)
-
-            updateSummaryState((prev) => {
-                if (prev.modalView === 'submitted') {
-                    return {}
-                }
-                const newState = { modalView: selectedItems.length > 0 ? 'summary' : 'empty' }
-                if (!prev.startDate) {
-                    newState.startDate = enforceSchoolHours(localIsoStr)
-                    newState.endDate = enforceSchoolHours(addMinutesToIso(localIsoStr, 60))
-                }
-                return newState
-            })
-        } else {
-            updateSummaryState({
-                modalView: selectedItems.length > 0 ? 'summary' : 'empty',
-                startDate: '',
-                endDate: '',
-                purpose: ''
-            })
-        }
-    }, [isOpen, selectedItems.length, updateSummaryState])
-
-    const isDateRangeValid = !startDate || !endDate || startDate < endDate
+    const isDateRangeValid = !startDate || !endDate || (startDate >= minStartDate && startDate < endDate)
     const isSubmittable = Boolean(
         !isSubmitting &&
         startDate &&
@@ -368,7 +343,9 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         selectedItems,
         summaryState,
         remoteBookings,
-        setErrorMessage
+        setErrorMessage,
+        startDateIsAutomaticRef,
+        endDateIsAutomaticRef
     })
 
     const handleSubmit = useBorrowSubmitHandler({

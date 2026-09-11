@@ -23,7 +23,7 @@ class StoreBookingRequest extends FormRequest
             'equipment_ids' => 'required|array|min:1',
             'equipment_ids.*' => 'required|integer|distinct|exists:equipments,id',
             'purpose' => 'required|string|max:255',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|after_or_equal:'.now()->startOfMinute()->format('Y-m-d H:i:s'),
             'end_date' => 'required|date|after:start_date',
         ];
     }

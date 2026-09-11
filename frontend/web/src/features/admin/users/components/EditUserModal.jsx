@@ -131,7 +131,7 @@ const useEditUserForm = (user, onClose, onSuccess) => {
                     data: buildUpdatePayload(form, isBorrower)
                 })
                 setForm(getInitialFormState(user))
-                onSuccess()
+                onSuccess({ firstname: form.firstname.trim(), lastname: form.lastname.trim() })
                 onClose()
             } catch (error) {
                 setForm({ error: extractFormError(error) })
@@ -215,20 +215,18 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 onChange={handleEmailChange}
                 error={errors.email}
             />
-            <div className="grid grid-cols-2 gap-2.5">
-                <Field label="Role">
-                    <Select
-                        value={form.role}
-                        onChange={handleRoleChange}
-                        options={EDITABLE_ROLES}
-                        panelClass="right-0 left-auto! w-full bg-white shadow-lg"
-                        hoverClass="hover:bg-gray-100"
-                        selectedClass="bg-border-focus"
-                        className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
-                    />
-                    <div className="h-4 mt-1" />
-                </Field>
-            </div>
+            <Field label="Role">
+                <Select
+                    value={form.role}
+                    onChange={handleRoleChange}
+                    options={EDITABLE_ROLES}
+                    panelClass="right-0 left-auto! w-full bg-white shadow-lg"
+                    hoverClass="hover:bg-gray-100"
+                    selectedClass="bg-border-focus"
+                    className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
+                />
+                <div className="h-4 mt-1" />
+            </Field>
             {isBorrower && (
                 <DepartmentSelect value={form.department} onChange={handleDepartmentChange} error={errors.department} />
             )}

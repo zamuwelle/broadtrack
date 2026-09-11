@@ -62,6 +62,28 @@ export const getBookingDateTimeValue = (dateValue) => {
     return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`
 }
 
+export const getCurrentBookingDateTimeValue = (date = new Date()) => getBookingDateTimeValue(date)
+
+export const getNextBookingHourValue = (dateValue) => {
+    const parsedDate = parseBookingDate(dateValue)
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+        return ''
+    }
+    const date = new Date(parsedDate)
+    date.setUTCMinutes(0, 0, 0)
+    date.setUTCHours(date.getUTCHours() + 1)
+    return getBookingDateTimeValue(date)
+}
+
+export const addBookingMinutes = (dateValue, minutesToAdd) => {
+    const parsedDate = parseBookingDate(dateValue)
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+        return ''
+    }
+    const date = new Date(parsedDate.getTime() + minutesToAdd * 60_000)
+    return getBookingDateTimeValue(date)
+}
+
 export const formatDate = (dateValue) => {
     const date = parseBookingDate(dateValue)
     if (!date || Number.isNaN(date.getTime())) {

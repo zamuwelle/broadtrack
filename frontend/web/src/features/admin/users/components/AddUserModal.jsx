@@ -94,7 +94,7 @@ const useAddUserForm = (role, onClose, onSuccess) => {
                     role
                 })
                 setForm(initialFormState)
-                onSuccess()
+                onSuccess(`${isBorrower ? 'Borrower' : 'Admin'} added successfully!`)
                 onClose()
             } catch (error) {
                 const errors = error?.errors || {}

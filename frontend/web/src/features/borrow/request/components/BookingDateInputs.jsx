@@ -8,6 +8,11 @@ const defaultList = Object.freeze([])
 
 const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange }) => {
     const pickerRef = useRef(null)
+    const minDateRef = useRef(minDate)
+
+    useEffect(() => {
+        minDateRef.current = minDate
+    }, [minDate])
 
     useEffect(() => {
         if (!inputRef.current) {
@@ -16,17 +21,16 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
 
         const isFullyBookedDay = (date) => {
             const dayStart = new Date(date)
-            dayStart.setHours(5, 0, 0, 0)
+            dayStart.setHours(0, 0, 0, 0)
             const dayEnd = new Date(date)
-            dayEnd.setHours(20, 0, 0, 0)
+            dayEnd.setHours(24, 0, 0, 0)
             return (excludeDateIntervals || []).some((interval) => interval.start <= dayStart && interval.end >= dayEnd)
         }
 
         const options = {
             enableTime: true,
+            minuteIncrement: 1,
             dateFormat: 'Y-m-d\\TH:i',
-            minTime: '05:00',
-            maxTime: '20:00',
             disable: [isFullyBookedDay],
             onChange: (_selectedDates, dateStr) => {
                 if (dateStr) {
@@ -35,8 +39,8 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
             }
         }
 
-        if (minDate) {
-            options.minDate = minDate
+        if (minDateRef.current) {
+            options.minDate = minDateRef.current
         }
 
         pickerRef.current = flatpickr(inputRef.current, options)
@@ -44,7 +48,13 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
         return () => {
             pickerRef.current?.destroy()
         }
-    }, [inputRef, excludeDateIntervals, minDate, onChange])
+    }, [inputRef, excludeDateIntervals, onChange])
+
+    useEffect(() => {
+        if (pickerRef.current && minDate) {
+            pickerRef.current.set('minDate', minDate)
+        }
+    }, [minDate])
 
     useEffect(() => {
         if (pickerRef.current && value) {
@@ -84,7 +94,7 @@ export const BookingDateInputs = ({
     })
 
     return (
-        <div className="flex flex-col lg:flex-row w-full items-center justify-start gap-3 lg:gap-4">
+        <div className="flex flex-col lg:flex-row w-full items-start justify-start gap-3 lg:gap-4">
             <div className="w-full lg:flex-1 min-w-0 inline-flex flex-col justify-start items-start gap-1.5">
                 <div className="self-stretch justify-start text-xs font-normal font-['Poppins'] text-black">
                     Start Date <span className="text-red-500">*</span>
