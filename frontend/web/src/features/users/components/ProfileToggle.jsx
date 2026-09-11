@@ -27,10 +27,6 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
         setOpen((prev) => !prev)
     }, [open, onOpen, setOpen])
 
-    const handleProfileUpdated = useCallback(() => {
-        showToast('Profile successfully updated!')
-    }, [showToast])
-
     const profilePicture = user?.profile_picture ?? null
     const firstName = user?.firstname ?? ''
 
@@ -57,7 +53,7 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
             </button>
             {open && (
                 <div className="absolute right-0 top-full mt-2">
-                    <ProfileMenu user={user} onUpdated={handleProfileUpdated} />
+                    <ProfileMenu user={user} />
                 </div>
             )}
             <Toast show={toastVisible} message={toastMessage} type={toastType} />

@@ -181,7 +181,7 @@ test('legacy duplicate serial equipment remains editable when serial is unchange
     ])->assertOk()->assertJsonPath('data.description', 'Updated description');
 });
 
-test('admin user departments may be omitted or cleared', function (): void {
+test('sysadmin can update a managed user department', function (): void {
     $sysadmin = User::factory()->sysadmin()->create();
     $response = $this->actingAs($sysadmin)->postJson('/api/v1/users', [
         'firstname' => 'New', 'lastname' => 'Admin', 'email' => 'optional@laverdad.edu.ph',
@@ -189,12 +189,6 @@ test('admin user departments may be omitted or cleared', function (): void {
     ])->assertCreated()->assertJsonPath('data.department', null);
 
     $this->putJson('/api/v1/users/'.$response->json('data.id'), ['department' => null])->assertOk();
-});
-
-test('admin profile accepts an empty department', function (): void {
-    $admin = User::factory()->admin()->create();
-    $this->actingAs($admin)->putJson('/api/v1/profile', ['department' => null])
-        ->assertOk()->assertJsonPath('data.department', null);
 });
 
 test('changing an admin without department to borrower requires department', function (): void {
@@ -205,11 +199,6 @@ test('changing an admin without department to borrower requires department', fun
         ->assertUnprocessable()->assertJsonValidationErrors('department');
 
     expect($admin->fresh()->isAdmin())->toBeTrue();
-});
-
-test('borrower profile rejects an empty department', function (): void {
-    $borrower = User::factory()->borrower()->create();
-    $this->actingAs($borrower)->putJson('/api/v1/profile', ['department' => null])->assertUnprocessable();
 });
 
 test('stale booking transitions cannot overwrite a terminal state', function (string $transition, BookingStatus $initial): void {

@@ -271,14 +271,6 @@ const useBorrowFieldHandlers = ({
         [removeItem, selectedItems.length, updateSummaryState]
     )
 
-    const handleOpenEdit = useCallback(() => {
-        updateSummaryState({ modalView: 'edit' })
-    }, [updateSummaryState])
-
-    const handleCloseEdit = useCallback(() => {
-        updateSummaryState({ modalView: 'summary' })
-    }, [updateSummaryState])
-
     const handlePurposeChange = useCallback(
         (event) => {
             updateSummaryState({ purpose: event.target.value })
@@ -290,8 +282,6 @@ const useBorrowFieldHandlers = ({
         handleStartDateChange,
         handleEndDateChange,
         handleRemoveItem,
-        handleOpenEdit,
-        handleCloseEdit,
         handlePurposeChange
     }
 }

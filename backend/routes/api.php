@@ -31,8 +31,6 @@ Route::prefix('v1')->group(function () {
 
         // Profile
         Route::get('/me', [ProfileController::class, 'show']);
-        Route::put('/profile', [ProfileController::class, 'update']);
-        Route::post('/profile/picture', [ProfileController::class, 'uploadPicture']);
 
         // Equipment
         Route::get('/equipment', [EquipmentController::class, 'index']);

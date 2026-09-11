@@ -258,35 +258,6 @@
                         ],
                         "url": "{{base_url}}/me"
                     }
-                },
-                {
-                    "name": "Update Profile",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Profile updated\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            { "key": "Accept", "value": "application/json" },
-                            { "key": "Content-Type", "value": "application/json" },
-                            { "key": "Authorization", "value": "Bearer {{token}}" }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"firstname\": \"Karl Ashton\",\n  \"lastname\": \"Mahusay\",\n  \"department\": \"BS Information Systems\"\n}"
-                        },
-                        "url": "{{base_url}}/profile"
-                    }
                 }
             ]
         },
