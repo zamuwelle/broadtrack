@@ -21,5 +21,11 @@ export default defineConfig({
             '@': fileURLToPath(new URL('src', import.meta.url)),
             '@shared': fileURLToPath(new URL('../shared', import.meta.url))
         }
+    },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: './src/test/setup.js',
+        include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)']
     }
 })

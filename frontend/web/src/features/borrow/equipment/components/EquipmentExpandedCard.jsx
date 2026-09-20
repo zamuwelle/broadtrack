@@ -43,9 +43,9 @@ export const EquipmentExpandedCard = ({
                 />
             </div>
             <div className="flex flex-col gap-[10px] px-4 py-5 lg:px-[26px] lg:py-[28px]">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-3">
                     <p className="text-[18.17px] font-semibold">{equipment.name}</p>
-                    <span className="inline-flex items-center justify-center rounded-[12px] border-[0.5px] border-icon-subtle bg-surface px-[8px] py-[4px] text-[12px]">
+                    <span className="inline-flex shrink-0 items-center justify-center rounded-[12px] border-[0.5px] border-icon-subtle bg-surface px-[8px] py-[4px] text-[12px]">
                         {categoryName}
                     </span>
                 </div>
@@ -55,17 +55,21 @@ export const EquipmentExpandedCard = ({
                         <p className="text-[12px] text-muted">SERIAL NO</p>
                         <p className="text-[12px] text-text">{equipment.serial_no || '—'}</p>
                     </div>
-                    <div className="flex w-[90px] flex-col items-center gap-[7px]">
+                    <div className="flex shrink-0 flex-col items-center gap-[7px]">
                         <p className="text-[12px] text-muted">AVAILABILITY</p>
-                        <StatusBadge status={equipment.status} className="self-stretch" />
+                        <StatusBadge status={equipment.status} className="min-w-[90px] px-2.5" />
                     </div>
                 </div>
-                <p className="text-[14px] font-bold text-muted">PRODUCT SPECS</p>
-                <ul className="list-disc pl-[20px] text-[14px] text-muted">
-                    {specLines.map((line) => (
-                        <li key={`spec-${line}`}>{line}</li>
-                    ))}
-                </ul>
+                {specLines.length > 0 ? (
+                    <>
+                        <p className="text-[14px] font-bold text-muted">PRODUCT SPECS</p>
+                        <ul className="list-disc pl-[20px] text-[14px] text-muted">
+                            {specLines.map((line) => (
+                                <li key={`spec-${line}`}>{line}</li>
+                            ))}
+                        </ul>
+                    </>
+                ) : null}
                 <div className="h-0 border-t-[1.3px] border-border-divider" />
                 <div className="flex flex-col gap-[10px]">
                     <p className="text-[14px] font-bold text-muted">ITEM BOOK SCHEDULE</p>

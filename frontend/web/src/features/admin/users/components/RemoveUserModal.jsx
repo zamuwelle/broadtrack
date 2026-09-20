@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { useDeleteUser } from '@/api/users/delete-user'
+import { useDeleteUser } from '@/features/users/api/delete-user'
 
 const defaultUser = Object.freeze({})
 const noop = () => null

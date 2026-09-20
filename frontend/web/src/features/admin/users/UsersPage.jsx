@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useUsers } from '@/api/users/get-users'
+import { useUsers } from '@/features/users/api/get-users'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { UserTable } from '@/features/admin/users/components/UserTable'
 import { AddUserModal } from '@/features/admin/users/components/AddUserModal'

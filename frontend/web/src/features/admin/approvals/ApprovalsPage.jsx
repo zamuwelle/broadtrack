@@ -5,7 +5,7 @@ import { ApprovalCard } from '@/features/admin/approvals/components/ApprovalCard
 import { DecisionModal } from '@/features/admin/approvals/components/DecisionModal'
 import { ConfirmReturnModal } from '@/features/admin/approvals/components/ConfirmReturnModal'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { useBookings } from '@/api/bookings/get-bookings'
+import { useBookings } from '@/features/bookings/api/get-bookings'
 import { useSetState } from '@shared/hooks/useSetState'
 import { flattenBookingsByEquipment, getBookingStatus } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'

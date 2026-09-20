@@ -42,7 +42,6 @@ class BookingReportController extends ApiController
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
         return response()->streamDownload(static function () use ($rows) {
@@ -63,7 +62,7 @@ class BookingReportController extends ApiController
                 'Actual Return Date',
                 'Purpose',
                 'Status',
-            ]);
+            ], ',', '"', '');
 
             foreach ($rows as $row) {
                 fputcsv($handle, array_map(static fn (mixed $value): mixed => is_string($value) && preg_match('/^[\x00-\x20]*[=+@-]/', $value)
@@ -82,7 +81,7 @@ class BookingReportController extends ApiController
                         $row['actual_return_date'],
                         $row['purpose'],
                         $row['status_label'],
-                    ]));
+                    ]), ',', '"', '');
             }
 
             fclose($handle);

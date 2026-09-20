@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { contactSchema } from '@shared/schemas/contact'
-import { useCreateContact } from '@/api/contact/create-contact'
-import { useSetState } from '@shared/hooks/useSetState'
+import { useCreateContact } from '@/features/landing/api/create-contact'
 import { ContactFormView } from '@/features/landing/components/contact/ContactFormView'
 
 const initialForm = Object.freeze({
@@ -13,13 +14,31 @@ const initialForm = Object.freeze({
 
 export const QuickContact = () => {
     const resetTimer = useRef(null)
-    const [contactState, updateContactState] = useSetState({
+    const [contactState, setContactState] = useState({
         isOpen: false,
         sent: false,
         form: initialForm,
         touched: {}
     })
-    const { isOpen, sent, form, touched } = contactState
+    const updateContactState = useCallback(
+        (update) =>
+            setContactState((previous) => ({
+                ...previous,
+                ...(typeof update === 'function' ? update(previous) : update)
+            })),
+        []
+    )
+    const { isOpen, sent } = contactState
+    const {
+        register,
+        handleSubmit: submitForm,
+        reset: resetForm,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(contactSchema),
+        mode: 'onChange',
+        defaultValues: initialForm
+    })
     const {
         mutate: send,
         isPending,
@@ -31,42 +50,21 @@ export const QuickContact = () => {
         }
     })
 
-    const isValid = contactSchema.safeParse(form).success
-
     useEffect(() => () => clearTimeout(resetTimer.current), [])
 
-    const updateField = useCallback(
-        (name, value) => {
-            updateContactState((prev) => ({
-                form: { ...prev.form, [name]: value },
-                touched: { ...prev.touched, [name]: true }
-            }))
-        },
-        [updateContactState]
-    )
-
-    const handleSubmit = useCallback(
-        (event) => {
-            event.preventDefault()
-            if (!isValid || isPending) {
-                updateContactState({
-                    touched: {
-                        firstname: true,
-                        lastname: true,
-                        email: true,
-                        message: true
-                    }
-                })
+    const handleContactSubmit = useCallback(
+        (values) => {
+            if (isPending) {
                 return
             }
             send({
-                firstname: form.firstname.trim(),
-                lastname: form.lastname.trim(),
-                email: form.email.trim(),
-                message: form.message.trim()
+                firstname: values.firstname.trim(),
+                lastname: values.lastname.trim(),
+                email: values.email.trim(),
+                message: values.message.trim()
             })
         },
-        [form, isPending, isValid, send, updateContactState]
+        [isPending, send]
     )
 
     const close = useCallback(() => {
@@ -74,9 +72,10 @@ export const QuickContact = () => {
         updateContactState({ isOpen: false })
         resetTimer.current = setTimeout(() => {
             updateContactState({ sent: false, form: initialForm, touched: {} })
+            resetForm(initialForm)
             reset()
         }, 300)
-    }, [reset, updateContactState])
+    }, [reset, resetForm, updateContactState])
 
     const handleOpen = useCallback(() => {
         clearTimeout(resetTimer.current)
@@ -89,8 +88,9 @@ export const QuickContact = () => {
             form: initialForm,
             touched: {}
         })
+        resetForm(initialForm)
         reset()
-    }, [reset, updateContactState])
+    }, [reset, resetForm, updateContactState])
 
     return (
         <>
@@ -125,10 +125,9 @@ export const QuickContact = () => {
                         </div>
                     ) : (
                         <ContactFormView
-                            form={form}
-                            touched={touched}
-                            onFieldChange={updateField}
-                            onSubmit={handleSubmit}
+                            register={register}
+                            errors={errors}
+                            onSubmit={submitForm(handleContactSubmit)}
                             isValid={isValid}
                             isPending={isPending}
                             error={error}

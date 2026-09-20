@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useSetState } from '@shared/hooks/useSetState'
-import { deleteEquipment } from '@/api/equipment/delete-equipment'
+import { deleteEquipment } from '@/features/equipment/api/delete-equipment'
 
 const noop = () => null
 

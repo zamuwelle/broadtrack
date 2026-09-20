@@ -8,6 +8,8 @@
     "scripts": {
         "test": "bun run test:backend",
         "test:backend": "(cd ../backend && php artisan test)",
+        "test:frontend": "vp test run",
+        "test:frontend:watch": "vp test",
         "lint": "bun run lint:frontend && bun run lint:backend",
         "lint:frontend": "vp lint",
         "lint:backend": "php ../backend/vendor/bin/pint --test --config ../backend/pint.json ../backend",

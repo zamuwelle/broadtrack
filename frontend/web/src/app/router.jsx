@@ -1,10 +1,17 @@
 import { useMemo } from 'react'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { ADMIN_ROLES, BORROWER_ROLES, ROLES } from '@shared/constants'
 import { ProtectedRoute } from '@/app/authorization'
 import { paths } from '@/config/paths'
 
 const SYSADMIN_ROLES = Object.freeze([ROLES.SYSADMIN])
+const notFoundRoute = {
+    path: '*',
+    lazy: () =>
+        Promise.resolve({
+            Component: () => <Navigate to={paths.home} replace />
+        })
+}
 
 const createAppRouter = () =>
     createBrowserRouter([
@@ -14,15 +21,24 @@ const createAppRouter = () =>
             children: [
                 {
                     path: paths.home,
-                    lazy: () => import('@/routes/Landing')
+                    lazy: async () => {
+                        const { LandingPage } = await import('@/features/landing/LandingPage')
+                        return { Component: LandingPage }
+                    }
                 },
                 {
                     path: paths.terms,
-                    lazy: () => import('@/routes/Terms')
+                    lazy: async () => {
+                        const { TermsPage } = await import('@/features/landing/TermsPage')
+                        return { Component: TermsPage }
+                    }
                 },
                 {
                     path: paths.privacy,
-                    lazy: () => import('@/routes/Privacy')
+                    lazy: async () => {
+                        const { PrivacyPage } = await import('@/features/landing/PrivacyPage')
+                        return { Component: PrivacyPage }
+                    }
                 }
             ]
         },
@@ -35,15 +51,24 @@ const createAppRouter = () =>
                     children: [
                         {
                             path: paths.app.borrowEquipment,
-                            lazy: () => import('@/routes/borrow/Equipment')
+                            lazy: async () => {
+                                const { EquipmentPage } = await import('@/features/borrow/equipment/EquipmentPage')
+                                return { Component: EquipmentPage }
+                            }
                         },
                         {
                             path: paths.app.borrowCalendar,
-                            lazy: () => import('@/routes/borrow/Calendar')
+                            lazy: async () => {
+                                const { CalendarPage } = await import('@/features/borrow/calendar/CalendarPage')
+                                return { Component: CalendarPage }
+                            }
                         },
                         {
                             path: paths.app.borrowSlips,
-                            lazy: () => import('@/routes/borrow/Slips')
+                            lazy: async () => {
+                                const { SlipsPage } = await import('@/features/borrow/slips/SlipsPage')
+                                return { Component: SlipsPage }
+                            }
                         }
                     ]
                 }
@@ -58,26 +83,42 @@ const createAppRouter = () =>
                     children: [
                         {
                             path: paths.app.adminDashboard,
-                            lazy: () => import('@/routes/admin/Dashboard')
+                            lazy: async () => {
+                                const { DashboardPage } = await import('@/features/admin/dashboard/DashboardPage')
+                                return { Component: DashboardPage }
+                            }
                         },
                         {
                             path: paths.app.adminApprovals,
-                            lazy: () => import('@/routes/admin/Approvals')
+                            lazy: async () => {
+                                const { ApprovalsPage } = await import('@/features/admin/approvals/ApprovalsPage')
+                                return { Component: ApprovalsPage }
+                            }
                         },
                         {
                             path: paths.app.adminInventory,
-                            lazy: () => import('@/routes/admin/Inventory')
+                            lazy: async () => {
+                                const { InventoryPage } = await import('@/features/admin/inventory/InventoryPage')
+                                return { Component: InventoryPage }
+                            }
                         },
                         {
                             path: paths.app.adminTransactions,
-                            lazy: () => import('@/routes/admin/Transactions')
+                            lazy: async () => {
+                                const { TransactionsPage } =
+                                    await import('@/features/admin/transactions/TransactionsPage')
+                                return { Component: TransactionsPage }
+                            }
                         },
                         {
                             element: <ProtectedRoute allowedRoles={SYSADMIN_ROLES} />,
                             children: [
                                 {
                                     path: paths.app.adminUsers,
-                                    lazy: () => import('@/routes/admin/Users')
+                                    lazy: async () => {
+                                        const { UsersPage } = await import('@/features/admin/users/UsersPage')
+                                        return { Component: UsersPage }
+                                    }
                                 }
                             ]
                         }
@@ -85,10 +126,7 @@ const createAppRouter = () =>
                 }
             ]
         },
-        {
-            path: '*',
-            lazy: () => import('@/routes/NotFound')
-        }
+        notFoundRoute
     ])
 
 export const AppRouter = () => {

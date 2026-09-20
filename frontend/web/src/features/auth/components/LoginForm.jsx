@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { loginSchema } from '@shared/schemas/auth'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { Icon } from '@/components/ui/Icon'
@@ -136,28 +139,46 @@ export const LoginForm = ({
     emailError = '',
     passwordError = '',
     showPass = false,
-    validLogin = false,
     isPending = false,
-    onFieldChange = noop,
     onToggleShowPass = noop,
     onSwitchTab = noop,
-    onSubmit = noop
+    onSubmit = noop,
+    onInvalid = noop,
+    onClearError = noop
 }) => {
     const handleGoogleLogin = useGooglePopup()
+    const {
+        register,
+        watch,
+        handleSubmit,
+        reset,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(loginSchema),
+        mode: 'onChange',
+        defaultValues: {
+            email: form.email || '',
+            password: form.password || ''
+        }
+    })
+    const emailValue = watch('email')
+    const passwordValue = watch('password')
+    const firstChange = useRef(true)
 
-    const handleEmailChange = useCallback(
-        (event) => {
-            onFieldChange('email', event.target.value)
-        },
-        [onFieldChange]
-    )
+    useEffect(() => {
+        if (firstChange.current) {
+            firstChange.current = false
+            return
+        }
+        onClearError()
+    }, [emailValue, onClearError, passwordValue])
 
-    const handlePasswordChange = useCallback(
-        (event) => {
-            onFieldChange('password', event.target.value)
-        },
-        [onFieldChange]
-    )
+    useEffect(() => {
+        reset({
+            email: form.email || '',
+            password: form.password || ''
+        })
+    }, [form.email, form.password, reset])
 
     const handleSwitchForgot = useCallback(() => {
         onSwitchTab('forgot')
@@ -181,24 +202,22 @@ export const LoginForm = ({
                 <span className="text-gray-400 text-[13px]">or</span>
                 <div className="flex-1 h-[1px] bg-gray-200" />
             </div>
-            <form noValidate className="flex flex-col gap-2.5" onSubmit={onSubmit}>
+            <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
                 <TextInput
                     label="La Verdad Email"
                     type="email"
                     maxLength={255}
                     autoComplete="email"
-                    value={form.email || ''}
-                    onChange={handleEmailChange}
-                    error={emailError}
+                    error={errors.email?.message || emailError}
+                    {...register('email')}
                     className={inputClass}
                 />
                 <PasswordInput
                     maxLength={64}
                     label="Password"
                     autoComplete="current-password"
-                    value={form.password || ''}
-                    onChange={handlePasswordChange}
-                    error={passwordError}
+                    error={errors.password?.message || passwordError}
+                    {...register('password')}
                     className={passwordClass}
                     showPass={showPass}
                     onToggleShow={onToggleShowPass}
@@ -207,8 +226,8 @@ export const LoginForm = ({
                 />
                 <button
                     type="submit"
-                    disabled={isPending}
-                    className={`${submitClass} ${validLogin ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}>
+                    disabled={isPending || !isValid}
+                    className={`${submitClass} ${isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}>
                     {isPending ? 'Signing in...' : 'Sign In'}
                 </button>
             </form>

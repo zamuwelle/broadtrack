@@ -1,12 +1,13 @@
 import { Eye, EyeOff } from 'lucide-react'
 import { FormField } from '@/components/ui/form/FormField'
 import { ErrorText } from '@/components/ui/form/ErrorText'
+import { cn } from 'cn'
 
 const noop = () => null
 
 export const PasswordInput = ({
     label = 'Password',
-    value = '',
+    value,
     onChange,
     error = '',
     className = '',
@@ -24,7 +25,10 @@ export const PasswordInput = ({
             <div className="relative">
                 <input
                     type={isVisible ? 'text' : 'password'}
-                    className={`${className || 'w-full border h-10 pl-3 pr-10 rounded-lg text-[14px] outline-none'} ${error ? 'border-red-500' : 'border-gray-300'}`}
+                    className={cn(
+                        className || 'w-full border h-10 pl-3 pr-10 rounded-lg text-[14px] outline-none',
+                        error ? 'border-red-500' : 'border-gray-300'
+                    )}
                     value={value}
                     onChange={onChange}
                     {...rest}

@@ -4,7 +4,7 @@ import { SlipEquipmentList } from '@/features/borrow/slips/components/SlipEquipm
 import { SlipDetailsGrid } from '@/features/borrow/slips/components/SlipDetailsGrid'
 import { SlipStatusNotices } from '@/features/borrow/slips/components/SlipStatusNotices'
 import { SlipFooter } from '@/features/borrow/slips/components/SlipFooter'
-import { downloadBookingSlip } from '@/api/bookings/download-slip'
+import { downloadBookingSlip } from '@/features/bookings/api/download-slip'
 import { getBookingStatus } from '@shared/util/booking'
 
 const defaultBooking = Object.freeze({})

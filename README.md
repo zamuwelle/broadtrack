@@ -200,6 +200,7 @@ bun run test:backend
 bun run lint            # Lints ALL (Frontend + Backend)
 bun run lint:frontend   # Lints Frontend only (Oxlint)
 bun run lint:backend    # Lints Backend only (Laravel Pint)
+bun run test:frontend   # Runs Vite Plus frontend tests
 
 # Formatting
 bun run format          # Formats ALL (Frontend + Backend)

@@ -1,11 +1,12 @@
-import { useCallback } from 'react'
-import { useSetState } from '@shared/hooks/useSetState'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Select } from '@/components/ui/Select'
-import { useUpdateUser } from '@/api/users/update-user'
-import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword } from '@shared/schemas/common'
+import { useUpdateUser } from '@/features/users/api/update-user'
+import { MAX_NAME_LENGTH } from '@shared/schemas/common'
+import { editUserSchema } from '@shared/schemas/users'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
-import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -13,164 +14,116 @@ import { EDITABLE_ROLES } from '@shared/constants'
 
 const noop = () => null
 
-const getInitialFormState = (user) => ({
+const getDefaultValues = (user) => ({
     firstname: user?.firstname || '',
     lastname: user?.lastname || '',
     email: user?.email || '',
     role: user?.role || 'borrower',
     department: user?.department || '',
-    password: '',
-    showPassword: false,
-    error: ''
+    password: ''
 })
 
-const useEditUserFormFields = (setForm) => {
-    const handleFirstnameChange = useCallback(
-        (e) => {
-            setForm({ firstname: e.target.value, error: '' })
-        },
-        [setForm]
-    )
+export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onSuccess = noop }) => {
+    const [error, setError] = useState('')
+    const updateUserMutation = useUpdateUser()
+    const {
+        control,
+        register,
+        watch,
+        reset,
+        handleSubmit,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(editUserSchema),
+        mode: 'onChange',
+        defaultValues: getDefaultValues(user)
+    })
+    const role = watch('role')
+    const watchedValues = watch(['firstname', 'lastname', 'email', 'role', 'department', 'password'])
+    const firstChange = useRef(true)
+    const isBorrower = role === 'borrower'
 
-    const handleLastnameChange = useCallback(
-        (e) => {
-            setForm({ lastname: e.target.value, error: '' })
-        },
-        [setForm]
-    )
+    useEffect(() => {
+        reset(getDefaultValues(user))
+        setError('')
+    }, [reset, user])
 
-    const handleEmailChange = useCallback(
-        (e) => {
-            setForm({ email: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleRoleChange = useCallback(
-        (value) => {
-            setForm({ role: value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleDepartmentChange = useCallback(
-        (value) => {
-            setForm({ department: value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handlePasswordChange = useCallback(
-        (e) => {
-            setForm({ password: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleTogglePassword = useCallback(() => {
-        setForm((prev) => ({ showPassword: !prev.showPassword }))
-    }, [setForm])
-
-    return {
-        handleFirstnameChange,
-        handleLastnameChange,
-        handleEmailChange,
-        handleRoleChange,
-        handleDepartmentChange,
-        handlePasswordChange,
-        handleTogglePassword
-    }
-}
-
-const extractFormError = (error) => {
-    const errors = error?.errors || {}
-    return errors.email?.[0] || error?.message || 'Failed to update user'
-}
-
-const buildUpdatePayload = (form, isBorrower) => ({
-    firstname: form.firstname.trim(),
-    lastname: form.lastname.trim(),
-    email: form.email.trim(),
-    role: form.role,
-    department: isBorrower ? form.department : null,
-    ...(form.password ? { password: form.password } : {})
-})
-
-const checkEditUserValid = (form, isBorrower) =>
-    Boolean(
-        isValidName(form.firstname) &&
-        isValidName(form.lastname) &&
-        isValidEmail(form.email) &&
-        (!isBorrower || form.department) &&
-        (!form.password || isValidPassword(form.password))
-    )
-
-const useEditUserForm = (user, onClose, onSuccess) => {
-    const [form, setForm] = useSetState(() => getInitialFormState(user))
+    useEffect(() => {
+        if (firstChange.current) {
+            firstChange.current = false
+            return
+        }
+        setError('')
+    }, [watchedValues])
 
     const handleClose = useCallback(() => {
-        setForm(getInitialFormState(user))
+        reset(getDefaultValues(user))
+        setError('')
         onClose()
-    }, [onClose, setForm, user])
+    }, [onClose, reset, user])
 
-    const fields = useEditUserFormFields(setForm)
-    const updateUserMutation = useUpdateUser()
-
-    const isBorrower = form.role === 'borrower'
-    const isValid = checkEditUserValid(form, isBorrower)
-
-    const handleSubmit = useCallback(
-        async (event) => {
-            event.preventDefault()
-            if (!isValid || updateUserMutation.isPending || !user?.id) {
+    const handleFormSubmit = useCallback(
+        async (values) => {
+            if (updateUserMutation.isPending || !user?.id) {
                 return
             }
             try {
                 await updateUserMutation.mutateAsync({
                     userId: user.id,
-                    data: buildUpdatePayload(form, isBorrower)
+                    data: {
+                        firstname: values.firstname.trim(),
+                        lastname: values.lastname.trim(),
+                        email: values.email.trim(),
+                        role: values.role,
+                        department: isBorrower ? values.department : null,
+                        ...(values.password ? { password: values.password } : {})
+                    }
                 })
-                setForm(getInitialFormState(user))
-                onSuccess({ firstname: form.firstname.trim(), lastname: form.lastname.trim() })
+                reset(getDefaultValues(user))
+                setError('')
+                onSuccess({ firstname: values.firstname.trim(), lastname: values.lastname.trim() })
                 onClose()
-            } catch (error) {
-                setForm({ error: extractFormError(error) })
+            } catch (submitError) {
+                const serverErrors = submitError?.errors || {}
+                setError(serverErrors.email?.[0] || submitError?.message || 'Failed to update user')
             }
         },
-        [form, isBorrower, isValid, onClose, onSuccess, setForm, updateUserMutation, user]
+        [isBorrower, onClose, onSuccess, reset, updateUserMutation, user]
     )
-
-    const errors = getUserFormErrors(form, isBorrower)
-
-    return {
-        form,
-        errors,
-        isBorrower,
-        isValid,
-        isPending: updateUserMutation.isPending,
-        handleClose,
-        ...fields,
-        handleSubmit
-    }
-}
-
-export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onSuccess = noop }) => {
-    const {
-        form,
-        errors,
-        isBorrower,
-        isValid,
-        isPending,
-        handleClose,
-        handleFirstnameChange,
-        handleLastnameChange,
-        handleEmailChange,
-        handleRoleChange,
-        handleDepartmentChange,
-        handlePasswordChange,
-        handleTogglePassword,
-        handleSubmit
-    } = useEditUserForm(user, onClose, onSuccess)
+    const renderRole = useCallback(
+        ({ field }) => {
+            const handleRoleChange = field.onChange
+            return (
+                <Select
+                    {...field}
+                    onChange={handleRoleChange}
+                    options={EDITABLE_ROLES}
+                    panelClass="right-0 left-auto! w-full bg-white shadow-lg"
+                    hoverClass="hover:bg-gray-100"
+                    selectedClass="bg-border-focus"
+                    className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
+                />
+            )
+        },
+        []
+    )
+    const renderDepartment = useCallback(
+        ({ field }) => {
+            const handleDepartmentChange = field.onChange
+            return (
+                <DepartmentSelect
+                    value={field.value}
+                    onChange={handleDepartmentChange}
+                    error={errors.department?.message}
+                />
+            )
+        },
+        [errors.department?.message]
+    )
+    const handleFormSubmitEvent = useCallback(
+        (event) => handleSubmit(handleFormSubmit)(event),
+        [handleFormSubmit, handleSubmit]
+    )
 
     if (!isOpen || !user) {
         return null
@@ -181,28 +134,27 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             title="Edit User"
             subtitle="Update this user's account details."
             onClose={handleClose}
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmitEvent}
             submitLabel="Update"
-            isPending={isPending}
+            isPending={updateUserMutation.isPending}
             disabled={!isValid}>
+            {error ? <p className="text-[13px] text-red-500">{error}</p> : null}
             <div className="grid grid-cols-2 gap-2.5">
                 <TextInput
                     autoComplete="off"
                     label="First Name"
                     name="edit-user-firstname"
                     maxLength={MAX_NAME_LENGTH}
-                    value={form.firstname}
-                    onChange={handleFirstnameChange}
-                    error={errors.firstname}
+                    error={errors.firstname?.message}
+                    {...register('firstname')}
                 />
                 <TextInput
                     autoComplete="off"
                     label="Last Name"
                     name="edit-user-lastname"
                     maxLength={MAX_NAME_LENGTH}
-                    value={form.lastname}
-                    onChange={handleLastnameChange}
-                    error={errors.lastname}
+                    error={errors.lastname?.message}
+                    {...register('lastname')}
                 />
             </div>
             <TextInput
@@ -211,34 +163,30 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 type="email"
                 maxLength={255}
                 name="edit-user-email"
-                value={form.email}
-                onChange={handleEmailChange}
-                error={errors.email}
+                error={errors.email?.message}
+                {...register('email')}
             />
             <Field label="Role">
-                <Select
-                    value={form.role}
-                    onChange={handleRoleChange}
-                    options={EDITABLE_ROLES}
-                    panelClass="right-0 left-auto! w-full bg-white shadow-lg"
-                    hoverClass="hover:bg-gray-100"
-                    selectedClass="bg-border-focus"
-                    className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
+                <Controller
+                    name="role"
+                    control={control}
+                    render={renderRole}
                 />
                 <div className="h-4 mt-1" />
             </Field>
-            {isBorrower && (
-                <DepartmentSelect value={form.department} onChange={handleDepartmentChange} error={errors.department} />
-            )}
+            {isBorrower ? (
+                <Controller
+                    name="department"
+                    control={control}
+                    render={renderDepartment}
+                />
+            ) : null}
             <PasswordInput
                 maxLength={64}
                 autoComplete="new-password"
                 name="edit-user-password"
-                value={form.password}
-                onChange={handlePasswordChange}
-                showPassword={form.showPassword}
-                onToggleShow={handleTogglePassword}
-                error={errors.password}
+                error={errors.password?.message}
+                {...register('password')}
                 required={false}
             />
         </UserModalShell>

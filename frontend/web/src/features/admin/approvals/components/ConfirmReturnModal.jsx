@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
-import { useReturnBooking } from '@/api/bookings/return-booking'
+import { useReturnBooking } from '@/features/bookings/api/return-booking'
 
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])

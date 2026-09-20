@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { X } from 'lucide-react'
-import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@shared/schemas/auth'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
 import { useSetState } from '@shared/hooks/useSetState'
@@ -29,16 +28,6 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
         successMessage: '',
         form: { ...initialFormState, ...initialData }
     })
-
-    const updateFormField = useCallback(
-        (key, value) => {
-            updateAuthState((prev) => ({
-                form: { ...prev.form, [key]: value },
-                error: prev.error ? '' : prev.error
-            }))
-        },
-        [updateAuthState]
-    )
 
     const switchTab = useCallback(
         (targetTab) => {
@@ -70,7 +59,6 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
     return {
         authState,
         updateAuthState,
-        updateFormField,
         switchTab,
         handleClose,
         toggleShowPass
@@ -85,7 +73,7 @@ export const AuthModal = ({
     initialError = '',
     initialData = defaultInitialData
 }) => {
-    const { authState, updateAuthState, updateFormField, switchTab, handleClose, toggleShowPass } = useAuthModalState({
+    const { authState, updateAuthState, switchTab, handleClose, toggleShowPass } = useAuthModalState({
         mode,
         initialError,
         initialData,
@@ -93,20 +81,13 @@ export const AuthModal = ({
     })
     const { tab, showPass, error, successMessage, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
+    const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
 
     const isVerifyTab = tab === 'verify'
     useEscapeKey(isVerifyTab ? null : onClose)
 
-    const validLogin = loginSchema.safeParse(form).success
-    const validRegister = registerSchema.safeParse(form).success
-    const validForgot = forgotPasswordSchema.safeParse(form).success
-    const validReset = resetPasswordSchema.safeParse(form).success
-
     const actions = useAuthModalActions({
         form,
-        validLogin,
-        validRegister,
-        validReset,
         onLoginSuccess,
         onClose,
         updateAuthState,
@@ -143,12 +124,9 @@ export const AuthModal = ({
                         error={error}
                         successMessage={successMessage}
                         showPass={showPass}
-                        validLogin={validLogin}
-                        validRegister={validRegister}
-                        validForgot={validForgot}
-                        validReset={validReset}
                         actions={actions}
-                        onFieldChange={updateFormField}
+                        onClearError={handleClearError}
+                        showToast={showToast}
                         onToggleShowPass={toggleShowPass}
                         onSwitchTab={switchTab}
                     />

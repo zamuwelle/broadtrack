@@ -248,16 +248,17 @@
 
     <div class="barcode-section">
         <div class="barcode-bars">
-            <svg width="240" height="30" viewBox="0 0 240 30" style="display: inline-block;">
-                <defs>
-                    <pattern id="barcode-stripes" width="8" height="30" patternUnits="userSpaceOnUse">
-                        <rect x="0" y="0" width="2" height="30" fill="#0f172a" />
-                        <rect x="3" y="0" width="1" height="30" fill="#0f172a" />
-                        <rect x="5" y="0" width="3" height="30" fill="#0f172a" />
-                    </pattern>
-                </defs>
-                <rect x="0" y="0" width="240" height="30" fill="url(#barcode-stripes)" />
-            </svg>
+            <table style="width: 240px; height: 30px; margin: 0 auto; border-collapse: collapse;">
+                <tr>
+                    @for ($i = 0; $i < 30; $i++)
+                        <td style="width: 2px; height: 30px; background-color: #0f172a; padding: 0;"></td>
+                        <td style="width: 1px; height: 30px; padding: 0;"></td>
+                        <td style="width: 1px; height: 30px; background-color: #0f172a; padding: 0;"></td>
+                        <td style="width: 1px; height: 30px; padding: 0;"></td>
+                        <td style="width: 3px; height: 30px; background-color: #0f172a; padding: 0;"></td>
+                    @endfor
+                </tr>
+            </table>
         </div>
         <div class="barcode-code">*{{ $booking->ticket_id }}*</div>
     </div>

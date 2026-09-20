@@ -1,26 +1,13 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
-import { VALIDATION_MESSAGES, isValidEmail } from '@shared/schemas/common'
-import { useSend } from '@/hooks/actions/useSend'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { loginUser } from '@/features/auth/api/login'
 import { registerUser } from '@/features/auth/api/register'
 import { forgotPassword } from '@/features/auth/api/forgot-password'
 import { resetPassword } from '@/features/auth/api/reset-password'
 import { paths } from '@/config/paths'
 
-const hasRegisterMissing = (form) => {
-    const fn = (form.firstname || '').trim()
-    const ln = (form.lastname || '').trim()
-    const em = (form.email || '').trim()
-    const dp = (form.department || '').trim()
-    const pw = form.password || ''
-    return !fn || !ln || !em || !dp || !pw
-}
-
 const useAuthLoginHandlers = ({
-    form,
-    validLogin,
     onLoginSuccess,
     onClose,
     updateAuthState,
@@ -59,8 +46,8 @@ const useAuthLoginHandlers = ({
         [queryClient, onLoginSuccess, updateAuthState, initialFormState, onClose, navigate]
     )
 
-    const loginSend = useSend({
-        send: loginUser,
+    const loginMutation = useMutation({
+        mutationFn: loginUser,
         onSuccess: saveAuth,
         onError: useCallback(
             (loginError = {}) => {
@@ -81,31 +68,24 @@ const useAuthLoginHandlers = ({
     })
 
     const handleLogin = useCallback(
-        (event) => {
-            event.preventDefault()
-            const trimmedEmail = (form.email || '').trim()
-            if (trimmedEmail && !isValidEmail(form.email)) {
-                showToast(VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT, 'danger')
-                return
-            }
-            if (!trimmedEmail || !form.password) {
-                showToast(VALIDATION_MESSAGES.MISSING_FIELDS, 'warning')
-                return
-            }
-            if (validLogin && !loginSend.isPending) {
-                loginSend.send({ email: form.email, password: form.password })
+        (data) => {
+            if (!loginMutation.isPending) {
+                updateAuthState((prev) => ({
+                    form: { ...prev.form, email: data.email }
+                }))
+                loginMutation.mutate({ email: data.email, password: data.password })
             }
         },
-        [form.email, form.password, validLogin, loginSend, showToast]
+        [loginMutation, updateAuthState]
     )
 
     return {
-        loginPending: loginSend.isPending,
+        loginPending: loginMutation.isPending,
         handleLogin
     }
 }
 
-const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToast }) => {
+const useAuthRegisterHandlers = ({ updateAuthState }) => {
     const showCheckInbox = useCallback(() => {
         updateAuthState({
             tab: 'verify',
@@ -115,8 +95,8 @@ const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToa
         })
     }, [updateAuthState])
 
-    const registerSend = useSend({
-        send: registerUser,
+    const registerMutation = useMutation({
+        mutationFn: registerUser,
         onSuccess: showCheckInbox,
         onError: useCallback(
             (registerError = {}) => {
@@ -131,33 +111,26 @@ const useAuthRegisterHandlers = ({ form, validRegister, updateAuthState, showToa
     })
 
     const handleRegister = useCallback(
-        (event) => {
-            event.preventDefault()
-            const trimmedEmail = (form.email || '').trim()
-            if (trimmedEmail && !isValidEmail(form.email)) {
-                showToast(VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT, 'danger')
-                return
-            }
-            if (hasRegisterMissing(form)) {
-                showToast(VALIDATION_MESSAGES.MISSING_FIELDS, 'warning')
-                return
-            }
-            if (validRegister && !registerSend.isPending) {
-                registerSend.send(form)
+        (data) => {
+            if (!registerMutation.isPending) {
+                updateAuthState((prev) => ({
+                    form: { ...prev.form, email: data.email }
+                }))
+                registerMutation.mutate(data)
             }
         },
-        [form, validRegister, registerSend, showToast]
+        [registerMutation, updateAuthState]
     )
 
     return {
-        registerPending: registerSend.isPending,
+        registerPending: registerMutation.isPending,
         handleRegister
     }
 }
 
-const useAuthRecoveryHandlers = ({ form, validReset, updateAuthState, showToast }) => {
-    const forgotSend = useSend({
-        send: forgotPassword,
+const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
+    const forgotMutation = useMutation({
+        mutationFn: forgotPassword,
         onSuccess: useCallback(() => {
             updateAuthState({ successMessage: 'Reset link sent! Check your inbox.' })
         }, [updateAuthState]),
@@ -171,8 +144,8 @@ const useAuthRecoveryHandlers = ({ form, validReset, updateAuthState, showToast 
         )
     })
 
-    const resetSend = useSend({
-        send: resetPassword,
+    const resetMutation = useMutation({
+        mutationFn: resetPassword,
         onSuccess: useCallback(() => {
             updateAuthState({ tab: 'login', successMessage: '', error: '' })
             showToast('Password reset successfully! You can now log in.')
@@ -188,55 +161,36 @@ const useAuthRecoveryHandlers = ({ form, validReset, updateAuthState, showToast 
     })
 
     const handleForgot = useCallback(
-        (event) => {
-            event.preventDefault()
-            const trimmedEmail = (form.email || '').trim()
-            if (trimmedEmail && !isValidEmail(form.email)) {
-                showToast(VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT, 'danger')
-                return
-            }
-            if (!trimmedEmail) {
-                showToast(VALIDATION_MESSAGES.MISSING_FIELDS, 'warning')
-                return
-            }
-            if (!forgotSend.isPending) {
-                forgotSend.send({ email: form.email })
+        (data) => {
+            if (!forgotMutation.isPending) {
+                forgotMutation.mutate({ email: data.email })
             }
         },
-        [form.email, forgotSend, showToast]
+        [forgotMutation]
     )
 
     const handleReset = useCallback(
-        (event) => {
-            event.preventDefault()
-            if (!form.password || !form.confirmPassword) {
-                showToast(VALIDATION_MESSAGES.MISSING_FIELDS, 'warning')
-                return
-            }
-            if (validReset && !resetSend.isPending) {
-                resetSend.send({
-                    token: form.token,
-                    email: form.email,
-                    password: form.password
+        (data) => {
+            if (!resetMutation.isPending) {
+                resetMutation.mutate({
+                    token: data.token,
+                    email: data.email,
+                    password: data.password
                 })
             }
         },
-        [form.password, form.confirmPassword, form.token, form.email, validReset, resetSend, showToast]
+        [resetMutation]
     )
 
     return {
-        forgotPending: forgotSend.isPending,
-        resetPending: resetSend.isPending,
+        forgotPending: forgotMutation.isPending,
+        resetPending: resetMutation.isPending,
         handleForgot,
         handleReset
     }
 }
 
 export const useAuthModalActions = ({
-    form,
-    validLogin,
-    validRegister,
-    validReset,
     onLoginSuccess,
     onClose,
     updateAuthState,
@@ -244,8 +198,6 @@ export const useAuthModalActions = ({
     initialFormState
 }) => {
     const { loginPending, handleLogin } = useAuthLoginHandlers({
-        form,
-        validLogin,
         onLoginSuccess,
         onClose,
         updateAuthState,
@@ -254,15 +206,11 @@ export const useAuthModalActions = ({
     })
 
     const { registerPending, handleRegister } = useAuthRegisterHandlers({
-        form,
-        validRegister,
         updateAuthState,
         showToast
     })
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({
-        form,
-        validReset,
         updateAuthState,
         showToast
     })

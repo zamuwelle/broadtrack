@@ -3,7 +3,7 @@ import { useToggle } from '@/hooks/ui/useToggle'
 import { Icon } from '@/components/ui/Icon'
 import { getNotificationConfig } from '@/features/borrow/notifications/notificationConfig'
 import { NotificationItem } from '@/features/borrow/notifications/NotificationItem'
-import { useMarkBookingAsRead } from '@/api/bookings/read-booking'
+import { useMarkBookingAsRead } from '@/features/bookings/api/read-booking'
 
 const defaultBookings = Object.freeze([])
 const noop = () => null

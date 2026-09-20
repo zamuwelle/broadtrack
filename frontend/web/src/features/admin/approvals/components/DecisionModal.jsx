@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
-import { useApproveBooking } from '@/api/bookings/approve-booking'
-import { useRejectBooking } from '@/api/bookings/reject-booking'
+import { useApproveBooking } from '@/features/bookings/api/approve-booking'
+import { useRejectBooking } from '@/features/bookings/api/reject-booking'
 import { DecisionForm } from '@/features/admin/approvals/components/DecisionForm'
 
 const defaultBooking = Object.freeze({})

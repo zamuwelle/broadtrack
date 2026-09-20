@@ -1,60 +1,80 @@
-import { useCallback } from 'react'
-import { validateConfirmPassword, validatePassword } from '@shared/schemas/common'
+import { useCallback, useEffect, useRef } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { resetPasswordSchema } from '@shared/schemas/auth'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
 
-const getResetErrors = (form) => ({
-    passwordError: form.password ? validatePassword(form.password) : '',
-    confirmPasswordError: validateConfirmPassword(form.password, form.confirmPassword)
-})
-
 export const ResetForm = (props) => {
     const {
         form,
         error = '',
         showPass = false,
-        validReset = false,
         isPending = false,
-        onFieldChange = noop,
         onToggleShowPass = noop,
         onSwitchTab = noop,
-        onSubmit = noop
+        onSubmit = noop,
+        onInvalid = noop,
+        onClearError = noop
     } = props
 
-    const handlePasswordChange = useCallback(
-        (event) => {
-            onFieldChange('password', event.target.value)
-        },
-        [onFieldChange]
+    const {
+        register,
+        handleSubmit,
+        reset,
+        watch,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(resetPasswordSchema),
+        mode: 'onChange',
+        defaultValues: {
+            token: form.token || '',
+            email: form.email || '',
+            password: form.password || '',
+            confirmPassword: form.confirmPassword || ''
+        }
+    })
+    const [watchedPassword, watchedConfirmPassword] = watch(['password', 'confirmPassword'])
+    const firstChange = useRef(true)
+
+    useEffect(
+        () =>
+            reset({
+                token: form.token || '',
+                email: form.email || '',
+                password: form.password || '',
+                confirmPassword: form.confirmPassword || ''
+            }),
+        [form.confirmPassword, form.email, form.password, form.token, reset]
     )
 
-    const handleConfirmPasswordChange = useCallback(
-        (event) => {
-            onFieldChange('confirmPassword', event.target.value)
-        },
-        [onFieldChange]
-    )
+    useEffect(() => {
+        if (firstChange.current) {
+            firstChange.current = false
+            return
+        }
+        onClearError()
+    }, [onClearError, watchedConfirmPassword, watchedPassword])
 
     const handleSwitchLogin = useCallback(() => {
         onSwitchTab('login')
     }, [onSwitchTab])
 
-    const { passwordError, confirmPasswordError } = getResetErrors(form)
-
     return (
-        <form noValidate className="flex flex-col gap-2.5" onSubmit={onSubmit}>
+        <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
+            <input type="hidden" {...register('token')} />
+            <input type="hidden" {...register('email')} />
             {error ? <div className="text-[13px] text-red-500 bg-red-50 p-2.5 rounded-[6px]">{error}</div> : null}
             <PasswordInput
                 maxLength={64}
                 label="New Password"
                 name="password"
                 autoComplete="new-password"
-                value={form.password || ''}
-                onChange={handlePasswordChange}
-                error={passwordError}
+                error={errors.password?.message}
+                {...register('password')}
                 className={passwordClass}
                 showPass={showPass}
                 onToggleShow={onToggleShowPass}
@@ -64,12 +84,11 @@ export const ResetForm = (props) => {
                 name="confirmPassword"
                 type={showPass ? 'text' : 'password'}
                 autoComplete="new-password"
-                value={form.confirmPassword || ''}
-                onChange={handleConfirmPasswordChange}
-                error={confirmPasswordError}
+                error={errors.confirmPassword?.message}
+                {...register('confirmPassword')}
                 className={inputClass}
             />
-            <button type="submit" disabled={!validReset || isPending} className={submitClass}>
+            <button type="submit" disabled={!isValid || isPending} className={submitClass}>
                 {isPending ? 'Updating password...' : 'Confirm Password'}
             </button>
             <p className="text-center text-[13px] text-text/70 mt-4">

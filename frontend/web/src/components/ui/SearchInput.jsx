@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
+import { cn } from 'cn'
 
 export const SearchInput = ({
     value,
@@ -18,7 +19,10 @@ export const SearchInput = ({
 
     return (
         <div
-            className={`w-full h-[46px] bg-background border border-muted rounded-[8px] flex items-center gap-[18px] px-[22px] py-[10px] ${className}`}>
+            className={cn(
+                'w-full h-[46px] bg-background border border-muted rounded-[8px] flex items-center gap-[18px] px-[22px] py-[10px]',
+                className
+            )}>
             <Icon name="search" />
             <input
                 type="text"

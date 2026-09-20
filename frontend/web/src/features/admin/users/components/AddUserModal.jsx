@@ -1,130 +1,24 @@
-import { useCallback } from 'react'
-import { useSetState } from '@shared/hooks/useSetState'
-import { useCreateUser } from '@/api/users/create-user'
-import { MAX_NAME_LENGTH, isValidEmail, isValidName, isValidPassword } from '@shared/schemas/common'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { useCreateUser } from '@/features/users/api/create-user'
+import { MAX_NAME_LENGTH } from '@shared/schemas/common'
+import { addUserSchema } from '@shared/schemas/users'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
-import { getUserFormErrors } from '@/features/admin/users/getUserFormErrors'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 
 const noop = () => null
 
-const initialFormState = Object.freeze({
+const getDefaultValues = (role) => ({
     firstname: '',
     lastname: '',
     email: '',
     department: '',
     password: '',
-    showPassword: false,
-    error: ''
+    role
 })
-
-const useAddUserForm = (role, onClose, onSuccess) => {
-    const [form, setForm] = useSetState(initialFormState)
-    const isBorrower = role === 'borrower'
-
-    const handleClose = useCallback(() => {
-        setForm(initialFormState)
-        onClose()
-    }, [onClose, setForm])
-
-    const handleFirstnameChange = useCallback(
-        (e) => {
-            setForm({ firstname: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleLastnameChange = useCallback(
-        (e) => {
-            setForm({ lastname: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleEmailChange = useCallback(
-        (e) => {
-            setForm({ email: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleDepartmentChange = useCallback(
-        (value) => {
-            setForm({ department: value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handlePasswordChange = useCallback(
-        (e) => {
-            setForm({ password: e.target.value, error: '' })
-        },
-        [setForm]
-    )
-
-    const handleTogglePassword = useCallback(() => {
-        setForm((prev) => ({ showPassword: !prev.showPassword }))
-    }, [setForm])
-
-    const createUserMutation = useCreateUser()
-
-    const isValid = Boolean(
-        isValidName(form.firstname) &&
-        isValidName(form.lastname) &&
-        isValidEmail(form.email) &&
-        (!isBorrower || form.department) &&
-        isValidPassword(form.password)
-    )
-
-    const handleSubmit = useCallback(
-        async (event) => {
-            event.preventDefault()
-            if (!isValid || createUserMutation.isPending) {
-                return
-            }
-            try {
-                await createUserMutation.mutateAsync({
-                    firstname: form.firstname.trim(),
-                    lastname: form.lastname.trim(),
-                    email: form.email.trim(),
-                    department: isBorrower ? form.department : null,
-                    password: form.password,
-                    role
-                })
-                setForm(initialFormState)
-                onSuccess(`${isBorrower ? 'Borrower' : 'Admin'} added successfully!`)
-                onClose()
-            } catch (error) {
-                const errors = error?.errors || {}
-                const emailErrorMsg = errors.email ? errors.email[0] : null
-                setForm({
-                    error: emailErrorMsg || error?.message || 'Failed to create user'
-                })
-            }
-        },
-        [createUserMutation, form, isBorrower, isValid, onClose, onSuccess, role, setForm]
-    )
-
-    const errors = getUserFormErrors(form, isBorrower)
-
-    return {
-        form,
-        errors,
-        isBorrower,
-        isValid,
-        isPending: createUserMutation.isPending,
-        handleClose,
-        handleFirstnameChange,
-        handleLastnameChange,
-        handleEmailChange,
-        handleDepartmentChange,
-        handlePasswordChange,
-        handleTogglePassword,
-        handleSubmit
-    }
-}
 
 export const AddUserModal = ({
     isOpen = false,
@@ -133,21 +27,80 @@ export const AddUserModal = ({
     userRole,
     role = userRole || 'borrower'
 }) => {
+    const [error, setError] = useState('')
+    const createUserMutation = useCreateUser()
     const {
-        form,
-        errors,
-        isBorrower,
-        isValid,
-        isPending,
-        handleClose,
-        handleFirstnameChange,
-        handleLastnameChange,
-        handleEmailChange,
-        handleDepartmentChange,
-        handlePasswordChange,
-        handleTogglePassword,
-        handleSubmit
-    } = useAddUserForm(role, onClose, onSuccess)
+        control,
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(addUserSchema),
+        mode: 'onChange',
+        defaultValues: getDefaultValues(role)
+    })
+    const watchedValues = watch(['firstname', 'lastname', 'email', 'department', 'password'])
+    const firstChange = useRef(true)
+    const isBorrower = role === 'borrower'
+
+    useEffect(() => {
+        if (firstChange.current) {
+            firstChange.current = false
+            return
+        }
+        setError('')
+    }, [watchedValues])
+
+    const handleClose = useCallback(() => {
+        reset(getDefaultValues(role))
+        setError('')
+        onClose()
+    }, [onClose, reset, role])
+
+    const handleFormSubmit = useCallback(
+        async (values) => {
+            if (createUserMutation.isPending) {
+                return
+            }
+            try {
+                await createUserMutation.mutateAsync({
+                    firstname: values.firstname.trim(),
+                    lastname: values.lastname.trim(),
+                    email: values.email.trim(),
+                    department: isBorrower ? values.department : null,
+                    password: values.password,
+                    role
+                })
+                reset(getDefaultValues(role))
+                setError('')
+                onSuccess(`${isBorrower ? 'Borrower' : 'Admin'} added successfully!`)
+                onClose()
+            } catch (submitError) {
+                const serverErrors = submitError?.errors || {}
+                setError(serverErrors.email?.[0] || submitError?.message || 'Failed to create user')
+            }
+        },
+        [createUserMutation, isBorrower, onClose, onSuccess, reset, role]
+    )
+    const renderDepartment = useCallback(
+        ({ field }) => {
+            const handleDepartmentChange = field.onChange
+            return (
+                <DepartmentSelect
+                    value={field.value}
+                    onChange={handleDepartmentChange}
+                    error={errors.department?.message}
+                />
+            )
+        },
+        [errors.department?.message]
+    )
+    const handleFormSubmitEvent = useCallback(
+        (event) => handleSubmit(handleFormSubmit)(event),
+        [handleFormSubmit, handleSubmit]
+    )
 
     if (!isOpen) {
         return null
@@ -163,28 +116,27 @@ export const AddUserModal = ({
             title={title}
             subtitle={subtitle}
             onClose={handleClose}
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmitEvent}
             submitLabel="Add"
-            isPending={isPending}
+            isPending={createUserMutation.isPending}
             disabled={!isValid}>
+            {error ? <p className="text-[13px] text-red-500">{error}</p> : null}
             <div className="grid grid-cols-2 gap-2.5">
                 <TextInput
                     autoComplete="off"
                     label="First Name"
                     name="new-user-firstname"
                     maxLength={MAX_NAME_LENGTH}
-                    value={form.firstname}
-                    onChange={handleFirstnameChange}
-                    error={errors.firstname}
+                    error={errors.firstname?.message}
+                    {...register('firstname')}
                 />
                 <TextInput
                     autoComplete="off"
                     label="Last Name"
                     name="new-user-lastname"
                     maxLength={MAX_NAME_LENGTH}
-                    value={form.lastname}
-                    onChange={handleLastnameChange}
-                    error={errors.lastname}
+                    error={errors.lastname?.message}
+                    {...register('lastname')}
                 />
             </div>
             <TextInput
@@ -193,22 +145,22 @@ export const AddUserModal = ({
                 type="email"
                 maxLength={255}
                 name="new-user-email"
-                value={form.email}
-                onChange={handleEmailChange}
-                error={errors.email}
+                error={errors.email?.message}
+                {...register('email')}
             />
-            {isBorrower && (
-                <DepartmentSelect value={form.department} onChange={handleDepartmentChange} error={errors.department} />
-            )}
+            {isBorrower ? (
+                <Controller
+                    name="department"
+                    control={control}
+                    render={renderDepartment}
+                />
+            ) : null}
             <PasswordInput
                 maxLength={64}
                 autoComplete="new-password"
                 name="new-user-password"
-                value={form.password}
-                onChange={handlePasswordChange}
-                showPassword={form.showPassword}
-                onToggleShow={handleTogglePassword}
-                error={errors.password}
+                error={errors.password?.message}
+                {...register('password')}
             />
         </UserModalShell>
     )

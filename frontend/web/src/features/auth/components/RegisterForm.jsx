@@ -1,4 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Controller, useForm } from 'react-hook-form'
+import { registerSchema } from '@shared/schemas/auth'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
 import { FormField as Field } from '@/components/ui/form/FormField'
@@ -10,6 +13,7 @@ import { RegisterFooter } from '@/features/auth/components/RegisterFooter'
 import { DEPARTMENTS } from '@shared/constants'
 
 const DEFAULT_FORM = Object.freeze({})
+const noop = () => null
 
 export const RegisterForm = (props) => {
     const {
@@ -20,46 +24,78 @@ export const RegisterForm = (props) => {
         departmentError,
         passwordError,
         showPass,
-        validRegister,
         isPending,
-        onFieldChange,
         onToggleShowPass,
         onSwitchTab,
-        onSubmit
+        onSubmit,
+        onInvalid = noop,
+        onClearError = noop
     } = props
 
     const { firstname = '', lastname = '', email = '', department = '', password = '' } = form
+    const {
+        register,
+        control,
+        watch,
+        handleSubmit,
+        reset,
+        formState: { errors, isValid }
+    } = useForm({
+        resolver: zodResolver(registerSchema),
+        mode: 'onChange',
+        defaultValues: { firstname, lastname, email, department, password }
+    })
+    const [watchedFirstname, watchedLastname, watchedEmail, watchedDepartment, watchedPassword] = watch([
+        'firstname',
+        'lastname',
+        'email',
+        'department',
+        'password'
+    ])
+    const firstChange = useRef(true)
 
-    const handleInputChange = useCallback(
-        (event) => {
-            const { name, value } = event.target
-            onFieldChange(name, value)
-        },
-        [onFieldChange]
-    )
+    useEffect(() => {
+        if (firstChange.current) {
+            firstChange.current = false
+            return
+        }
+        onClearError()
+    }, [onClearError, watchedDepartment, watchedEmail, watchedFirstname, watchedLastname, watchedPassword])
 
-    const handleDepartmentChange = useCallback(
-        (value) => {
-            onFieldChange('department', value)
-        },
-        [onFieldChange]
-    )
+    useEffect(() => {
+        reset({ firstname, lastname, email, department, password })
+    }, [department, email, firstname, lastname, password, reset])
 
     const handleSwitchLogin = useCallback(() => {
         onSwitchTab('login')
     }, [onSwitchTab])
+    const renderDepartment = useCallback(
+        ({ field }) => (
+            <Select
+                {...field}
+                options={DEPARTMENTS}
+                placeholder="Select Department"
+                error={errors.department?.message || departmentError}
+                panelClass="right-0 left-auto! w-full bg-surface shadow-lg"
+                hoverClass="hover:bg-slate-100"
+                selectedClass="bg-border-focus"
+                className="w-full bg-surface border border-gray-300 h-[40px] px-3 gap-2 text-[14px] text-text"
+            />
+        ),
+        [departmentError, errors.department?.message]
+    )
 
-    const submitButtonClass = `${submitClass} ${validRegister ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`
+    const submitButtonClass = `${submitClass} ${isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`
 
     return (
         <>
-            <form noValidate className="flex flex-col gap-2.5" onSubmit={onSubmit}>
+            <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
                 <RegisterNameFields
                     firstname={firstname}
                     lastname={lastname}
-                    firstnameError={firstnameError}
-                    lastnameError={lastnameError}
-                    onChange={handleInputChange}
+                    firstnameError={errors.firstname?.message || firstnameError}
+                    lastnameError={errors.lastname?.message || lastnameError}
+                    register={register}
                 />
                 <TextInput
                     label="La Verdad Email"
@@ -67,38 +103,30 @@ export const RegisterForm = (props) => {
                     type="email"
                     maxLength={255}
                     autoComplete="email"
-                    value={email}
-                    onChange={handleInputChange}
-                    error={emailError}
+                    error={errors.email?.message || emailError}
+                    {...register('email')}
                     className={inputClassSmall}
                 />
                 <Field label="Department">
-                    <Select
-                        value={department}
-                        onChange={handleDepartmentChange}
-                        options={DEPARTMENTS}
-                        placeholder="Select Department"
-                        error={departmentError}
-                        panelClass="right-0 left-auto! w-full bg-surface shadow-lg"
-                        hoverClass="hover:bg-slate-100"
-                        selectedClass="bg-border-focus"
-                        className="w-full bg-surface border border-gray-300 h-[40px] px-3 gap-2 text-[14px] text-text"
+                    <Controller
+                        name="department"
+                        control={control}
+                        render={renderDepartment}
                     />
-                    <ErrorText message={departmentError} />
+                    <ErrorText message={errors.department?.message || departmentError} />
                 </Field>
                 <PasswordInput
                     maxLength={64}
                     label="Password"
                     name="password"
                     autoComplete="new-password"
-                    value={password}
-                    onChange={handleInputChange}
-                    error={passwordError}
+                    error={errors.password?.message || passwordError}
+                    {...register('password')}
                     className={passwordClassSmall}
                     showPass={showPass}
                     onToggleShow={onToggleShowPass}
                 />
-                <button type="submit" disabled={isPending} className={submitButtonClass}>
+                <button type="submit" disabled={isPending || !isValid} className={submitButtonClass}>
                     {isPending ? 'Creating account...' : 'Create Account'}
                 </button>
             </form>

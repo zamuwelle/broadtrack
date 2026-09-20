@@ -5,11 +5,11 @@ import { inputClassSmall } from '@/features/auth/components/authStyles'
 const noop = () => null
 
 export const RegisterNameFields = ({
-    firstname = '',
-    lastname = '',
+    firstname: _firstname = '',
+    lastname: _lastname = '',
     firstnameError = '',
     lastnameError = '',
-    onChange = noop
+    register = noop
 }) => (
     <div className="grid grid-cols-2 gap-2.5">
         <TextInput
@@ -17,8 +17,7 @@ export const RegisterNameFields = ({
             name="firstname"
             type="text"
             maxLength={MAX_NAME_LENGTH}
-            value={firstname}
-            onChange={onChange}
+            {...register('firstname')}
             error={firstnameError}
             className={inputClassSmall}
         />
@@ -27,8 +26,7 @@ export const RegisterNameFields = ({
             name="lastname"
             type="text"
             maxLength={MAX_NAME_LENGTH}
-            value={lastname}
-            onChange={onChange}
+            {...register('lastname')}
             error={lastnameError}
             className={inputClassSmall}
         />

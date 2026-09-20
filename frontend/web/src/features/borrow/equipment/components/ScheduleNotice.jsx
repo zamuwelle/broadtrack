@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { formatDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
-import { useBookings } from '@/api/bookings/get-bookings'
+import { useBookings } from '@/features/bookings/api/get-bookings'
 
 const filterParams = Object.freeze({ view: 'calendar' })
 const defaultEquipment = Object.freeze({})
@@ -28,6 +28,7 @@ export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
         }
 
         return activeBookings.map((booking) => ({
+            id: booking.id,
             start: formatDate(booking.start_date),
             end: formatDate(booking.end_date)
         }))
@@ -77,7 +78,7 @@ export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
                         {activeRanges ? (
                             activeRanges.map((range) => (
                                 <div
-                                    key={`range-${range.start}-${range.end}`}
+                                    key={range.id}
                                     className="self-stretch p-1 bg-white rounded-lg flex flex-wrap justify-center items-center gap-x-1.5 gap-y-0.5 text-slate-800 text-xs font-medium text-center">
                                     <span className="whitespace-nowrap">{range.start}</span>
                                     <span className="text-slate-400">–</span>
@@ -105,7 +106,7 @@ export const ScheduleNotice = ({ status, equipment = defaultEquipment }) => {
                         {activeRanges ? (
                             activeRanges.map((range) => (
                                 <div
-                                    key={`range-${range.start}-${range.end}`}
+                                    key={range.id}
                                     className="self-stretch p-1.5 bg-slate-50 rounded-lg flex flex-wrap justify-center items-center gap-x-1.5 gap-y-0.5 text-slate-800 text-xs font-medium text-center">
                                     <span className="whitespace-nowrap">{range.start}</span>
                                     <span className="text-slate-400">–</span>

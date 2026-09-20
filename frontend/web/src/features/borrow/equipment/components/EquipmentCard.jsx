@@ -66,24 +66,34 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                     <SelectButton selected={isSelected} onSelect={handleToggleSelect} className="relative z-10" />
                 ) : null}
             </div>
-            <div className="flex h-[221px] flex-col gap-[18px] px-4 py-5 lg:px-[26px] lg:py-[28px]">
+            <div className="flex h-[221px] flex-col justify-between px-4 py-5 lg:px-[26px] lg:py-[28px]">
                 <div className="flex flex-col gap-[8px]">
-                    <p className="text-[18.17px] font-semibold">{equipment.name}</p>
-                    <p className="text-[12px] text-icon-gray">{modelName}</p>
-                    <p className="text-[12px] leading-snug text-icon-gray">{equipment.description}</p>
+                    <p className="line-clamp-1 text-[18.17px] font-semibold" title={equipment.name}>
+                        {equipment.name}
+                    </p>
+                    <p className="line-clamp-1 min-h-[18px] text-[12px] text-icon-gray" title={modelName}>
+                        {modelName}
+                    </p>
+                    <p
+                        className="line-clamp-2 min-h-[33px] text-[12px] leading-snug text-icon-gray"
+                        title={equipment.description}>
+                        {equipment.description}
+                    </p>
                 </div>
-                <div className="h-0 border-t border-border-divider" />
-                <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center justify-center rounded-[12px] border-[0.5px] border-icon-subtle bg-surface px-[8px] py-[4px] text-[12px]">
-                        {categoryName}
-                    </span>
-                    <button
-                        type="button"
-                        onClick={handleExpand}
-                        className="group flex cursor-pointer items-center gap-[2px] rounded-[8px] border-[0.5px] border-border-subtle bg-surface px-[12px] py-[8px] text-black transition-colors hover:bg-accent-subtle hover:text-warning">
-                        <p className="text-[16px] font-medium">View Details</p>
-                        <Icon name="chevron3" className="h-[24px] w-[24px] shrink-0" fill="currentColor" />
-                    </button>
+                <div className="mt-auto flex flex-col gap-[18px]">
+                    <div className="h-0 border-t border-border-divider" />
+                    <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center justify-center rounded-[12px] border-[0.5px] border-icon-subtle bg-surface px-[8px] py-[4px] text-[12px]">
+                            {categoryName}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleExpand}
+                            className="group flex cursor-pointer items-center gap-[2px] rounded-[8px] border-[0.5px] border-border-subtle bg-surface px-[12px] py-[8px] text-black transition-colors hover:bg-accent-subtle hover:text-warning">
+                            <p className="text-[16px] font-medium">View Details</p>
+                            <Icon name="chevron3" className="h-[24px] w-[24px] shrink-0" fill="currentColor" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

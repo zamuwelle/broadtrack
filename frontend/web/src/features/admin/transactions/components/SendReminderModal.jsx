@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { formatDate } from '@shared/util/date'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
-import { useRemindBooking } from '@/api/bookings/remind-booking'
+import { useRemindBooking } from '@/features/bookings/api/remind-booking'
 import { ReminderSuccessView } from '@/features/admin/transactions/components/ReminderSuccessView'
 import { ReminderPromptView } from '@/features/admin/transactions/components/ReminderPromptView'
 

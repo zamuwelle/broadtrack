@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { cn } from 'cn'
 
 const variants = Object.freeze({
     primary: 'bg-primary text-surface hover:opacity-90 shadow-sm',
@@ -8,7 +9,11 @@ const variants = Object.freeze({
 })
 
 export const Button = ({ to, variant = 'primary', type = 'button', className = '', children, ...props }) => {
-    const buttonClassName = `flex items-center justify-center rounded-[8px] text-[16px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant] ?? variants.primary} ${className}`
+    const buttonClassName = cn(
+        'flex items-center justify-center rounded-[8px] text-[16px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+        variants[variant] ?? variants.primary,
+        className
+    )
     if (to) {
         return (
             <Link to={to} className={buttonClassName} {...props}>

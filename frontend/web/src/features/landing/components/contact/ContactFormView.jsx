@@ -1,10 +1,6 @@
-import { useCallback } from 'react'
 import {
     MAX_MESSAGE_LENGTH,
-    MAX_NAME_LENGTH,
-    validateAnyEmail,
-    validateMessage,
-    validateName
+    MAX_NAME_LENGTH
 } from '@shared/schemas/common'
 
 const fieldClass =
@@ -20,35 +16,22 @@ const inputDefs = Object.freeze([
         type: 'text',
         maxLength: MAX_NAME_LENGTH,
         placeholder: '* First Name',
-        getError: validateName
     },
     {
         name: 'lastname',
         type: 'text',
         maxLength: MAX_NAME_LENGTH,
         placeholder: '* Last Name',
-        getError: validateName
     },
     {
         name: 'email',
         type: 'email',
         placeholder: '* Email',
-        getError: validateAnyEmail
     }
 ])
 
-export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isValid, isPending, error }) => {
-    const handleInputChange = useCallback(
-        (event) => {
-            onFieldChange(event.target.name, event.target.value)
-        },
-        [onFieldChange]
-    )
-
-    const messageError = touched.message ? validateMessage(form.message) : ''
-
-    return (
-        <div className="w-full flex flex-col items-center my-auto">
+export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending, error }) => (
+    <div className="w-full flex flex-col items-center my-auto">
             <h3 className="text-surface text-lg sm:text-[22px] font-bold text-center leading-snug">
                 We welcome your questions and
                 <br className="hidden sm:inline" /> feedback!
@@ -56,20 +39,21 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
             <div className="h-3 sm:h-5" />
             <form onSubmit={onSubmit} className="flex flex-col gap-1.5 sm:gap-2 w-full max-w-[368px] items-center">
                 {inputDefs.map((def) => {
-                    const err = touched[def.name] ? def.getError(form[def.name]) : ''
+                    const fieldError = errors[def.name]?.message
                     return (
                         <div key={def.name} className="w-full">
                             <input
                                 name={def.name}
                                 type={def.type}
                                 maxLength={def.maxLength}
-                                value={form[def.name]}
-                                onChange={handleInputChange}
+                                {...register(def.name)}
                                 placeholder={def.placeholder}
-                                className={`${fieldClass} ${err ? 'border-red-400' : 'border-transparent'}`}
+                                className={`${fieldClass} ${fieldError ? 'border-red-400' : 'border-transparent'}`}
                             />
                             <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                                {err ? <span className="text-[11px] sm:text-[12px] text-red-300">{err}</span> : null}
+                                {fieldError ? (
+                                    <span className="text-[11px] sm:text-[12px] text-red-300">{fieldError}</span>
+                                ) : null}
                             </div>
                         </div>
                     )
@@ -78,14 +62,15 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
                     <textarea
                         name="message"
                         maxLength={MAX_MESSAGE_LENGTH}
-                        value={form.message}
-                        onChange={handleInputChange}
+                        {...register('message')}
                         placeholder="* How can we help you?"
-                        className={`${textareaClass} ${messageError ? 'border-red-400' : 'border-transparent'}`}
+                        className={`${textareaClass} ${errors.message ? 'border-red-400' : 'border-transparent'}`}
                     />
                     <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                        {messageError ? (
-                            <span className="text-[11px] sm:text-[12px] text-red-300">{messageError}</span>
+                        {errors.message ? (
+                            <span className="text-[11px] sm:text-[12px] text-red-300">
+                                {errors.message.message}
+                            </span>
                         ) : null}
                     </div>
                 </div>
@@ -102,6 +87,5 @@ export const ContactFormView = ({ form, touched, onFieldChange, onSubmit, isVali
                     {isPending ? 'Sending...' : 'Send'}
                 </button>
             </form>
-        </div>
-    )
-}
+    </div>
+)

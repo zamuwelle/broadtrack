@@ -10,8 +10,8 @@ import {
 import { getBookingStatus } from '@shared/util/booking'
 import { useUser } from '@/lib/auth'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
-import { useBookings } from '@/api/bookings/get-bookings'
-import { useCreateBooking } from '@/api/bookings/create-booking'
+import { useBookings } from '@/features/bookings/api/get-bookings'
+import { useCreateBooking } from '@/features/bookings/api/create-booking'
 import { useBookingDateDefaults } from '@/features/borrow/request/useBookingDateDefaults'
 import { useSetState } from '@shared/hooks/useSetState'
 

@@ -1,4 +1,11 @@
-import { validateDepartment, validateEmail, validateName, validatePassword } from '@shared/schemas/common'
+import { useCallback } from 'react'
+import {
+    VALIDATION_MESSAGES,
+    validateDepartment,
+    validateEmail,
+    validateName,
+    validatePassword
+} from '@shared/schemas/common'
 import { ForgotForm } from '@/features/auth/components/ForgotForm'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
@@ -30,12 +37,9 @@ export const AuthModalBody = ({
     error,
     successMessage,
     showPass,
-    validLogin,
-    validRegister,
-    validForgot,
-    validReset,
     actions,
-    onFieldChange,
+    onClearError,
+    showToast,
     onToggleShowPass,
     onSwitchTab
 }) => {
@@ -45,6 +49,15 @@ export const AuthModalBody = ({
         error,
         isCredentialError
     )
+    const handleInvalid = useCallback(
+        (invalidErrors) => {
+            const message = invalidErrors.email
+                ? VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT
+                : VALIDATION_MESSAGES.MISSING_FIELDS
+            showToast(message, 'warning')
+        },
+        [showToast]
+    )
 
     if (tab === 'login') {
         return (
@@ -53,12 +66,12 @@ export const AuthModalBody = ({
                 emailError={emailError}
                 passwordError={passwordError}
                 showPass={showPass}
-                validLogin={validLogin}
                 isPending={actions.loginPending}
-                onFieldChange={onFieldChange}
                 onToggleShowPass={onToggleShowPass}
                 onSwitchTab={onSwitchTab}
                 onSubmit={actions.handleLogin}
+                onInvalid={handleInvalid}
+                onClearError={onClearError}
             />
         )
     }
@@ -73,12 +86,12 @@ export const AuthModalBody = ({
                 departmentError={departmentError}
                 passwordError={passwordError}
                 showPass={showPass}
-                validRegister={validRegister}
                 isPending={actions.registerPending}
-                onFieldChange={onFieldChange}
                 onToggleShowPass={onToggleShowPass}
                 onSwitchTab={onSwitchTab}
                 onSubmit={actions.handleRegister}
+                onInvalid={handleInvalid}
+                onClearError={onClearError}
             />
         )
     }
@@ -89,11 +102,11 @@ export const AuthModalBody = ({
                 form={form}
                 error={emailError}
                 successMessage={successMessage}
-                validForgot={validForgot}
                 isPending={actions.forgotPending}
-                onFieldChange={onFieldChange}
                 onSwitchTab={onSwitchTab}
                 onSubmit={actions.handleForgot}
+                onInvalid={handleInvalid}
+                onClearError={onClearError}
             />
         )
     }
@@ -104,12 +117,12 @@ export const AuthModalBody = ({
                 form={form}
                 error={error}
                 showPass={showPass}
-                validReset={validReset}
                 isPending={actions.resetPending}
-                onFieldChange={onFieldChange}
                 onToggleShowPass={onToggleShowPass}
                 onSwitchTab={onSwitchTab}
                 onSubmit={actions.handleReset}
+                onInvalid={handleInvalid}
+                onClearError={onClearError}
             />
         )
     }

@@ -1,3 +1,4 @@
+import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite-plus'
 
 export default defineConfig({
@@ -28,6 +29,22 @@ export default defineConfig({
                     'import/no-default-export': 'off',
                     'import/no-anonymous-default-export': 'off',
                     'max-lines': 'off'
+                }
+            },
+            {
+                files: [
+                    'web/src/features/admin/users/components/AddUserModal.jsx',
+                    'web/src/features/admin/users/components/EditUserModal.jsx',
+                    'web/src/features/auth/components/ForgotForm.jsx',
+                    'web/src/features/auth/components/LoginForm.jsx',
+                    'web/src/features/auth/components/RegisterForm.jsx',
+                    'web/src/features/auth/components/ResetForm.jsx'
+                ],
+                rules: {
+                    // React Hook Form's APIs are intentionally not compiler-memoized.
+                    'react/incompatible-library': 'off',
+                    complexity: 'off',
+                    'max-lines-per-function': 'off'
                 }
             }
         ],
@@ -531,6 +548,20 @@ export default defineConfig({
                 specifier: 'vite-plus/oxlint-plugin'
             }
         ]
+    },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: './web/src/test/setup.js',
+        include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+        alias: {
+            '@': fileURLToPath(new URL('web/src', import.meta.url)),
+            '@shared': fileURLToPath(new URL('shared', import.meta.url)),
+            react: fileURLToPath(new URL('web/node_modules/react', import.meta.url)),
+            'react-dom': fileURLToPath(new URL('web/node_modules/react-dom', import.meta.url)),
+            axios: fileURLToPath(new URL('web/node_modules/axios', import.meta.url)),
+            zod: fileURLToPath(new URL('web/node_modules/zod', import.meta.url))
+        }
     },
     fmt: {
         semi: false,

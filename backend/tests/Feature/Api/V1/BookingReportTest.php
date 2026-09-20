@@ -140,3 +140,33 @@ test('transaction exports preserve rows for zero one or multiple equipment', fun
     }
     $this->get('/api/v1/bookings/reports/pdf')->assertOk()->assertHeader('content-type', 'application/pdf');
 })->with([0, 1, 2]);
+
+test('csv export does not emit php deprecation warnings', function (): void {
+    $admin = User::factory()->admin()->create();
+    $borrower = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $booking = Booking::factory()->approved()->create([
+        'user_id' => $borrower->id,
+    ]);
+    $booking->equipments()->attach($equipment->id);
+
+    $deprecations = [];
+    set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+        if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+            $deprecations[] = $errstr;
+        }
+
+        return true;
+    });
+
+    try {
+        $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv');
+        $response->assertOk();
+        $response->streamedContent();
+    } finally {
+        restore_error_handler();
+    }
+
+    expect($deprecations)->toBeEmpty();
+});
