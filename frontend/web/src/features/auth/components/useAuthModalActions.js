@@ -7,13 +7,7 @@ import { forgotPassword } from '@/features/auth/api/forgot-password'
 import { resetPassword } from '@/features/auth/api/reset-password'
 import { paths } from '@/config/paths'
 
-const useAuthLoginHandlers = ({
-    onLoginSuccess,
-    onClose,
-    updateAuthState,
-    showToast,
-    initialFormState
-}) => {
+const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showToast, initialFormState }) => {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
 
@@ -190,13 +184,7 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
     }
 }
 
-export const useAuthModalActions = ({
-    onLoginSuccess,
-    onClose,
-    updateAuthState,
-    showToast,
-    initialFormState
-}) => {
+export const useAuthModalActions = ({ onLoginSuccess, onClose, updateAuthState, showToast, initialFormState }) => {
     const { loginPending, handleLogin } = useAuthLoginHandlers({
         onLoginSuccess,
         onClose,

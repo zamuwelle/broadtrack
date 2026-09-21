@@ -11,8 +11,8 @@ afterEach(() => {
 
 beforeAll(() => {
     globalThis.matchMedia ||= () => ({
-            matches: false,
-            addEventListener: noop,
-            removeEventListener: noop
-        })
+        matches: false,
+        addEventListener: noop,
+        removeEventListener: noop
+    })
 })

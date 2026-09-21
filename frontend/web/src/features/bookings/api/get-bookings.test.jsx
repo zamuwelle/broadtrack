@@ -23,10 +23,7 @@ describe('booking queries', () => {
 
     it('keeps the base query key when no params are supplied', () => {
         expect(getBookingsQueryOptions().queryKey).toEqual(['bookings'])
-        expect(getBookingsQueryOptions({ status: 'pending' }).queryKey).toEqual([
-            'bookings',
-            { status: 'pending' }
-        ])
+        expect(getBookingsQueryOptions({ status: 'pending' }).queryKey).toEqual(['bookings', { status: 'pending' }])
     })
 
     it('exposes fetched bookings through the query hook', async () => {

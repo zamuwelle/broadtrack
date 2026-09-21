@@ -381,7 +381,8 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         purpose,
         isSubmittable,
         isSubmitting,
-        errorMessage,
+        errorMessage:
+            errorMessage || (hasScheduleConflict ? 'Selected date conflicts with an existing reservation.' : ''),
         ...handlers,
         handleSubmit
     }

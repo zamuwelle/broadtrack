@@ -29,7 +29,10 @@ describe('booking helpers', () => {
     it('flattens multi-equipment bookings with stable item keys', () => {
         const booking = {
             id: 8,
-            equipments: [{ id: 2, name: 'Camera' }, { id: 3, name: 'Tripod' }]
+            equipments: [
+                { id: 2, name: 'Camera' },
+                { id: 3, name: 'Tripod' }
+            ]
         }
 
         expect(flattenBookingsByEquipment([booking])).toEqual([

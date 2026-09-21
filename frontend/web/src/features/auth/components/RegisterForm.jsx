@@ -108,11 +108,7 @@ export const RegisterForm = (props) => {
                     className={inputClassSmall}
                 />
                 <Field label="Department">
-                    <Controller
-                        name="department"
-                        control={control}
-                        render={renderDepartment}
-                    />
+                    <Controller name="department" control={control} render={renderDepartment} />
                     <ErrorText message={errors.department?.message || departmentError} />
                 </Field>
                 <PasswordInput
