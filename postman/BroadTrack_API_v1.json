@@ -459,6 +459,8 @@
                                 "exec": [
                                     "pm.test(\"Profile retrieved\", function () {",
                                     "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.id).to.be.a(\"number\");",
                                     "});"
                                 ],
                                 "type": "text/javascript"

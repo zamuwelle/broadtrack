@@ -18,11 +18,14 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         endDate,
         minStartDate,
         excludeDateIntervals,
+        hasStartConflict,
+        hasEndConflict,
         hasScheduleConflict,
         purpose,
         isSubmittable,
         isSubmitting,
         errorMessage,
+        helperMessage,
         handleStartDateChange,
         handleEndDateChange,
         handleRemoveItem,
@@ -66,11 +69,14 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         endDate={endDate}
                         minStartDate={minStartDate}
                         excludeDateIntervals={excludeDateIntervals}
+                        hasStartConflict={hasStartConflict}
+                        hasEndConflict={hasEndConflict}
                         hasScheduleConflict={hasScheduleConflict}
                         purpose={purpose}
                         isSubmittable={isSubmittable}
                         isSubmitting={isSubmitting}
                         errorMessage={errorMessage}
+                        helperMessage={helperMessage}
                         onClose={onClose}
                         onRemoveItem={handleRemoveItem}
                         onStartDateChange={handleStartDateChange}

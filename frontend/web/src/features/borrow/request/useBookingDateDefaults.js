@@ -5,6 +5,7 @@ export const useBookingDateDefaults = ({
     isOpen,
     modalView,
     minuteTick,
+    minStartDate,
     selectedItemCount,
     updateSummaryState,
     setMinuteTick,
@@ -39,22 +40,32 @@ export const useBookingDateDefaults = ({
             return
         }
         const currentDateTime = getCurrentBookingDateTimeValue()
+        const defaultStartDate = minStartDate && minStartDate > currentDateTime ? minStartDate : currentDateTime
         updateSummaryState((prev) => {
             const newState = {}
-            const nextStartDate = startDateIsAutomaticRef.current ? currentDateTime : prev.startDate
+            const nextStartDate = startDateIsAutomaticRef.current ? defaultStartDate : prev.startDate
             if (startDateIsAutomaticRef.current) {
                 newState.startDate = nextStartDate
             }
             if (endDateIsAutomaticRef.current) {
-                newState.endDate = getNextBookingHourValue(nextStartDate || currentDateTime)
+                newState.endDate = getNextBookingHourValue(nextStartDate || defaultStartDate)
             }
             return newState
         })
-    }, [isOpen, minuteTick, modalView, updateSummaryState, startDateIsAutomaticRef, endDateIsAutomaticRef])
+    }, [
+        isOpen,
+        minuteTick,
+        modalView,
+        minStartDate,
+        updateSummaryState,
+        startDateIsAutomaticRef,
+        endDateIsAutomaticRef
+    ])
 
     useEffect(() => {
         if (isOpen) {
             const currentDateTime = getCurrentBookingDateTimeValue()
+            const defaultStartDate = minStartDate && minStartDate > currentDateTime ? minStartDate : currentDateTime
 
             updateSummaryState((prev) => {
                 if (prev.modalView === 'submitted') {
@@ -62,8 +73,8 @@ export const useBookingDateDefaults = ({
                 }
                 const newState = { modalView: selectedItemCount > 0 ? 'summary' : 'empty' }
                 if (!prev.startDate) {
-                    newState.startDate = currentDateTime
-                    newState.endDate = getNextBookingHourValue(currentDateTime)
+                    newState.startDate = defaultStartDate
+                    newState.endDate = getNextBookingHourValue(defaultStartDate)
                 }
                 return newState
             })
@@ -77,5 +88,5 @@ export const useBookingDateDefaults = ({
                 purpose: ''
             })
         }
-    }, [isOpen, selectedItemCount, updateSummaryState, startDateIsAutomaticRef, endDateIsAutomaticRef])
+    }, [isOpen, selectedItemCount, minStartDate, updateSummaryState, startDateIsAutomaticRef, endDateIsAutomaticRef])
 }

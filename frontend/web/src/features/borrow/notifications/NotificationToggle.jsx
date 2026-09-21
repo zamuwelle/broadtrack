@@ -4,33 +4,10 @@ import { Icon } from '@/components/ui/Icon'
 import { getNotificationConfig } from '@/features/borrow/notifications/notificationConfig'
 import { NotificationItem } from '@/features/borrow/notifications/NotificationItem'
 import { useMarkBookingAsRead } from '@/features/bookings/api/read-booking'
+import { formatRelativeTime } from '@shared/util/date'
 
 const defaultBookings = Object.freeze([])
 const noop = () => null
-
-const formatRelativeTime = (dateValue) => {
-    if (!dateValue) {
-        return ''
-    }
-    const timestamp = new Date(String(dateValue).replace(' ', 'T')).getTime()
-    if (Number.isNaN(timestamp)) {
-        return ''
-    }
-    const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000))
-    if (seconds < 60) {
-        return 'Just now'
-    }
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) {
-        return `${minutes} min${minutes > 1 ? 's' : ''} ago`
-    }
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) {
-        return `${hours} hr${hours > 1 ? 's' : ''} ago`
-    }
-    const days = Math.floor(hours / 24)
-    return days === 1 ? 'Yesterday' : `${days} days ago`
-}
 
 export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotification = noop, onOpen = noop }) => {
     const { open, setOpen, boxRef } = useToggle()

@@ -11,11 +11,14 @@ export const SummaryFormView = (props) => {
         endDate,
         minStartDate,
         excludeDateIntervals,
+        hasStartConflict,
+        hasEndConflict,
         hasScheduleConflict,
         purpose,
         isSubmittable,
         isSubmitting,
         errorMessage,
+        helperMessage = '',
         onClose,
         onRemoveItem,
         onStartDateChange,
@@ -50,11 +53,13 @@ export const SummaryFormView = (props) => {
                         endDate={endDate}
                         minStartDate={minStartDate}
                         excludeDateIntervals={excludeDateIntervals}
+                        hasStartConflict={hasStartConflict}
+                        hasEndConflict={hasEndConflict}
                         hasScheduleConflict={hasScheduleConflict}
                         onStartDateChange={onStartDateChange}
                         onEndDateChange={onEndDateChange}
                     />
-                    <ErrorText message={errorMessage} />
+                    <ErrorText message={errorMessage || helperMessage} variant={errorMessage ? 'error' : 'muted'} />
                 </div>
 
                 <div className="flex w-full flex-col items-start justify-start gap-1.5">

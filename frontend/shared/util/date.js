@@ -1,153 +1,90 @@
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 const PH_TIMEZONE = 'Asia/Manila'
 
-export const getTodayDateString = () => new Intl.DateTimeFormat('en-CA', { timeZone: PH_TIMEZONE }).format(new Date())
+export const getTodayDateString = () => dayjs().tz(PH_TIMEZONE).format('YYYY-MM-DD')
 
-const normalizeIsoString = (isoWithT) => {
-    if (isoWithT.length === 16) {
-        return `${isoWithT}:00+08:00`
-    }
-    if (isoWithT.length === 19) {
-        return `${isoWithT}+08:00`
-    }
-    return isoWithT
-}
-
-export const parseBookingDate = (dateValue) => {
+const toDayjsPh = (dateValue) => {
     if (!dateValue) {
         return null
     }
     if (dateValue instanceof Date) {
-        return dateValue
+        if (Number.isNaN(dateValue.getTime())) {
+            return null
+        }
+        return dayjs(dateValue).tz(PH_TIMEZONE)
     }
     const str = String(dateValue).trim()
-    if (str.includes('+') || str.includes('Z')) {
-        return new Date(str)
+    if (!str) {
+        return null
     }
-    const isoWithT = str.replace(' ', 'T')
-    const normalized = normalizeIsoString(isoWithT)
-    const date = new Date(normalized)
-    return Number.isNaN(date.getTime()) ? new Date(str) : date
+    if (str.includes('+') || str.includes('Z')) {
+        const parsed = dayjs(str)
+        return parsed.isValid() ? parsed.tz(PH_TIMEZONE) : null
+    }
+    const parsed = dayjs.tz(str.replace(' ', 'T'), PH_TIMEZONE)
+    return parsed.isValid() ? parsed : null
 }
 
+export const parseBookingDate = (dateValue) => toDayjsPh(dateValue)?.toDate() ?? null
+
 export const getBookingDateKey = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
-        return ''
-    }
-    const parts = new Intl.DateTimeFormat('en-CA', {
-        timeZone: PH_TIMEZONE,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).formatToParts(date)
-    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
-    return `${values.year}-${values.month}-${values.day}`
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.format('YYYY-MM-DD') : ''
 }
 
 export const getBookingDateTimeValue = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
-        return ''
-    }
-    const parts = new Intl.DateTimeFormat('en-CA', {
-        timeZone: PH_TIMEZONE,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23'
-    }).formatToParts(date)
-    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
-    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.format('YYYY-MM-DDTHH:mm') : ''
 }
 
 export const getCurrentBookingDateTimeValue = (date = new Date()) => getBookingDateTimeValue(date)
 
-export const getNextBookingHourValue = (dateValue) => {
-    const parsedDate = parseBookingDate(dateValue)
-    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
-        return ''
-    }
-    const date = new Date(parsedDate)
-    date.setUTCMinutes(0, 0, 0)
-    date.setUTCHours(date.getUTCHours() + 1)
-    return getBookingDateTimeValue(date)
+export const addBookingMinutes = (dateValue, minutesToAdd) => {
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.add(minutesToAdd, 'minute').format('YYYY-MM-DDTHH:mm') : ''
 }
 
-export const addBookingMinutes = (dateValue, minutesToAdd) => {
-    const parsedDate = parseBookingDate(dateValue)
-    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+export const getNextBookingHourValue = (dateValue) => {
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.startOf('hour').add(1, 'hour').format('YYYY-MM-DDTHH:mm') : ''
+}
+
+export const formatBookingTimeRange = (startDate, endDate) => {
+    const parsedStart = toDayjsPh(startDate)
+    const parsedEnd = toDayjsPh(endDate)
+    if (!parsedStart || !parsedEnd) {
         return ''
     }
-    const date = new Date(parsedDate.getTime() + minutesToAdd * 60_000)
-    return getBookingDateTimeValue(date)
+    return `${parsedStart.format('hh:mm A')} - ${parsedEnd.format('hh:mm A')}`
 }
 
 export const formatDate = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
+    const parsed = toDayjsPh(dateValue)
+    if (!parsed) {
         return String(dateValue ?? '')
     }
-    const month = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, month: 'long' })
-    const day = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, day: 'numeric' })
-    const year = date.toLocaleDateString('en-US', { timeZone: PH_TIMEZONE, year: 'numeric' })
-    const time = date.toLocaleTimeString('en-US', {
-        timeZone: PH_TIMEZONE,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    })
-    return `${month} ${day}, ${year}, ${time}`
+    return parsed.format('MMMM D, YYYY, hh:mm A')
 }
 
 export const formatShortDate = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
-        return ''
-    }
-    return new Intl.DateTimeFormat('en-US', {
-        timeZone: PH_TIMEZONE,
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-    })
-        .format(date)
-        .replaceAll('/', '-')
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.format('MM-DD-YYYY') : ''
 }
 
 export const formatSimpleDate = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
-        return '---'
-    }
-    return date.toLocaleDateString('en-US', {
-        timeZone: PH_TIMEZONE,
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-    })
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.format('MMMM D, YYYY') : '---'
 }
 
 export const formatDateTime = (dateValue) => {
-    const date = parseBookingDate(dateValue)
-    if (!date || Number.isNaN(date.getTime())) {
-        return '---'
-    }
-    const datePart = new Intl.DateTimeFormat('en-US', {
-        timeZone: PH_TIMEZONE,
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-    }).format(date)
-    const timePart = date.toLocaleTimeString('en-US', {
-        timeZone: PH_TIMEZONE,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-    })
-    return `${datePart} ${timePart}`
+    const parsed = toDayjsPh(dateValue)
+    return parsed ? parsed.format('MM/DD/YYYY hh:mm:ss A') : '---'
 }
 
 export const getOverdueDuration = (endDate) => {
@@ -171,4 +108,26 @@ export const getOverdueDuration = (endDate) => {
         return `${hours} hour${hours > 1 ? 's' : ''}${minutes > 0 ? `, ${minutes} min` : ''}`
     }
     return `${minutes} minute${minutes > 1 ? 's' : ''}`
+}
+
+export const formatRelativeTime = (dateValue) => {
+    const parsedDate = parseBookingDate(dateValue)
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+        return ''
+    }
+    const diffMs = Date.now() - parsedDate.getTime()
+    const seconds = Math.max(0, Math.floor(diffMs / 1000))
+    if (seconds < 60) {
+        return 'Just now'
+    }
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) {
+        return `${minutes} min${minutes > 1 ? 's' : ''} ago`
+    }
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) {
+        return `${hours} hr${hours > 1 ? 's' : ''} ago`
+    }
+    const days = Math.floor(hours / 24)
+    return days === 1 ? 'Yesterday' : `${days} days ago`
 }

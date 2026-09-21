@@ -65,15 +65,31 @@ const useFlatpickr = ({ inputRef, value, minDate, excludeDateIntervals, onChange
     return pickerRef
 }
 
-export const BookingDateInputs = ({
-    startDate = '',
-    endDate = '',
-    minStartDate = '',
-    excludeDateIntervals = defaultList,
-    hasScheduleConflict = false,
-    onStartDateChange,
-    onEndDateChange
-}) => {
+const DEFAULT_PROPS = Object.freeze({
+    startDate: '',
+    endDate: '',
+    minStartDate: '',
+    excludeDateIntervals: defaultList,
+    hasStartConflict: false,
+    hasEndConflict: false,
+    hasScheduleConflict: false
+})
+
+export const BookingDateInputs = (props) => {
+    const {
+        startDate,
+        endDate,
+        minStartDate,
+        excludeDateIntervals,
+        hasStartConflict,
+        hasEndConflict,
+        hasScheduleConflict,
+        onStartDateChange,
+        onEndDateChange
+    } = { ...DEFAULT_PROPS, ...props }
+
+    const isStartInvalid = Boolean(hasStartConflict || (hasScheduleConflict && !hasEndConflict))
+    const isEndInvalid = Boolean(hasEndConflict || (hasScheduleConflict && !hasStartConflict))
     const startInputRef = useRef(null)
     const endInputRef = useRef(null)
 
@@ -93,6 +109,13 @@ export const BookingDateInputs = ({
         onChange: onEndDateChange
     })
 
+    const startLabel = startDate ? formatDate(startDate) : 'Select start date & time'
+    const endLabel = endDate ? formatDate(endDate) : 'Select end date & time'
+    const startOutlineClass = isStartInvalid ? 'outline-red-500' : 'outline-slate-300'
+    const endOutlineClass = isEndInvalid ? 'outline-red-500' : 'outline-slate-300'
+    const startTextClass = startDate ? 'text-black' : 'text-neutral-400'
+    const endTextClass = endDate ? 'text-black' : 'text-neutral-400'
+
     return (
         <div className="flex flex-col lg:flex-row w-full items-start justify-start gap-3 lg:gap-4">
             <div className="w-full lg:flex-1 min-w-0 inline-flex flex-col justify-start items-start gap-1.5">
@@ -100,12 +123,10 @@ export const BookingDateInputs = ({
                     Start Date <span className="text-red-500">*</span>
                 </div>
                 <div
-                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${
-                        hasScheduleConflict ? 'outline-red-500' : 'outline-slate-300'
-                    }`}>
+                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${startOutlineClass}`}>
                     <span
-                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${startDate ? 'text-black' : 'text-neutral-400'}`}>
-                        {startDate ? formatDate(startDate) : 'Select start date & time'}
+                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${startTextClass}`}>
+                        {startLabel}
                     </span>
                     <Icon name="calendar" className="size-4 shrink-0 pointer-events-none" />
                     <input
@@ -122,12 +143,10 @@ export const BookingDateInputs = ({
                     End Date <span className="text-red-500">*</span>
                 </div>
                 <div
-                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${
-                        hasScheduleConflict ? 'outline-red-500' : 'outline-slate-300'
-                    }`}>
+                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${endOutlineClass}`}>
                     <span
-                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${endDate ? formatDate(endDate) : 'Select end date & time'} `}>
-                        {endDate ? formatDate(endDate) : 'Select end date & time'}
+                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${endTextClass}`}>
+                        {endLabel}
                     </span>
                     <Icon name="calendar" className="size-4 shrink-0 pointer-events-none" />
                     <input
