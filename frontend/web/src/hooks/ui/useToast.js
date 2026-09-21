@@ -1,35 +1,46 @@
-import { useCallback, useEffect } from 'react'
-import { useSetState } from '@shared/hooks/useSetState'
+import { useCallback } from 'react'
+import { create } from 'zustand'
+
+const useToastStore = create(() => ({
+    message: '',
+    type: 'success',
+    visible: false
+}))
+
+let activeTimer = null
+
+const clearActiveTimer = () => {
+    if (activeTimer) {
+        clearTimeout(activeTimer)
+        activeTimer = null
+    }
+}
 
 export const useToast = (duration = 3000) => {
-    const [toastState, updateToastState] = useSetState({
-        message: '',
-        type: 'success',
-        visible: false
-    })
-    const { message, type, visible } = toastState
+    const message = useToastStore((state) => state.message)
+    const type = useToastStore((state) => state.type)
+    const visible = useToastStore((state) => state.visible)
 
     const hide = useCallback(() => {
-        updateToastState({ visible: false })
-    }, [updateToastState])
+        clearActiveTimer()
+        useToastStore.setState({ visible: false })
+    }, [])
 
     const show = useCallback(
         (nextMessage, nextType = 'success') => {
-            updateToastState({
+            clearActiveTimer()
+            useToastStore.setState({
                 message: nextMessage,
                 type: nextType,
                 visible: true
             })
+            activeTimer = setTimeout(() => {
+                useToastStore.setState({ visible: false })
+                activeTimer = null
+            }, duration)
         },
-        [updateToastState]
+        [duration]
     )
-
-    useEffect(() => {
-        if (toastState.visible) {
-            const timer = setTimeout(hide, duration)
-            return () => clearTimeout(timer)
-        }
-    }, [toastState, duration, hide])
 
     return { message, type, visible, show, hide }
 }

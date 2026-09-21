@@ -6,6 +6,7 @@ export const ReminderPromptView = ({
     equipmentName = '',
     dueDate = '',
     recipientEmail = '',
+    errorMessage = '',
     isSubmitting = false,
     onClose = noop,
     onSend = noop
@@ -25,6 +26,12 @@ export const ReminderPromptView = ({
                     You&apos;re about to send an overdue reminder to the borrower.
                 </p>
             </div>
+
+            {errorMessage ? (
+                <div className="mx-4 sm:mx-8 mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg text-center">
+                    {errorMessage}
+                </div>
+            ) : null}
 
             <div className="bg-white px-4 sm:px-8 py-4 sm:py-6 border-y border-slate-200 flex justify-center">
                 <div className="w-full bg-slate-50 rounded-2xl border border-slate-300 p-4 sm:p-5 flex flex-col gap-3 text-xs sm:text-sm">

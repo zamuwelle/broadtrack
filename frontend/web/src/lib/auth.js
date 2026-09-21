@@ -69,23 +69,34 @@ const syncTokenFromUrl = () => {
     }
 }
 
-syncTokenFromUrl()
+export const initAuthFromUrl = () => {
+    syncTokenFromUrl()
+}
+
+export const clearAuthSession = (queryClient) => {
+    globalThis.localStorage?.removeItem('auth_token')
+    queryClient?.setQueryData(['me'], null)
+    queryClient?.removeQueries({
+        predicate: (query) => query.queryKey[0] !== 'me'
+    })
+}
 
 export const fetchCurrentUser = async () => {
-    syncTokenFromUrl()
     if (!globalThis.localStorage?.getItem('auth_token')) {
         return null
     }
     try {
         const response = await api.get('/me')
         return response?.data ?? null
-    } catch {
-        return null
+    } catch (error) {
+        if (error?.status === 401 || error?.response?.status === 401) {
+            return null
+        }
+        throw error
     }
 }
 
 export const useUser = (options = {}) => {
-    syncTokenFromUrl()
     const hasToken = Boolean(globalThis.localStorage?.getItem('auth_token'))
 
     return useQuery({
@@ -109,11 +120,7 @@ export const useLogout = () => {
         } catch {
             // ignore network failure on logout
         }
-        globalThis.localStorage?.removeItem('auth_token')
-        queryClient.setQueryData(['me'], null)
-        queryClient.removeQueries({
-            predicate: (query) => query.queryKey[0] !== 'me'
-        })
+        clearAuthSession(queryClient)
         navigate(paths.home)
     }
 }

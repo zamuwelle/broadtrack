@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
+import { useToast } from '@/hooks/ui/useToast'
 import { useApproveBooking } from '@/features/bookings/api/approve-booking'
 import { useRejectBooking } from '@/features/bookings/api/reject-booking'
 import { DecisionForm } from '@/features/admin/approvals/components/DecisionForm'
@@ -10,17 +11,28 @@ const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
 const noop = () => null
 
+const getDecisionModalDetails = (booking) => {
+    const equipments = booking.equipments ?? defaultList
+    const equipment = equipments[0] || defaultBooking
+    return {
+        equipments,
+        equipmentName: equipment.name || 'Equipment',
+        borrowerName: booking.user?.full_name || 'Borrower'
+    }
+}
+
 export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaultBooking, type = 'approve' }) => {
     const approveMutation = useApproveBooking()
     const rejectMutation = useRejectBooking()
+    const { show: showToast } = useToast()
     const isApprove = type === 'approve'
 
     const [modalState, updateModalState] = useSetState({
         text: '',
-        isSubmitting: false,
         errorMessage: ''
     })
-    const { text, isSubmitting, errorMessage } = modalState
+    const isSubmitting = approveMutation.isPending || rejectMutation.isPending
+    const { text, errorMessage } = modalState
     const isMounted = useRef(false)
 
     useEffect(() => {
@@ -44,7 +56,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
     const handleSubmit = useCallback(
         async (event) => {
             event.preventDefault()
-            if (!bookingId) {
+            if (isSubmitting || !bookingId) {
                 return
             }
             if (!isApprove && !text.trim()) {
@@ -52,7 +64,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                 return
             }
             try {
-                updateModalState({ isSubmitting: true, errorMessage: '' })
+                updateModalState({ errorMessage: '' })
                 await (isApprove
                     ? approveMutation.mutateAsync({ bookingId, data: { approval_note: text } })
                     : rejectMutation.mutateAsync({ bookingId, data: { rejection_reason: text } }))
@@ -60,28 +72,34 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                     onClose()
                 }
             } catch (error) {
+                const message = (error && error.message) || `Failed to ${type} booking`
                 if (isMounted.current) {
                     updateModalState({
-                        errorMessage: (error && error.message) || `Failed to ${type} booking`
+                        errorMessage: message
                     })
                 }
-            } finally {
-                if (isMounted.current) {
-                    updateModalState({ isSubmitting: false })
-                }
+                showToast(message, 'danger')
             }
         },
-        [approveMutation, bookingId, isApprove, onClose, rejectMutation, text, type, updateModalState]
+        [
+            approveMutation,
+            bookingId,
+            isApprove,
+            isSubmitting,
+            onClose,
+            rejectMutation,
+            showToast,
+            text,
+            type,
+            updateModalState
+        ]
     )
 
     if (!isOpen || !booking || !booking.id) {
         return null
     }
 
-    const equipments = booking.equipments ?? defaultList
-    const equipment = equipments[0] || defaultBooking
-    const borrowerName = booking.user?.full_name || 'Borrower'
-    const equipmentName = equipment.name || 'Equipment'
+    const { equipments, equipmentName, borrowerName } = getDecisionModalDetails(booking)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">

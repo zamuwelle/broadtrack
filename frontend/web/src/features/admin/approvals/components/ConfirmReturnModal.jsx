@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Check, X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
+import { useToast } from '@/hooks/ui/useToast'
 import { useReturnBooking } from '@/features/bookings/api/return-booking'
 
 const defaultBooking = Object.freeze({})
@@ -22,27 +23,27 @@ const getConfirmModalDetails = (booking) => {
 
 export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = defaultBooking, onSuccess = noop }) => {
     const returnMutation = useReturnBooking()
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { show: showToast } = useToast()
+    const isSubmitting = returnMutation.isPending
     const [errorMessage, setErrorMessage] = useState('')
 
     useEscapeKey(onClose)
 
     const handleConfirmReturn = useCallback(async () => {
-        if (!booking || !booking.id) {
+        if (isSubmitting || !booking || !booking.id) {
             return
         }
         try {
-            setIsSubmitting(true)
             setErrorMessage('')
             await returnMutation.mutateAsync(booking.id)
             onSuccess()
             onClose()
         } catch (error) {
-            setErrorMessage((error && error.message) || 'Failed to confirm return')
-        } finally {
-            setIsSubmitting(false)
+            const message = (error && error.message) || 'Failed to confirm return'
+            setErrorMessage(message)
+            showToast(message, 'danger')
         }
-    }, [booking, onClose, onSuccess, returnMutation])
+    }, [booking, isSubmitting, onClose, onSuccess, returnMutation, showToast])
 
     if (!isOpen || !booking || !booking.id) {
         return null

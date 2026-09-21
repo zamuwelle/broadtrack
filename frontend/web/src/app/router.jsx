@@ -5,14 +5,6 @@ import { ProtectedRoute } from '@/app/authorization'
 import { paths } from '@/config/paths'
 
 const SYSADMIN_ROLES = Object.freeze([ROLES.SYSADMIN])
-const notFoundRoute = {
-    path: '*',
-    lazy: () =>
-        Promise.resolve({
-            Component: () => <Navigate to={paths.home} replace />
-        })
-}
-
 const createAppRouter = () =>
     createBrowserRouter([
         {
@@ -126,7 +118,10 @@ const createAppRouter = () =>
                 }
             ]
         },
-        notFoundRoute
+        {
+            path: '*',
+            element: <Navigate to={paths.home} replace />
+        }
     ])
 
 export const AppRouter = () => {

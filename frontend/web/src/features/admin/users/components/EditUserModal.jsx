@@ -3,6 +3,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/features/users/api/update-user'
+import { useToast } from '@/hooks/ui/useToast'
 import { MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { editUserSchema } from '@shared/schemas/users'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
@@ -25,6 +26,7 @@ const getDefaultValues = (user) => ({
 
 export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onSuccess = noop }) => {
     const [error, setError] = useState('')
+    const { show: showToast } = useToast()
     const updateUserMutation = useUpdateUser()
     const {
         control,
@@ -85,28 +87,27 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 onClose()
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
-                setError(serverErrors.email?.[0] || submitError?.message || 'Failed to update user')
+                const message = serverErrors.email?.[0] || submitError?.message || 'Failed to update user'
+                setError(message)
+                showToast(message, 'danger')
             }
         },
-        [isBorrower, onClose, onSuccess, reset, updateUserMutation, user]
+        [isBorrower, onClose, onSuccess, reset, showToast, updateUserMutation, user]
     )
-    const renderRole = useCallback(
-        ({ field }) => {
-            const handleRoleChange = field.onChange
-            return (
-                <Select
-                    {...field}
-                    onChange={handleRoleChange}
-                    options={EDITABLE_ROLES}
-                    panelClass="right-0 left-auto! w-full bg-white shadow-lg"
-                    hoverClass="hover:bg-gray-100"
-                    selectedClass="bg-border-focus"
-                    className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
-                />
-            )
-        },
-        []
-    )
+    const renderRole = useCallback(({ field }) => {
+        const handleRoleChange = field.onChange
+        return (
+            <Select
+                {...field}
+                onChange={handleRoleChange}
+                options={EDITABLE_ROLES}
+                panelClass="right-0 left-auto! w-full bg-white shadow-lg"
+                hoverClass="hover:bg-gray-100"
+                selectedClass="bg-border-focus"
+                className="w-full bg-white border border-gray-300 h-10 px-3 gap-2 text-[14px] text-text"
+            />
+        )
+    }, [])
     const renderDepartment = useCallback(
         ({ field }) => {
             const handleDepartmentChange = field.onChange
@@ -167,20 +168,10 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 {...register('email')}
             />
             <Field label="Role">
-                <Controller
-                    name="role"
-                    control={control}
-                    render={renderRole}
-                />
+                <Controller name="role" control={control} render={renderRole} />
                 <div className="h-4 mt-1" />
             </Field>
-            {isBorrower ? (
-                <Controller
-                    name="department"
-                    control={control}
-                    render={renderDepartment}
-                />
-            ) : null}
+            {isBorrower ? <Controller name="department" control={control} render={renderDepartment} /> : null}
             <PasswordInput
                 maxLength={64}
                 autoComplete="new-password"

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUsers } from '@/features/users/api/get-users'
 import { SearchInput } from '@/components/ui/SearchInput'
@@ -7,23 +7,12 @@ import { AddUserModal } from '@/features/admin/users/components/AddUserModal'
 import { EditUserModal } from '@/features/admin/users/components/EditUserModal'
 import { RemoveUserModal } from '@/features/admin/users/components/RemoveUserModal'
 import { Icon } from '@/components/ui/Icon'
+import { useSetState } from '@shared/hooks/useSetState'
 import { matchesUserSearch } from '@shared/util/search'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
-import { Toast } from '@/components/ui/Toast'
 import { useToast } from '@/hooks/ui/useToast'
 
-export const UsersPage = (props) => {
-    useDocumentTitle('User Management')
-    const { users: propUsers } = props
-    const queryClient = useQueryClient()
-    const [search, setSearch] = useState('')
-    const [modal, setModal] = useState(null)
-    const [selectedUser, setSelectedUser] = useState(null)
-    const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
-
-    const { data: hookUsers = [], isLoading } = useUsers()
-    const users = propUsers ?? hookUsers
-
+const useUserModals = (updatePageState, queryClient, selectedUser, showToast) => {
     const handleInvalidate = useCallback(() => queryClient.invalidateQueries({ queryKey: ['users'] }), [queryClient])
 
     const handleUserAdded = useCallback(
@@ -44,23 +33,71 @@ export const UsersPage = (props) => {
         [handleInvalidate, selectedUser, showToast]
     )
 
-    const handleOpenAddBorrower = useCallback(() => setModal('addBorrower'), [])
-    const handleOpenAddAdmin = useCallback(() => setModal('addAdmin'), [])
+    const handleUserRemoved = useCallback(() => {
+        handleInvalidate()
+        showToast('User removed successfully!')
+    }, [handleInvalidate, showToast])
 
-    const handleOpenEdit = useCallback((user) => {
-        setSelectedUser(user)
-        setModal('edit')
-    }, [])
+    const handleUserRemoveError = useCallback(
+        (message) => {
+            showToast(message, 'danger')
+        },
+        [showToast]
+    )
 
-    const handleOpenRemove = useCallback((user) => {
-        setSelectedUser(user)
-        setModal('remove')
-    }, [])
+    const handleOpenAddBorrower = useCallback(() => updatePageState({ modal: 'addBorrower' }), [updatePageState])
+    const handleOpenAddAdmin = useCallback(() => updatePageState({ modal: 'addAdmin' }), [updatePageState])
+    const handleOpenEdit = useCallback(
+        (user) => updatePageState({ selectedUser: user, modal: 'edit' }),
+        [updatePageState]
+    )
+    const handleOpenRemove = useCallback(
+        (user) => updatePageState({ selectedUser: user, modal: 'remove' }),
+        [updatePageState]
+    )
+    const handleCloseModal = useCallback(() => updatePageState({ modal: null, selectedUser: null }), [updatePageState])
 
-    const handleCloseModal = useCallback(() => {
-        setModal(null)
-        setSelectedUser(null)
-    }, [])
+    return {
+        handleUserAdded,
+        handleUserEdited,
+        handleUserRemoved,
+        handleUserRemoveError,
+        handleOpenAddBorrower,
+        handleOpenAddAdmin,
+        handleOpenEdit,
+        handleOpenRemove,
+        handleCloseModal
+    }
+}
+
+export const UsersPage = (props) => {
+    useDocumentTitle('User Management')
+    const { users: propUsers } = props
+    const queryClient = useQueryClient()
+    const [pageState, updatePageState] = useSetState({
+        search: '',
+        modal: null,
+        selectedUser: null
+    })
+    const { search, modal, selectedUser } = pageState
+    const { show: showToast } = useToast()
+
+    const { data: hookUsers = [], isLoading } = useUsers()
+    const users = propUsers ?? hookUsers
+
+    const {
+        handleUserAdded,
+        handleUserEdited,
+        handleUserRemoved,
+        handleUserRemoveError,
+        handleOpenAddBorrower,
+        handleOpenAddAdmin,
+        handleOpenEdit,
+        handleOpenRemove,
+        handleCloseModal
+    } = useUserModals(updatePageState, queryClient, selectedUser, showToast)
+
+    const handleSearchChange = useCallback((newSearch) => updatePageState({ search: newSearch }), [updatePageState])
 
     const filteredUsers = useMemo(() => users.filter((user) => matchesUserSearch(user, search)), [users, search])
 
@@ -97,7 +134,7 @@ export const UsersPage = (props) => {
                 </div>
             </div>
 
-            <SearchInput value={search} onChange={setSearch} placeholder="Search name..." />
+            <SearchInput value={search} onChange={handleSearchChange} placeholder="Search name..." />
 
             <UserTable
                 users={filteredUsers}
@@ -128,9 +165,14 @@ export const UsersPage = (props) => {
                 <EditUserModal isOpen onClose={handleCloseModal} user={selectedUser} onSuccess={handleUserEdited} />
             )}
             {isRemove && (
-                <RemoveUserModal isOpen onClose={handleCloseModal} user={selectedUser} onSuccess={handleInvalidate} />
+                <RemoveUserModal
+                    isOpen
+                    onClose={handleCloseModal}
+                    user={selectedUser}
+                    onSuccess={handleUserRemoved}
+                    onError={handleUserRemoveError}
+                />
             )}
-            <Toast show={toastVisible} message={toastMessage} type={toastType} />
         </div>
     )
 }

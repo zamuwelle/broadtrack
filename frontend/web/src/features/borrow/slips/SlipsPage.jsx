@@ -11,6 +11,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { BOOKING_FILTER_OPTIONS } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
+import { useToast } from '@/hooks/ui/useToast'
 
 const DEFAULT_BOOKINGS = Object.freeze([])
 const DEFAULT_EMPTY_USER = Object.freeze({})
@@ -35,6 +36,45 @@ const matchStatusFilter = (booking, selectedStatus) => {
     return true
 }
 
+const useSlipModals = (cancelMutation, showToast) => {
+    const [pageState, updatePageState] = useSetState({
+        cancellingBookingId: null
+    })
+    const { cancellingBookingId } = pageState
+
+    const handleOpenCancelModal = useCallback(
+        (bookingId) => {
+            updatePageState({ cancellingBookingId: bookingId })
+        },
+        [updatePageState]
+    )
+
+    const handleCloseCancelModal = useCallback(() => {
+        updatePageState({ cancellingBookingId: null })
+    }, [updatePageState])
+
+    const handleConfirmCancel = useCallback(async () => {
+        if (!cancellingBookingId) {
+            return
+        }
+        try {
+            await cancelMutation.mutateAsync(cancellingBookingId)
+            updatePageState({ cancellingBookingId: null })
+            showToast('Booking request cancelled.', 'success')
+        } catch (error) {
+            updatePageState({ cancellingBookingId: null })
+            showToast((error && error.message) || 'Failed to cancel booking request.', 'danger')
+        }
+    }, [cancelMutation, cancellingBookingId, showToast, updatePageState])
+
+    return {
+        cancellingBookingId,
+        handleOpenCancelModal,
+        handleCloseCancelModal,
+        handleConfirmCancel
+    }
+}
+
 export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetStatus }) => {
     useDocumentTitle('My Booking Slips')
     const [searchParams, setSearchParams] = useSearchParams()
@@ -45,11 +85,18 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
     const selectedStatus =
         propStatus ?? (BOOKING_FILTER_OPTIONS.includes(urlStatus) ? urlStatus : 'All Ticket Requests')
 
-    const [pageState, updatePageState] = useSetState({
-        cancellingBookingId: null,
-        cancelError: ''
-    })
-    const { cancellingBookingId } = pageState
+    const { show: showToast } = useToast()
+    const { cancellingBookingId, handleOpenCancelModal, handleCloseCancelModal, handleConfirmCancel } = useSlipModals(
+        cancelMutation,
+        showToast
+    )
+
+    const handleDownloadError = useCallback(
+        (message) => {
+            showToast(message, 'danger')
+        },
+        [showToast]
+    )
 
     const handleStatusChange = useCallback(
         (status) => {
@@ -69,33 +116,6 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
         },
         [propSetStatus, setSearchParams]
     )
-
-    const handleOpenCancelModal = useCallback(
-        (bookingId) => {
-            updatePageState({ cancellingBookingId: bookingId })
-        },
-        [updatePageState]
-    )
-
-    const handleCloseCancelModal = useCallback(() => {
-        updatePageState({ cancellingBookingId: null })
-    }, [updatePageState])
-
-    const handleConfirmCancel = useCallback(async () => {
-        if (!cancellingBookingId) {
-            return
-        }
-        try {
-            await cancelMutation.mutateAsync(cancellingBookingId)
-            updatePageState({ cancellingBookingId: null, cancelError: '' })
-        } catch (error) {
-            console.error('Failed to cancel booking request:', error)
-            updatePageState({
-                cancellingBookingId: null,
-                cancelError: (error && error.message) || 'Failed to cancel booking request'
-            })
-        }
-    }, [cancelMutation, cancellingBookingId, updatePageState])
 
     const filteredBookings = bookings
         .filter((booking) => matchStatusFilter(booking, selectedStatus))
@@ -143,6 +163,7 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                             booking={booking}
                             currentUser={user}
                             onCancel={handleOpenCancelModal}
+                            onDownloadError={handleDownloadError}
                         />
                     ))}
                 </div>

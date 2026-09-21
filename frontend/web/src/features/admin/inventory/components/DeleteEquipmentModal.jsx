@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useSetState } from '@shared/hooks/useSetState'
-import { deleteEquipment } from '@/features/equipment/api/delete-equipment'
+import { useDeleteEquipment } from '@/features/equipment/api/delete-equipment'
 
 const noop = () => null
 
@@ -12,30 +12,36 @@ const modalIcon = (
     </div>
 )
 
-export const DeleteEquipmentModal = ({ isOpen = false, onClose = noop, equipment = null, onSuccess = noop }) => {
+export const DeleteEquipmentModal = ({
+    isOpen = false,
+    onClose = noop,
+    equipment = null,
+    onSuccess = noop,
+    onError = noop
+}) => {
+    const deleteMutation = useDeleteEquipment()
     const [modalState, updateModalState] = useSetState({
-        isDeleting: false,
         errorMessage: ''
     })
-    const { isDeleting, errorMessage } = modalState
+    const { errorMessage } = modalState
 
     const handleDelete = useCallback(async () => {
         if (!equipment || !equipment.id) {
             return
         }
-        updateModalState({ isDeleting: true, errorMessage: '' })
+        updateModalState({ errorMessage: '' })
         try {
-            await deleteEquipment(equipment.id)
+            await deleteMutation.mutateAsync(equipment.id)
             onSuccess()
             onClose()
         } catch (error) {
+            const message = (error && error.message) || 'Failed to delete equipment asset'
             updateModalState({
-                errorMessage: (error && error.message) || 'Failed to delete equipment asset'
+                errorMessage: message
             })
-        } finally {
-            updateModalState({ isDeleting: false })
+            onError(message)
         }
-    }, [equipment, onClose, onSuccess, updateModalState])
+    }, [deleteMutation, equipment, onClose, onError, onSuccess, updateModalState])
 
     if (!isOpen || !equipment) {
         return null
@@ -54,7 +60,7 @@ export const DeleteEquipmentModal = ({ isOpen = false, onClose = noop, equipment
             description={`${equipmentTitle} • ${serialNumber}`}
             confirmLabel="Delete"
             loadingLabel="Deleting..."
-            isPending={isDeleting}
+            isPending={deleteMutation.isPending}
             variant="danger"
             maxWidth="max-w-[538px]">
             {errorMessage ? (

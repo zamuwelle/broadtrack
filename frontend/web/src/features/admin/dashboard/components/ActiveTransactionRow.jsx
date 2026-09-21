@@ -66,7 +66,7 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
                 <div className="text-xs font-medium text-gray-700 md:mt-1">{timelineRange}</div>
             </div>
 
-            <div className="hidden md:flex shrink-0 self-center">
+            <div className="hidden md:flex md:w-44 md:justify-end shrink-0 self-center">
                 <div
                     className={`px-3.5 py-2 text-xs font-semibold inline-flex items-center justify-center ${statusBadge.className}`}>
                     {statusBadge.label}

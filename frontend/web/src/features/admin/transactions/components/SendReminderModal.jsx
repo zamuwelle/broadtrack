@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { formatDate } from '@shared/util/date'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
+import { useToast } from '@/hooks/ui/useToast'
 import { useRemindBooking } from '@/features/bookings/api/remind-booking'
 import { ReminderSuccessView } from '@/features/admin/transactions/components/ReminderSuccessView'
 import { ReminderPromptView } from '@/features/admin/transactions/components/ReminderPromptView'
@@ -25,17 +26,19 @@ const getReminderModalDetails = (booking) => {
 
 export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = defaultBooking }) => {
     const remindMutation = useRemindBooking()
+    const { show: showToast } = useToast()
     const [reminderState, updateReminderState] = useSetState({
         sent: false,
         sentTimestamp: '',
-        isSubmitting: false
+        errorMessage: ''
     })
-    const { sent, sentTimestamp, isSubmitting } = reminderState
+    const isSubmitting = remindMutation.isPending
+    const { sent, sentTimestamp, errorMessage } = reminderState
 
     useEscapeKey(onClose)
 
     const handleClose = useCallback(() => {
-        updateReminderState({ sent: false })
+        updateReminderState({ sent: false, errorMessage: '' })
         onClose()
     }, [onClose, updateReminderState])
 
@@ -43,7 +46,7 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
         if (isSubmitting || !booking || !booking.id) {
             return
         }
-        updateReminderState({ isSubmitting: true })
+        updateReminderState({ errorMessage: '' })
         try {
             await remindMutation.mutateAsync(booking.id)
             updateReminderState({
@@ -51,11 +54,13 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
                 sent: true
             })
         } catch (error) {
-            console.error('Failed to send reminder:', error)
-        } finally {
-            updateReminderState({ isSubmitting: false })
+            const message = (error && error.message) || 'Failed to send reminder.'
+            updateReminderState({
+                errorMessage: message
+            })
+            showToast(message, 'danger')
         }
-    }, [booking, isSubmitting, remindMutation, updateReminderState])
+    }, [booking, isSubmitting, remindMutation, showToast, updateReminderState])
 
     if (!isOpen || !booking || !booking.id) {
         return null
@@ -75,6 +80,7 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
             equipmentName={equipmentName}
             dueDate={dueDate}
             recipientEmail={recipientEmail}
+            errorMessage={errorMessage}
             isSubmitting={isSubmitting}
             onClose={handleClose}
             onSend={handleSendReminder}

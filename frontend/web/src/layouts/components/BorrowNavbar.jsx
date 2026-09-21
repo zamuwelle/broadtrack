@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { NotificationToggle } from '@/features/borrow/notifications/NotificationToggle'
@@ -6,6 +6,7 @@ import { ProfileToggle } from '@/features/users/components/ProfileToggle'
 import { BorrowSummaryModal } from '@/features/borrow/request/components/BorrowSummaryModal'
 import { useUser } from '@/lib/auth'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
+import { useSetState } from '@shared/hooks/useSetState'
 import { Icon } from '@/components/ui/Icon'
 
 const defaultBookings = Object.freeze([])
@@ -32,36 +33,37 @@ export const BorrowNavbar = ({
 }) => {
     const { data: user } = useUser()
     const count = useBookingCartStore((state) => state.items.length)
-    const [isSummaryOpen, setIsSummaryOpen] = useState(false)
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [{ isSummaryOpen, isMenuOpen }, setNavbarState] = useSetState({
+        isSummaryOpen: false,
+        isMenuOpen: false
+    })
 
     const handleTabClick = useCallback(
         (event) => {
             const { label } = event.currentTarget.dataset
             if (label) {
                 onSelectTab(label)
-                setIsMenuOpen(false)
+                setNavbarState({ isMenuOpen: false })
             }
         },
-        [onSelectTab]
+        [onSelectTab, setNavbarState]
     )
 
     const handleOpenSummary = useCallback(() => {
-        setIsSummaryOpen(true)
-        setIsMenuOpen(false)
-    }, [])
+        setNavbarState({ isSummaryOpen: true, isMenuOpen: false })
+    }, [setNavbarState])
 
     const handleCloseSummary = useCallback(() => {
-        setIsSummaryOpen(false)
-    }, [])
+        setNavbarState({ isSummaryOpen: false })
+    }, [setNavbarState])
 
     const handleToggleMenu = useCallback(() => {
-        setIsMenuOpen((prev) => !prev)
-    }, [])
+        setNavbarState((prev) => ({ isMenuOpen: !prev.isMenuOpen }))
+    }, [setNavbarState])
 
     const handleCloseMenu = useCallback(() => {
-        setIsMenuOpen(false)
-    }, [])
+        setNavbarState({ isMenuOpen: false })
+    }, [setNavbarState])
 
     return (
         <nav className="w-full h-16 lg:h-20 shrink-0 bg-white shadow-sm relative z-40">

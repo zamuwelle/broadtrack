@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
 class BookingSlipController extends ApiController
@@ -14,6 +15,8 @@ class BookingSlipController extends ApiController
         $this->authorize('view', $booking);
 
         $booking->loadMissing(['user', 'equipments', 'returnedByUser']);
+
+        File::ensureDirectoryExists(storage_path('fonts'));
 
         $pdf = Pdf::loadView('pdf.borrowing-slip', [
             'booking' => $booking,

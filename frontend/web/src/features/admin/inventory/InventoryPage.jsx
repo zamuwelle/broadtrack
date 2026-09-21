@@ -6,11 +6,12 @@ import { InventoryGrid } from '@/features/admin/inventory/components/InventoryGr
 import { EquipmentModal } from '@/features/admin/inventory/components/EquipmentModal'
 import { DeleteEquipmentModal } from '@/features/admin/inventory/components/DeleteEquipmentModal'
 import { useEquipment } from '@/features/equipment/api/get-equipment'
-import { updateEquipment } from '@/features/equipment/api/update-equipment'
+import { useUpdateEquipment } from '@/features/equipment/api/update-equipment'
 import { useSetState } from '@shared/hooks/useSetState'
 import { matchesSearch } from '@shared/util/search'
 import { EQUIPMENT_CATEGORIES } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
+import { useToast } from '@/hooks/ui/useToast'
 
 const CATEGORIES = Object.freeze(
     EQUIPMENT_CATEGORIES.map((categoryName) =>
@@ -86,9 +87,10 @@ export const InventoryPage = (props) => {
     const { equipment: propEquipment } = props
 
     const queryClient = useQueryClient()
+    const updateEquipmentMutation = useUpdateEquipment()
     const { data: hookEquipment = [] } = useEquipment()
-
     const equipmentList = propEquipment ?? hookEquipment
+    const { show: showToast } = useToast()
     const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
     const { searchText, selectedCategory, selectedEquipment, isEquipmentModalOpen, deletingEquipment } = pageState
 
@@ -126,13 +128,20 @@ export const InventoryPage = (props) => {
                 return current.map((item) => (item.id === equipmentId ? { ...item, status: newStatus } : item))
             })
             try {
-                await updateEquipment({ id: equipmentId, data: { status: newStatus } })
+                await updateEquipmentMutation.mutateAsync({ id: equipmentId, data: { status: newStatus } })
             } catch (error) {
-                console.error('Failed to update equipment status:', error)
+                showToast((error && error.message) || 'Failed to update equipment status.', 'danger')
                 await queryClient.invalidateQueries({ queryKey: ['equipment'] })
             }
         },
-        [queryClient]
+        [queryClient, showToast, updateEquipmentMutation]
+    )
+
+    const handleDeleteError = useCallback(
+        (message) => {
+            showToast(message, 'danger')
+        },
+        [showToast]
     )
 
     return (
@@ -180,6 +189,7 @@ export const InventoryPage = (props) => {
                 onClose={modals.handleCloseDeleteModal}
                 equipment={deletingEquipment}
                 onSuccess={modals.handleRefresh}
+                onError={handleDeleteError}
             />
         </div>
     )

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { contactSchema } from '@shared/schemas/contact'
+import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateContact } from '@/features/landing/api/create-contact'
 import { ContactFormView } from '@/features/landing/components/contact/ContactFormView'
 
@@ -14,20 +15,12 @@ const initialForm = Object.freeze({
 
 export const QuickContact = () => {
     const resetTimer = useRef(null)
-    const [contactState, setContactState] = useState({
+    const [contactState, updateContactState] = useSetState({
         isOpen: false,
         sent: false,
         form: initialForm,
         touched: {}
     })
-    const updateContactState = useCallback(
-        (update) =>
-            setContactState((previous) => ({
-                ...previous,
-                ...(typeof update === 'function' ? update(previous) : update)
-            })),
-        []
-    )
     const { isOpen, sent } = contactState
     const {
         register,

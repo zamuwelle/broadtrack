@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useCreateUser } from '@/features/users/api/create-user'
+import { useToast } from '@/hooks/ui/useToast'
 import { MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { addUserSchema } from '@shared/schemas/users'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,6 +29,7 @@ export const AddUserModal = ({
     role = userRole || 'borrower'
 }) => {
     const [error, setError] = useState('')
+    const { show: showToast } = useToast()
     const createUserMutation = useCreateUser()
     const {
         control,
@@ -79,10 +81,12 @@ export const AddUserModal = ({
                 onClose()
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
-                setError(serverErrors.email?.[0] || submitError?.message || 'Failed to create user')
+                const message = serverErrors.email?.[0] || submitError?.message || 'Failed to create user'
+                setError(message)
+                showToast(message, 'danger')
             }
         },
-        [createUserMutation, isBorrower, onClose, onSuccess, reset, role]
+        [createUserMutation, isBorrower, onClose, onSuccess, reset, role, showToast]
     )
     const renderDepartment = useCallback(
         ({ field }) => {
@@ -148,13 +152,7 @@ export const AddUserModal = ({
                 error={errors.email?.message}
                 {...register('email')}
             />
-            {isBorrower ? (
-                <Controller
-                    name="department"
-                    control={control}
-                    render={renderDepartment}
-                />
-            ) : null}
+            {isBorrower ? <Controller name="department" control={control} render={renderDepartment} /> : null}
             <PasswordInput
                 maxLength={64}
                 autoComplete="new-password"

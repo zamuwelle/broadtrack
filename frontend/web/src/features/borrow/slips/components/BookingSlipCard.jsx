@@ -13,7 +13,7 @@ const noop = () => null
 
 const getBorrowerName = (borrower) => borrower?.full_name || borrower?.name || borrower?.email || ''
 
-export const BookingSlipCard = ({ booking = defaultBooking, currentUser, onCancel = noop }) => {
+export const BookingSlipCard = ({ booking = defaultBooking, currentUser, onCancel = noop, onDownloadError = noop }) => {
     const [isDownloading, setIsDownloading] = useState(false)
 
     const status = getBookingStatus(booking)
@@ -23,20 +23,25 @@ export const BookingSlipCard = ({ booking = defaultBooking, currentUser, onCance
     const borrowerDepartment = borrower?.department || ''
     const equipments = booking.equipments ?? defaultEquipments
 
+    const bookingId = booking?.id
+    const ticketId = booking?.ticket_id
+
     const handleDownloadSlip = useCallback(async () => {
-        if (!booking?.id || isDownloading) {
+        if (!bookingId || isDownloading) {
             return
         }
         try {
             setIsDownloading(true)
             await downloadBookingSlip({
-                bookingId: booking.id,
-                ticketId: booking.ticket_id
+                bookingId,
+                ticketId
             })
+        } catch (error) {
+            onDownloadError((error && error.message) || 'Failed to download booking slip.')
         } finally {
             setIsDownloading(false)
         }
-    }, [booking?.id, booking?.ticket_id, isDownloading])
+    }, [bookingId, ticketId, isDownloading, onDownloadError])
 
     const handleCancelClick = useCallback(() => {
         if (typeof onCancel === 'function') {

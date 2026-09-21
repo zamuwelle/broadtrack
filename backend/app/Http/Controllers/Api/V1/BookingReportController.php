@@ -8,6 +8,7 @@ use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -20,6 +21,8 @@ class BookingReportController extends ApiController
         $bookings = $this->getFilteredBookings($request);
         $rows = $this->flattenRows($bookings);
         $generatedAt = now()->timezone('Asia/Manila')->format('F d, Y h:i A');
+
+        File::ensureDirectoryExists(storage_path('fonts'));
 
         $pdf = Pdf::loadView('pdf.transactions-report', [
             'rows' => $rows,

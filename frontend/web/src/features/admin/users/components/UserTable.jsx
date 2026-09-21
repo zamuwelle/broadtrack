@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { UserTableRow } from '@/features/admin/users/components/UserTableRow'
 import { UserTablePagination } from '@/features/admin/users/components/UserTablePagination'
+import { useSetState } from '@shared/hooks/useSetState'
 
 const defaultUsers = Object.freeze([])
 const noop = () => null
@@ -42,14 +43,17 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
 }
 
 export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = noop, onRemove = noop }) => {
-    const [pageSize, setPageSize] = useState(getDynamicPageSize)
-    const [currentPage, setCurrentPage] = useState(1)
+    const [tableState, updateTableState] = useSetState(() => ({
+        pageSize: getDynamicPageSize(),
+        currentPage: 1
+    }))
+    const { pageSize, currentPage } = tableState
 
     useEffect(() => {
-        const handleResize = () => setPageSize(getDynamicPageSize())
+        const handleResize = () => updateTableState({ pageSize: getDynamicPageSize() })
         globalThis.window.addEventListener('resize', handleResize)
         return () => globalThis.window.removeEventListener('resize', handleResize)
-    }, [])
+    }, [updateTableState])
 
     const totalPages = Math.max(1, Math.ceil(users.length / pageSize))
     const activePage = Math.min(currentPage, totalPages)
@@ -59,16 +63,19 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
     const showingEnd = Math.min(startIndex + pageSize, users.length)
 
     const handlePrevPage = useCallback(() => {
-        setCurrentPage(Math.max(1, activePage - 1))
-    }, [activePage])
+        updateTableState({ currentPage: Math.max(1, activePage - 1) })
+    }, [activePage, updateTableState])
 
     const handleNextPage = useCallback(() => {
-        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-    }, [totalPages])
+        updateTableState((prev) => ({ currentPage: Math.min(totalPages, prev.currentPage + 1) }))
+    }, [totalPages, updateTableState])
 
-    const handleSelectPage = useCallback((page) => {
-        setCurrentPage(page)
-    }, [])
+    const handleSelectPage = useCallback(
+        (page) => {
+            updateTableState({ currentPage: page })
+        },
+        [updateTableState]
+    )
 
     return (
         <div className="w-full flex flex-col font-['Poppins']">

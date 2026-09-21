@@ -8,6 +8,7 @@ import {
     parseBookingDate
 } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
+import { useToast } from '@/hooks/ui/useToast'
 import { useUser } from '@/lib/auth'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 import { useBookings } from '@/features/bookings/api/get-bookings'
@@ -115,7 +116,7 @@ const initialSummaryState = Object.freeze({
     startDate: '',
     endDate: '',
     purpose: '',
-    isSubmitting: false
+    errorMessage: ''
 })
 
 const useBorrowSubmitHandler = ({
@@ -128,14 +129,14 @@ const useBorrowSubmitHandler = ({
     endDate,
     updateSummaryState,
     clearBasket,
-    setErrorMessage
+    setErrorMessage,
+    showToast
 }) =>
     useCallback(async () => {
         if (!isSubmittable || isSubmitting) {
             return
         }
         setErrorMessage('')
-        updateSummaryState({ isSubmitting: true })
         try {
             await createBookingMutation.mutateAsync({
                 equipment_ids: selectedItems.map((item) => item.id),
@@ -151,11 +152,10 @@ const useBorrowSubmitHandler = ({
             })
             clearBasket()
         } catch (submitError) {
-            setErrorMessage(
+            const message =
                 submitError?.message || 'Failed to submit booking request. Please check dates and try again.'
-            )
-        } finally {
-            updateSummaryState({ isSubmitting: false })
+            setErrorMessage(message)
+            showToast(message, 'danger')
         }
     }, [
         createBookingMutation,
@@ -167,7 +167,8 @@ const useBorrowSubmitHandler = ({
         startDate,
         endDate,
         clearBasket,
-        setErrorMessage
+        setErrorMessage,
+        showToast
     ])
 
 const useBorrowFieldHandlers = ({
@@ -281,6 +282,7 @@ const useBorrowFieldHandlers = ({
 }
 
 export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
+    const { show: showToast } = useToast()
     const { data: activeUser } = useUser()
     const user = activeUser ?? propUser
     const selectedItems = useBookingCartStore((state) => state.items)
@@ -288,7 +290,7 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     const clearCart = useBookingCartStore((state) => state.clearCart)
     const { data: remoteBookings = [] } = useBookings({ params: filterParams })
     const createBookingMutation = useCreateBooking()
-    const [errorMessage, setErrorMessage] = useState('')
+    const isSubmitting = createBookingMutation.isPending
     const [minuteTick, setMinuteTick] = useState(Date.now)
     const startDateIsAutomaticRef = useRef(true)
     const endDateIsAutomaticRef = useRef(true)
@@ -297,7 +299,12 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         ...initialSummaryState,
         modalView: selectedItems.length > 0 ? 'summary' : 'empty'
     })
-    const { modalView, startDate, endDate, purpose, isSubmitting } = summaryState
+    const { modalView, startDate, endDate, purpose, errorMessage } = summaryState
+
+    const setErrorMessage = useCallback(
+        (nextErrorMessage) => updateSummaryState({ errorMessage: nextErrorMessage }),
+        [updateSummaryState]
+    )
 
     const minimumDateTime = getCurrentBookingDateTimeValue(new Date(minuteTick))
     useBookingDateDefaults({
@@ -358,7 +365,8 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         endDate,
         updateSummaryState,
         clearBasket: clearCart,
-        setErrorMessage
+        setErrorMessage,
+        showToast
     })
 
     return {

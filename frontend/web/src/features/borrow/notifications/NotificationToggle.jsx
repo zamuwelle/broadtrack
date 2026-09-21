@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useToggle } from '@/hooks/ui/useToggle'
 import { Icon } from '@/components/ui/Icon'
 import { getNotificationConfig } from '@/features/borrow/notifications/notificationConfig'
@@ -35,7 +35,6 @@ const formatRelativeTime = (dateValue) => {
 export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotification = noop, onOpen = noop }) => {
     const { open, setOpen, boxRef } = useToggle()
     const readMutation = useMarkBookingAsRead()
-    const [readIds, setReadIds] = useState(() => new Set())
 
     const notificationList = useMemo(() => {
         const list = []
@@ -57,16 +56,12 @@ export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotific
         return list.toReversed()
     }, [bookings])
 
-    const unreadNotifications = useMemo(
-        () => notificationList.filter((item) => !item.isRead && !readIds.has(item.id)),
-        [notificationList, readIds]
-    )
+    const unreadNotifications = useMemo(() => notificationList.filter((item) => !item.isRead), [notificationList])
 
     const notificationCount = unreadNotifications.length
 
     const handleClickItem = useCallback(
         async (item) => {
-            setReadIds((prev) => new Set(prev).add(item.id))
             setOpen(false)
             onSelectNotification(item.filterStatus)
             try {

@@ -11,6 +11,7 @@ import { flattenBookingsByEquipment, getBookingStatus, isBookingOverdue } from '
 import { matchesBookingSearch } from '@shared/util/search'
 import { TRANSACTION_CATEGORIES } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
+import { useToast } from '@/hooks/ui/useToast'
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -37,6 +38,47 @@ const matchesTransactionCategory = (status, isOverdue, selectedCategory) => {
     return true
 }
 
+const useTransactionExports = ({ selectedCategory, searchText, showToast }) => {
+    const [exportingType, setExportingType] = useState(null)
+    const isExporting = Boolean(exportingType)
+
+    const handleExportPdf = useCallback(async () => {
+        if (exportingType) {
+            return
+        }
+        try {
+            setExportingType('pdf')
+            await exportTransactionsPdf({
+                category: selectedCategory,
+                search: searchText
+            })
+        } catch (error) {
+            showToast((error && error.message) || 'Failed to export transactions to PDF.', 'danger')
+        } finally {
+            setExportingType(null)
+        }
+    }, [exportingType, selectedCategory, searchText, showToast])
+
+    const handleExportCsv = useCallback(async () => {
+        if (exportingType) {
+            return
+        }
+        try {
+            setExportingType('csv')
+            await exportTransactionsCsv({
+                category: selectedCategory,
+                search: searchText
+            })
+        } catch (error) {
+            showToast((error && error.message) || 'Failed to export transactions to CSV.', 'danger')
+        } finally {
+            setExportingType(null)
+        }
+    }, [exportingType, selectedCategory, searchText, showToast])
+
+    return { exportingType, isExporting, handleExportPdf, handleExportCsv }
+}
+
 export const TransactionsPage = (props) => {
     useDocumentTitle('Transaction History')
     const { bookings: propBookings } = props
@@ -45,8 +87,13 @@ export const TransactionsPage = (props) => {
 
     const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
     const { searchText, selectedCategory, selectedTransaction } = pageState
-    const [exportingType, setExportingType] = useState(null)
-    const isExporting = Boolean(exportingType)
+    const { show: showToast } = useToast()
+
+    const { exportingType, isExporting, handleExportPdf, handleExportCsv } = useTransactionExports({
+        selectedCategory,
+        searchText,
+        showToast
+    })
 
     const handleSearchChange = useCallback(
         (newSearchText) => updatePageState({ searchText: newSearchText }),
@@ -64,36 +111,6 @@ export const TransactionsPage = (props) => {
     )
 
     const handleCloseModal = useCallback(() => updatePageState({ selectedTransaction: null }), [updatePageState])
-
-    const handleExportPdf = useCallback(async () => {
-        if (exportingType) {
-            return
-        }
-        try {
-            setExportingType('pdf')
-            await exportTransactionsPdf({
-                category: selectedCategory,
-                search: searchText
-            })
-        } finally {
-            setExportingType(null)
-        }
-    }, [exportingType, selectedCategory, searchText])
-
-    const handleExportCsv = useCallback(async () => {
-        if (exportingType) {
-            return
-        }
-        try {
-            setExportingType('csv')
-            await exportTransactionsCsv({
-                category: selectedCategory,
-                search: searchText
-            })
-        } finally {
-            setExportingType(null)
-        }
-    }, [exportingType, selectedCategory, searchText])
 
     const flattenedTransactions = useMemo(() => flattenBookingsByEquipment(bookings), [bookings])
 

@@ -1,28 +1,34 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useSetState } from '@shared/hooks/useSetState'
 import { verifyEmail } from '@/features/auth/api/verify-email'
 import { resendVerification } from '@/features/auth/api/resend-verification'
 
 export const useVerifyOtp = ({ email, onSwitchTab }) => {
-    const [otp, setOtp] = useState('')
-    const [countdown, setCountdown] = useState(60)
-    const [error, setError] = useState('')
-    const [isVerifying, setIsVerifying] = useState(false)
-    const [isResending, setIsResending] = useState(false)
-    const [isVerified, setIsVerified] = useState(false)
+    const [state, setState] = useSetState({
+        otp: '',
+        countdown: 60,
+        error: '',
+        isVerifying: false,
+        isResending: false,
+        isVerified: false
+    })
+    const { otp, countdown, error, isVerifying, isResending, isVerified } = state
 
     useEffect(() => {
         if (countdown > 0) {
             const timer = setInterval(() => {
-                setCountdown((prev) => (prev > 0 ? prev - 1 : 0))
+                setState((prev) => ({ countdown: prev.countdown > 0 ? prev.countdown - 1 : 0 }))
             }, 1000)
             return () => clearInterval(timer)
         }
-    }, [countdown])
+    }, [countdown, setState])
 
-    const handleOtpChange = useCallback((newOtp) => {
-        setOtp(newOtp)
-        setError('')
-    }, [])
+    const handleOtpChange = useCallback(
+        (newOtp) => {
+            setState({ otp: newOtp, error: '' })
+        },
+        [setState]
+    )
 
     const handleVerify = useCallback(
         async (e) => {
@@ -33,23 +39,22 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
                 return
             }
 
-            setIsVerifying(true)
-            setError('')
+            setState({ isVerifying: true, error: '' })
 
             try {
                 await verifyEmail({ email, code: otp })
-                setIsVerified(true)
+                setState({ isVerified: true })
             } catch (error_) {
                 const message =
                     error_?.response?.data?.message ||
                     error_?.message ||
                     'Incorrect verification code. Please try again.'
-                setError(message)
+                setState({ error: message })
             } finally {
-                setIsVerifying(false)
+                setState({ isVerifying: false })
             }
         },
-        [email, otp, isVerifying]
+        [email, otp, isVerifying, setState]
     )
 
     const handleResend = useCallback(async () => {
@@ -57,21 +62,19 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
             return
         }
 
-        setIsResending(true)
-        setError('')
+        setState({ isResending: true, error: '' })
 
         try {
             await resendVerification({ email })
-            setCountdown(60)
-            setOtp('')
+            setState({ countdown: 60, otp: '' })
         } catch (error_) {
             const message =
                 error_?.response?.data?.message || error_?.message || 'Failed to resend code. Please try again later.'
-            setError(message)
+            setState({ error: message })
         } finally {
-            setIsResending(false)
+            setState({ isResending: false })
         }
-    }, [countdown, email, isResending])
+    }, [countdown, email, isResending, setState])
 
     const handleContinueToLogin = useCallback(() => {
         onSwitchTab('login')
