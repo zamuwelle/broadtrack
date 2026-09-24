@@ -8,6 +8,8 @@ Organize routed pages by business feature in `web/src/features`, with page compo
 
 Keep one React component per `.jsx` file. Name component exports to match their files. Local helpers may stay beside a component when that keeps the code clear. Import directly from defining files rather than adding barrel files. Use `@/` for web modules and `@shared/` for shared modules.
 
+The entry point in [`main.jsx`](../../frontend/web/src/main.jsx) initializes auth data from the URL before rendering the app under `StrictMode`. [`App.jsx`](../../frontend/web/src/app/App.jsx) composes the app provider and router. The provider creates the QueryClient and registers the unauthorized-response handler; the router owns role checks through `ProtectedRoute` around protected route groups.
+
 ## API data and shared code
 
 The shared [`axios.js`](../../frontend/shared/lib/axios.js) module provides the
@@ -23,7 +25,11 @@ Application-wide QueryClient defaults live in [`react-query.js`](../../frontend/
 
 API hooks under `web/src/features/*/api` may accept a `queryConfig` override when a particular consumer needs different behavior. Use overrides only for intentional differences, such as authentication-specific settings, disabled queries, or a screen-specific freshness requirement. The API module owns the query key and query function; the feature owns why it needs an override. Mutations own invalidation for the domain data they change, while the provider owns no domain behavior.
 
+Use TanStack Query for server data. Keep screen-only state in its feature. The borrow equipment selection cart is an exception to in-memory screen state: [`useBookingCartStore`](../../frontend/web/src/features/borrow/stores/useBookingCartStore.js) uses Zustand persistence in browser storage so selected equipment survives a reload. Keep this behavior in the borrow feature rather than moving it into shared code.
+
 Platform-independent helpers belong in `frontend/shared`. Existing sources include [`constants.js`](../../frontend/shared/constants.js), [`schemas/`](../../frontend/shared/schemas/), [`util/date.js`](../../frontend/shared/util/date.js), [`util/booking.js`](../../frontend/shared/util/booking.js), [`util/search.js`](../../frontend/shared/util/search.js), [`util/image.js`](../../frontend/shared/util/image.js), [`useSetState.js`](../../frontend/shared/hooks/useSetState.js), and the [`axios.js`](../../frontend/shared/lib/axios.js) and [`echo.js`](../../frontend/shared/lib/echo.js) client factories. The image helper uses the browser `Image` API to preload images; reuse it instead of duplicating that behavior.
+
+The web app's Echo client in [`lib/echo.js`](../../frontend/web/src/lib/echo.js) configures the shared factory for Reverb. The factory returns `null` when no app key is configured, so consumers must account for realtime being unavailable in that environment.
 
 ## Existing UI building blocks
 
@@ -79,4 +85,4 @@ server.
 
 ## Tooling
 
-The frontend configuration is [`vite.config.js`](../../frontend/vite.config.js). From `frontend/`, use `vp check` for lint and formatting checks, `bun run lint:frontend` for the repository’s frontend lint command, `vp fmt` for formatting, and `vp -C web build` to build the web app. `bun run check` formats the repository and runs frontend checks/build/browser checks; it can modify files. It does not run backend tests.
+The workspace lint configuration is [`vite.config.js`](../../frontend/vite.config.js), and web aliases, plugins, and the jsdom test setup are in [`web/vite.config.js`](../../frontend/web/vite.config.js). Tailwind CSS v4 theme tokens and global styles are in [`root.css`](../../frontend/web/src/root.css); feature-specific styles are imported by [`index.css`](../../frontend/web/src/index.css). From `frontend/`, use `vp check` for lint and formatting checks, `bun run lint:frontend` for the repository’s frontend lint command, `vp fmt` for formatting, and `vp -C web build` to build the web app. `bun run check` formats the repository and runs frontend checks/build/browser checks; it can modify files. It does not run backend tests.

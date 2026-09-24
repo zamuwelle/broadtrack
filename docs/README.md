@@ -2,6 +2,8 @@
 
 Developer documentation for BroadTrack, the School Equipment Borrowing and Inventory Management System for La Verdad Christian College.
 
+The [system overview](./architecture/system-overview.md) starts with users, external systems, running parts, request flow, and deployment configuration. This follows the relevant parts of [arc42](https://arc42.org/overview/) and uses [C4](https://c4model.com/) terms for system context and running parts. The linked lifecycle and reference pages hold the detailed behavior; this index remains the entry point.
+
 ---
 
 ## Documentation Index
@@ -34,10 +36,9 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-php artisan serve
 ```
 
-Backend API runs at `http://localhost:8000`.
+This prepares the backend. The API uses `http://localhost:8000` when started with the default local server settings.
 
 ### 2. Frontend Setup
 
@@ -47,7 +48,7 @@ bun install
 bun run dev
 ```
 
-Frontend Web application runs at `http://localhost:5173`.
+`bun run dev` starts the backend server, queue worker, Reverb, scheduler, and frontend server. The frontend uses `http://localhost:5173` with the default local settings.
 
 ---
 

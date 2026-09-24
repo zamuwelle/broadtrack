@@ -8,10 +8,10 @@ Booking states and equipment inventory states are separate. Their current values
 stateDiagram-v2
     [*] --> Pending: Borrower submits request
     Pending --> Approved: Admin approves
-    Pending --> Rejected: Admin rejects
-    Pending --> Cancelled: User cancels or expiry task cancels
+    Pending --> Rejected: Admin rejects or equipment enters maintenance
+    Pending --> Cancelled: Borrower/admin cancels or expiry task cancels
     Approved --> Returned: Admin records return
-    Approved --> Cancelled: User cancels when policy allows
+    Approved --> Cancelled: Borrower/admin cancels
     Rejected --> [*]
     Cancelled --> [*]
     Returned --> [*]
@@ -29,16 +29,16 @@ The persisted booking statuses are `pending`, `approved`, `rejected`, `returned`
 
 ## Equipment states
 
-Equipment status values are `available`, `booked`, `borrowed`, and `maintenance`. [`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) preserves items marked as `maintenance` or `borrowed`, and dynamically reports equipment tied to an active approved booking as `booked`. Returning a booking changes its booking status and return fields; it does not directly overwrite equipment status.
+Equipment status values are `available`, `booked`, `borrowed`, and `maintenance`. [`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) preserves items marked as `maintenance` or `borrowed`; for other items, it reports `booked` when at least one approved booking is attached. This resolved status is returned by the equipment API and does not itself update the stored equipment status. Returning a booking changes its booking status and return fields; it does not directly overwrite equipment status.
 
 The live inventory status dropdown and [`EquipmentController::update`](../../backend/app/Http/Controllers/Api/V1/EquipmentController.php) enforce the following transition rules:
 
 - **Available**: Indicates the equipment is free for reservations. An item that is currently booked cannot be set directly to available; the backend returns a 422 error (`Cannot change status while equipment is currently booked.`).
-- **Booked**: Resolved dynamically when an item has an active approved reservation. Manually setting status to booked without an active approved booking is rejected with a 422 error (`Equipment can only be marked as booked through an approved booking.`).
+- **Booked**: Resolved by the equipment API when an item has an approved booking. Manually setting status to booked without an approved booking is rejected with a 422 error (`Equipment can only be marked as booked through an approved booking.`). The booking form can still offer booked equipment when the requested interval does not overlap the approved reservation; the server checks availability for the requested dates.
 - **Borrowed**: Marks equipment in physical possession outside the normal reservation cycle. Setting status to borrowed while an item is currently booked is rejected with a 422 error. While marked borrowed, new booking submissions and approvals for this item are blocked.
-- **Maintenance**: Marks equipment undergoing inspection, repair, or servicing. When switched to maintenance, the backend automatically transitions all attached `pending` and `approved` bookings to `rejected` with the rejection reason `Equipment is under maintenance.` to clear conflicts and notify affected borrowers.
+- **Maintenance**: Marks equipment undergoing inspection, repair, or servicing. When switched to maintenance, the backend automatically transitions all attached `pending` and `approved` bookings to `rejected` with the rejection reason `Equipment is under maintenance.` Booking updates are broadcast to connected clients.
 
-The booking form can offer equipment with a `booked` status when the requested interval does not overlap an approved booking. Maintenance and borrowed equipment are excluded from availability. Availability checks are repeated while booking transitions run in a transaction with equipment locks; preserve these checks when changing booking logic.
+Maintenance and borrowed equipment are excluded from availability. Availability checks are repeated while booking transitions run in a transaction with equipment locks; preserve these checks when changing booking logic.
 
 ## Request validation and dates
 
@@ -51,6 +51,7 @@ The request summary uses [`useBookingDateDefaults`](../../frontend/web/src/featu
 - A booking request needs at least one equipment item.
 - A request with multiple equipment IDs creates one booking per item in the same database transaction, so each item has its own ticket and lifecycle.
 - Equipment conflict checks use approved bookings and half-open intervals: an existing booking conflicts when its start is before the requested end and its end is after the requested start. Pending requests do not reserve equipment.
+- Borrowers can cancel their own pending or approved bookings; admins can cancel any pending or approved booking. Other statuses cannot be cancelled through this route.
 - Approval rechecks availability under transaction locks. Do not remove the lock or conflict recheck when changing transitions.
 - Equipment with booking history cannot be deleted, preserving transaction records.
 
