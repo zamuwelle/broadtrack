@@ -65,8 +65,8 @@ class Equipment extends Model
             ->groupBy('id')
             ->map->pluck('booking');
 
-        return $equipmentItems->map(static function (Equipment $item) use ($bookingsByEquipmentId) {
-            if ($item->status === EquipmentStatus::Maintenance) {
+        return $equipmentItems->map(static function (Equipment $item) use ($bookingsByEquipmentId): Equipment {
+            if (in_array($item->status, [EquipmentStatus::Maintenance, EquipmentStatus::Borrowed], true)) {
                 return $item;
             }
 

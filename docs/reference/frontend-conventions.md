@@ -29,14 +29,14 @@ Platform-independent helpers belong in `frontend/shared`. Existing sources inclu
 
 Check the nearest component under [`components/ui`](../../frontend/web/src/components/ui/) before adding a new primitive.
 
-| Need | Existing component or hook |
-| --- | --- |
-| Labeled form control | [`FormField`](../../frontend/web/src/components/ui/form/FormField.jsx) |
+| Need                   | Existing component or hook                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Labeled form control   | [`FormField`](../../frontend/web/src/components/ui/form/FormField.jsx)                                                                                 |
 | Text or password input | [`TextInput`](../../frontend/web/src/components/ui/form/TextInput.jsx), [`PasswordInput`](../../frontend/web/src/components/ui/form/PasswordInput.jsx) |
-| Field error | [`ErrorText`](../../frontend/web/src/components/ui/form/ErrorText.jsx); the two inputs above already render it and reserve its row |
-| Button or select | [`Button`](../../frontend/web/src/components/ui/Button.jsx), [`Select`](../../frontend/web/src/components/ui/Select.jsx) |
-| Toast | [`Toast`](../../frontend/web/src/components/ui/Toast.jsx) with [`useToast`](../../frontend/web/src/hooks/ui/useToast.js) |
-| Confirmation dialog | [`ConfirmModal`](../../frontend/web/src/components/ui/ConfirmModal.jsx) |
+| Field error            | [`ErrorText`](../../frontend/web/src/components/ui/form/ErrorText.jsx); the two inputs above already render it and reserve its row                     |
+| Button or select       | [`Button`](../../frontend/web/src/components/ui/Button.jsx), [`Select`](../../frontend/web/src/components/ui/Select.jsx)                               |
+| Toast                  | [`Toast`](../../frontend/web/src/components/ui/Toast.jsx) with [`useToast`](../../frontend/web/src/hooks/ui/useToast.js)                               |
+| Confirmation dialog    | [`ConfirmModal`](../../frontend/web/src/components/ui/ConfirmModal.jsx)                                                                                |
 
 `ConfirmModal` handles focus and Escape for confirmation dialogs. Other modal shells have feature-specific behavior; check their implementation before relying on the same keyboard handling.
 

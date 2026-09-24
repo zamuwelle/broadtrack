@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Menu, X } from 'lucide-react'
+import { cn } from 'cn'
 import { Logo } from '@/components/ui/Logo'
 import { NotificationToggle } from '@/features/borrow/notifications/NotificationToggle'
 import { ProfileToggle } from '@/features/users/components/ProfileToggle'
@@ -125,7 +126,13 @@ export const BorrowNavbar = ({
                                     type="button"
                                     data-label={label}
                                     onClick={handleTabClick}
-                                    className={`w-full h-12 px-4 rounded-lg flex items-center gap-3 text-base font-medium font-['Poppins'] transition-colors ${activeTab === label ? 'bg-sky-800 text-white' : 'bg-slate-50 text-text hover:bg-accent-subtle'}`}>
+                                    className={cn(
+                                        "w-full h-12 px-4 rounded-lg flex items-center gap-3 text-base font-medium font-['Poppins'] transition-colors",
+                                        {
+                                            'bg-sky-800 text-white': activeTab === label,
+                                            'bg-slate-50 text-text hover:bg-accent-subtle': activeTab !== label
+                                        }
+                                    )}>
                                     {renderLinkIcon(resolvedIcon)}
                                     <span>{label}</span>
                                 </button>

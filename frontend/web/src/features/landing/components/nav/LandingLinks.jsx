@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import { cn } from 'cn'
 import { landingLinks } from '@/features/landing/components/nav/landingNavLinks'
 import { useActiveSection } from '@/hooks/ui/useActiveSection'
 
@@ -13,7 +14,13 @@ export const LandingLinks = () => {
                 <a
                     key={id}
                     href={href}
-                    className={`text-text text-[16px] font-semibold pb-[2px] hover:text-primary ${active === id ? 'text-primary border-b-2 border-primary' : 'border-b-2 border-transparent'}`}>
+                    className={cn(
+                        'text-text text-[16px] font-semibold pb-[2px] hover:text-primary',
+                        {
+                            'text-primary border-b-2 border-primary': active === id,
+                            'border-b-2 border-transparent': active !== id
+                        }
+                    )}>
                     {label}
                 </a>
             ))}

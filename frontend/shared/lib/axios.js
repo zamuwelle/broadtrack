@@ -4,7 +4,8 @@ export const createApi = ({ baseURL = '', getToken = () => null, onUnauthorized 
     const instance = axios.create({
         baseURL,
         headers: {
-            Accept: 'application/json'
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
 

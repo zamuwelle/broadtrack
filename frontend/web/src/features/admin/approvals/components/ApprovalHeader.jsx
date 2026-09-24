@@ -1,5 +1,6 @@
 import { formatShortDate } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
+import { cn } from 'cn'
 
 const defaultBooking = Object.freeze({})
 
@@ -40,9 +41,16 @@ export const ApprovalHeader = ({ booking = defaultBooking }) => {
 
             <div className="flex items-center gap-4 shrink-0 ml-auto">
                 {requestDateText ? <span className="text-xs text-slate-400 font-mono">{requestDateText}</span> : null}
-                <div className={`px-3.5 py-1 ${badgeConfig.bg} rounded-[10px] inline-flex justify-center items-center`}>
+                <div
+                    className={cn(
+                        'px-3.5 py-1 rounded-[10px] inline-flex justify-center items-center',
+                        badgeConfig.bg
+                    )}>
                     <span
-                        className={`${badgeConfig.text} text-[10px] font-semibold font-['Poppins'] leading-none text-center`}>
+                        className={cn(
+                            "text-[10px] font-semibold font-['Poppins'] leading-none text-center",
+                            badgeConfig.text
+                        )}>
                         {badgeConfig.label}
                     </span>
                 </div>

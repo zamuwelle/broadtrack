@@ -19,19 +19,26 @@ stateDiagram-v2
 
 The persisted booking statuses are `pending`, `approved`, `rejected`, `returned`, and `cancelled`. There is no persisted `released` state or barcode release transition. `is_overdue` is computed for an approved booking whose end date has passed; it is not a stored booking status. See [`Booking`](../../backend/app/Models/Booking.php) and [`BookingController`](../../backend/app/Http/Controllers/Api/V1/BookingController.php).
 
-| Status | Meaning |
-| --- | --- |
-| `pending` | Waiting for an administrator's decision. |
-| `approved` | Approved and included in active booking checks. |
-| `rejected` | Rejected by an administrator. |
-| `returned` | Return recorded by an administrator. |
-| `cancelled` | Cancelled by a user or by the expiry task. |
+| Status      | Meaning                                         |
+| ----------- | ----------------------------------------------- |
+| `pending`   | Waiting for an administrator's decision.        |
+| `approved`  | Approved and included in active booking checks. |
+| `rejected`  | Rejected by an administrator.                   |
+| `returned`  | Return recorded by an administrator.            |
+| `cancelled` | Cancelled by a user or by the expiry task.      |
 
 ## Equipment states
 
-Equipment status values are `available`, `booked`, `borrowed`, and `maintenance`. [`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) reports equipment tied to an approved booking as `booked`, unless its stored status is `maintenance`. This does not perform a time-based transition to `borrowed`. Returning a booking changes its booking status and return fields; it does not directly set an equipment status to `available`.
+Equipment status values are `available`, `booked`, `borrowed`, and `maintenance`. [`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) preserves items marked as `maintenance` or `borrowed`, and dynamically reports equipment tied to an active approved booking as `booked`. Returning a booking changes its booking status and return fields; it does not directly overwrite equipment status.
 
-The booking form can offer equipment with a `booked` status when the requested interval does not overlap an approved booking. Maintenance equipment is excluded from availability. Availability checks are repeated while booking transitions run in a transaction with equipment locks; preserve these checks when changing booking logic.
+The live inventory status dropdown and [`EquipmentController::update`](../../backend/app/Http/Controllers/Api/V1/EquipmentController.php) enforce the following transition rules:
+
+- **Available**: Indicates the equipment is free for reservations. An item that is currently booked cannot be set directly to available; the backend returns a 422 error (`Cannot change status while equipment is currently booked.`).
+- **Booked**: Resolved dynamically when an item has an active approved reservation. Manually setting status to booked without an active approved booking is rejected with a 422 error (`Equipment can only be marked as booked through an approved booking.`).
+- **Borrowed**: Marks equipment in physical possession outside the normal reservation cycle. Setting status to borrowed while an item is currently booked is rejected with a 422 error. While marked borrowed, new booking submissions and approvals for this item are blocked.
+- **Maintenance**: Marks equipment undergoing inspection, repair, or servicing. When switched to maintenance, the backend automatically transitions all attached `pending` and `approved` bookings to `rejected` with the rejection reason `Equipment is under maintenance.` to clear conflicts and notify affected borrowers.
+
+The booking form can offer equipment with a `booked` status when the requested interval does not overlap an approved booking. Maintenance and borrowed equipment are excluded from availability. Availability checks are repeated while booking transitions run in a transaction with equipment locks; preserve these checks when changing booking logic.
 
 ## Request validation and dates
 

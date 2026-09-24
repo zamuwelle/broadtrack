@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { ErrorText } from '@/components/ui/form/ErrorText'
 
 const noop = () => null
@@ -22,7 +23,13 @@ export const BasicFields = ({
                 value={equipmentName}
                 onChange={onNameChange}
                 placeholder="e.g. Sony Alpha A7 IV"
-                className={`h-10 px-3.5 rounded-lg border ${nameError ? 'border-red-500' : 'border-slate-300'} bg-white text-xs text-slate-900 outline-none focus:border-amber-500`}
+                className={cn(
+                    'h-10 px-3.5 rounded-lg border bg-white text-xs text-slate-900 outline-none focus:border-amber-500',
+                    {
+                        'border-red-500': Boolean(nameError),
+                        'border-slate-300': !nameError
+                    }
+                )}
             />
             <ErrorText message={nameError} />
         </div>

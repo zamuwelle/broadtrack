@@ -396,18 +396,30 @@ test('borrower can fetch calendar bookings with sanitized details', function () 
     ]);
     $otherBooking->equipments()->attach($equipment->id);
 
-    $otherPendingBooking = Booking::factory()->pending()->create(['user_id' => $otherUser->id]);
+    $otherPendingBooking = Booking::factory()->pending()->create([
+        'user_id' => $otherUser->id,
+        'purpose' => 'Secret Documentary',
+    ]);
     $otherPendingBooking->equipments()->attach($equipment->id);
 
     $response = $this->actingAs($borrower)->getJson('/api/v1/bookings?view=calendar');
 
     $response->assertOk();
-    $item = collect($response->json('data'))->firstWhere('id', $otherBooking->id);
-    expect($item)->not->toBeNull();
-    expect($item['purpose'])->toBeNull();
-    expect($item['user'])->toBeNull();
-    expect($item['user_id'])->toBeNull();
-    expect(collect($response->json('data'))->pluck('id'))->not->toContain($otherPendingBooking->id);
+    expect($response->json('data'))->toHaveCount(2);
+
+    $approvedItem = collect($response->json('data'))->firstWhere('id', $otherBooking->id);
+    expect($approvedItem)->not->toBeNull();
+    expect($approvedItem['purpose'])->toBeNull();
+    expect($approvedItem['user'])->toBeNull();
+    expect($approvedItem['user_id'])->toBeNull();
+    expect($approvedItem['status'])->toBe('approved');
+
+    $pendingItem = collect($response->json('data'))->firstWhere('id', $otherPendingBooking->id);
+    expect($pendingItem)->not->toBeNull();
+    expect($pendingItem['purpose'])->toBeNull();
+    expect($pendingItem['user'])->toBeNull();
+    expect($pendingItem['user_id'])->toBeNull();
+    expect($pendingItem['status'])->toBe('pending');
 });
 
 test('borrower booking list stays private unless calendar view is requested', function () {

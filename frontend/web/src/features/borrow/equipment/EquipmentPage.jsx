@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { cn } from 'cn'
 import { Banner } from '@/components/ui/Banner'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -116,7 +117,7 @@ export const EquipmentPage = () => {
             </div>
             <div className="mt-8">
                 {hasEquipment ? (
-                    <div className={`grid ${GRID_CLASS_MAP[columnCount]} gap-6 items-start`}>
+                    <div className={cn('grid gap-6 items-start', GRID_CLASS_MAP[columnCount])}>
                         {columns.map((column) => (
                             <div key={column.id} className="flex flex-col gap-6">
                                 {column.items.map((item) => (

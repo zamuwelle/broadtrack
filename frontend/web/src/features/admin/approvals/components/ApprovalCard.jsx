@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { getBookingStatus } from '@shared/util/booking'
 import { getOptimizedImageUrl } from '@shared/util/image'
 import { ApprovalHeader } from '@/features/admin/approvals/components/ApprovalHeader'
@@ -21,9 +22,6 @@ const getAccentColor = (status) => {
     return 'bg-amber-500'
 }
 
-const getCardBorder = (status) =>
-    status === 'rejected' || status === 'returned' ? 'border-slate-300' : 'border-slate-200'
-
 export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onReject = noop, onReturn = noop }) => {
     const handleApprove = useCallback(() => onApprove(booking), [booking, onApprove])
     const handleReject = useCallback(() => onReject(booking), [booking, onReject])
@@ -42,12 +40,17 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
     const equipmentModel = equipment.model || null
 
     const accentColor = getAccentColor(status)
-    const cardBorder = getCardBorder(status)
 
     return (
         <div
-            className={`w-full relative shadow-[0px_4px_4px_0px_rgba(0,0,0,0.18)] rounded-xl overflow-hidden bg-white border ${cardBorder} flex font-['Poppins']`}>
-            <div className={`w-[9px] shrink-0 ${accentColor}`} />
+            className={cn(
+                "w-full relative shadow-[0px_4px_4px_0px_rgba(0,0,0,0.18)] rounded-xl overflow-hidden bg-white border flex font-['Poppins']",
+                {
+                    'border-slate-300': status === 'rejected' || status === 'returned',
+                    'border-slate-200': status !== 'rejected' && status !== 'returned'
+                }
+            )}>
+            <div className={cn('w-[9px] shrink-0', accentColor)} />
 
             <div className="flex-1 p-4 sm:p-6 lg:p-7 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start min-w-0">
                 <div className="w-full h-44 sm:size-44 lg:size-48 shrink-0 rounded-lg bg-white self-center sm:self-start overflow-hidden flex items-center justify-center">

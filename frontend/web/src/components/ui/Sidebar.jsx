@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { Icon as IconComponent } from '@/components/ui/Icon'
 
 const defaultLinks = Object.freeze([])
@@ -26,7 +27,10 @@ export const Sidebar = ({ links = defaultLinks, active, onSelect, className = ''
 
     return (
         <aside
-            className={`w-[308px] h-full shrink-0 bg-white pt-[59px] px-[26px] flex flex-col gap-6 overflow-y-auto ${className}`}>
+            className={cn(
+                'w-[308px] h-full shrink-0 bg-white pt-[59px] px-[26px] flex flex-col gap-6 overflow-y-auto',
+                className
+            )}>
             {links.map(({ label, Icon, icon, divider, centered }) => {
                 const resolvedIcon = icon || Icon
                 return divider ? (
@@ -36,9 +40,15 @@ export const Sidebar = ({ links = defaultLinks, active, onSelect, className = ''
                         key={label}
                         type="button"
                         onClick={createSelectHandler(label)}
-                        className={`w-full h-16 shrink-0 rounded-lg flex items-center justify-center text-base font-medium font-['Poppins'] transition-colors cursor-pointer ${active === label ? 'bg-sky-800 text-white' : 'bg-slate-50 text-text hover:bg-accent-subtle'}`}>
+                        className={cn(
+                            "w-full h-16 shrink-0 rounded-lg flex items-center justify-center text-base font-medium font-['Poppins'] transition-colors cursor-pointer",
+                            {
+                                'bg-sky-800 text-white': active === label,
+                                'bg-slate-50 text-text hover:bg-accent-subtle': active !== label
+                            }
+                        )}>
                         {resolvedIcon ? (
-                            <div className={`flex items-center gap-2.5 ${centered ? '' : contentWidth}`}>
+                            <div className={cn('flex items-center gap-2.5', !centered && contentWidth)}>
                                 {renderIcon(resolvedIcon)}
                                 <span className="whitespace-nowrap">{label}</span>
                             </div>

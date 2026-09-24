@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
+import { cn } from 'cn'
 import { Button } from '@/components/ui/Button'
 import { XButton } from '@/components/ui/XButton'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
@@ -116,7 +117,10 @@ export const ConfirmModal = ({
                 aria-labelledby={title ? titleId : null}
                 aria-describedby={description ? descriptionId : null}
                 tabIndex={-1}
-                className={`bg-surface p-5 sm:p-6 rounded-xl border border-slate-200 shadow-2xl w-full ${maxWidth} max-h-[90dvh] overflow-y-scroll my-auto relative z-10 flex flex-col items-center text-center font-['Poppins'] gap-4`}>
+                className={cn(
+                    "bg-surface p-5 sm:p-6 rounded-xl border border-slate-200 shadow-2xl w-full max-h-[90dvh] overflow-y-scroll my-auto relative z-10 flex flex-col items-center text-center font-['Poppins'] gap-4",
+                    maxWidth
+                )}>
                 <XButton onClick={onClose} className="absolute top-5 right-5" />
                 {icon ? <div className="mb-1">{icon}</div> : null}
                 <div className="flex flex-col gap-1 w-full px-6 sm:px-8">

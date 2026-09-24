@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 
 const noop = () => null
@@ -36,17 +37,21 @@ export const FilterDropdown = ({
     }, [])
 
     return (
-        <div ref={dropdownReference} className={`relative font-['Poppins'] ${className}`}>
+        <div ref={dropdownReference} className={cn("relative font-['Poppins']", className)}>
             <button
                 type="button"
                 onClick={toggleOpen}
-                className={`w-full h-[42px] px-4 bg-white border border-border-subtle flex items-center justify-between text-[14px] font-medium text-slate-800 transition cursor-pointer ${
-                    isOpen ? 'rounded-t-[8px] rounded-b-none' : 'rounded-[8px]'
-                }`}>
+                className={cn(
+                    'w-full h-[42px] px-4 bg-white border border-border-subtle flex items-center justify-between text-[14px] font-medium text-slate-800 transition cursor-pointer',
+                    {
+                        'rounded-t-[8px] rounded-b-none': isOpen,
+                        'rounded-[8px]': !isOpen
+                    }
+                )}>
                 <span className="flex-1 min-w-0 text-left truncate mr-2">{value}</span>
                 <Icon
                     name="chevron4"
-                    className={`w-2.5 h-2.5 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    className={cn('w-2.5 h-2.5 shrink-0 transition-transform', isOpen && 'rotate-180')}
                 />
             </button>
             {isOpen ? (
@@ -56,11 +61,13 @@ export const FilterDropdown = ({
                             key={optionName}
                             type="button"
                             onClick={createSelectHandler(optionName)}
-                            className={`w-full h-[38px] shrink-0 text-left px-3 flex items-center text-[14px] rounded-[6px] transition cursor-pointer ${
-                                value === optionName
-                                    ? 'bg-border-focus font-medium text-slate-900'
-                                    : 'text-slate-800 hover:bg-slate-100 font-normal'
-                            }`}>
+                            className={cn(
+                                'w-full h-[38px] shrink-0 text-left px-3 flex items-center text-[14px] rounded-[6px] transition cursor-pointer',
+                                {
+                                    'bg-border-focus font-medium text-slate-900': value === optionName,
+                                    'text-slate-800 hover:bg-slate-100 font-normal': value !== optionName
+                                }
+                            )}>
                             <span className="truncate">{optionName}</span>
                         </button>
                     ))}

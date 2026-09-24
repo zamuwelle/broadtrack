@@ -53,12 +53,12 @@ Frontend Web application runs at `http://localhost:5173`.
 
 ## Common Developer Commands
 
-| Command | Action |
-| --- | --- |
-| `cd frontend && bun run dev` | Start the Laravel server, queue worker, Reverb, Vite, and scheduler workers for full-stack development. |
-| `cd frontend && bun run dev:frontend` | Start only the Vite frontend development server. |
-| `cd frontend && vp check` | Check frontend lint and formatting. |
-| `cd frontend && vp -C web build` | Build the web application. |
-| `cd frontend && bun run test:backend` | Run backend tests. |
-| `cd frontend && bun run lint:backend` | Run the Pint check. |
-| `cd frontend && bun run check` | Format the repository, run lint/build/browser checks; may modify files and does not run backend tests. |
+| Command                               | Action                                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `cd frontend && bun run dev`          | Start the Laravel server, queue worker, Reverb, Vite, and scheduler workers for full-stack development. |
+| `cd frontend && bun run dev:frontend` | Start only the Vite frontend development server.                                                        |
+| `cd frontend && vp check`             | Check frontend lint and formatting.                                                                     |
+| `cd frontend && vp -C web build`      | Build the web application.                                                                              |
+| `cd frontend && bun run test:backend` | Run backend tests.                                                                                      |
+| `cd frontend && bun run lint:backend` | Run the Pint check.                                                                                     |
+| `cd frontend && bun run check`        | Format the repository, run lint/build/browser checks; may modify files and does not run backend tests.  |

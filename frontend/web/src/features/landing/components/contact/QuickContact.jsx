@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { cn } from 'cn'
 import { contactSchema } from '@shared/schemas/contact'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useCreateContact } from '@/features/landing/api/create-contact'
@@ -96,7 +97,13 @@ export const QuickContact = () => {
                 />
             ) : null}
             <div
-                className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center transition-transform duration-300 drop-shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-[calc(100%-28px)] sm:translate-x-[calc(100%-32px)]'}`}>
+                className={cn(
+                    'fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center transition-transform duration-300 drop-shadow-2xl',
+                    {
+                        'translate-x-0': isOpen,
+                        'translate-x-[calc(100%-28px)] sm:translate-x-[calc(100%-32px)]': !isOpen
+                    }
+                )}>
                 <button
                     type="button"
                     aria-label={isOpen ? 'Close Contact Panel' : 'Open Contact Panel'}

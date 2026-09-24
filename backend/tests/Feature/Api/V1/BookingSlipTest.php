@@ -16,11 +16,16 @@ test('borrower can download their own borrowing slip as PDF', function () {
     ]);
     $booking->equipments()->attach($equipment->id);
 
-    $response = $this->actingAs($borrower)->get("/api/v1/bookings/{$booking->id}/slip/pdf");
+    $response = $this->actingAs($borrower)->get("/api/v1/bookings/{$booking->id}/slip");
 
     $response->assertOk()
         ->assertHeader('content-type', 'application/pdf');
     expect($response->getContent())->not->toBeEmpty();
+    expect($response->headers->get('content-disposition'))->toContain('inline');
+
+    $legacyResponse = $this->actingAs($borrower)->get("/api/v1/bookings/{$booking->id}/slip/pdf");
+    $legacyResponse->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
 });
 
 test('admin can download any borrower borrowing slip as PDF', function () {

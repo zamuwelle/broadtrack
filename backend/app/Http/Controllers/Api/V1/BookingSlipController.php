@@ -22,6 +22,6 @@ class BookingSlipController extends ApiController
             'booking' => $booking,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download("borrowing_slip_{$booking->ticket_id}.pdf");
+        return $pdf->stream("borrowing_slip_{$booking->ticket_id}.pdf");
     }
 }

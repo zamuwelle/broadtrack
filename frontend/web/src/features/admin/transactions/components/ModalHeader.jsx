@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import { cn } from 'cn'
 
 const defaultBadge = Object.freeze({ className: '', label: '' })
 const noop = () => null
@@ -15,7 +16,10 @@ export const ModalHeader = ({
             <div className="flex items-center gap-3">
                 <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{equipmentTitle}</h2>
                 <span
-                    className={`px-2.5 py-0.5 border rounded-2xl text-[10px] font-semibold ${equipmentBadge.className}`}>
+                    className={cn(
+                        'px-2.5 py-0.5 border rounded-2xl text-[10px] font-semibold',
+                        equipmentBadge.className
+                    )}>
                     {equipmentBadge.label}
                 </span>
             </div>

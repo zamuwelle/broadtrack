@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { cn } from 'cn'
 import { loginSchema } from '@shared/schemas/auth'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -227,7 +228,10 @@ export const LoginForm = ({
                 <button
                     type="submit"
                     disabled={isPending || !isValid}
-                    className={`${submitClass} ${isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`}>
+                    className={cn(submitClass, {
+                        'hover:opacity-90': isValid,
+                        'opacity-50 cursor-not-allowed': !isValid
+                    })}>
                     {isPending ? 'Signing in...' : 'Sign In'}
                 </button>
             </form>

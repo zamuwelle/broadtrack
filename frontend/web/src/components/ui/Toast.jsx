@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 
 const getBackgroundColor = (type, color) => {
@@ -29,7 +30,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         color === 'var(--color-border-focus)' ||
         color === '#BBD7EE'
     const backgroundColor = getBackgroundColor(type, color)
-    const contentColor = isWelcome ? 'text-primary' : 'text-white'
+    const contentColor = cn({ 'text-primary': isWelcome, 'text-white': !isWelcome })
     const containerStyle = useMemo(() => ({ backgroundColor }), [backgroundColor])
 
     useEffect(() => {
@@ -72,9 +73,18 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
     return (
         <div
             onTransitionEnd={handleTransitionEnd}
-            className={`fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${show && isVisible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+            className={cn(
+                'fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                {
+                    'opacity-100 translate-y-0 pointer-events-auto': show && isVisible,
+                    'opacity-0 -translate-y-4 pointer-events-none': !(show && isVisible)
+                }
+            )}>
             <div
-                className={`flex items-center gap-2.5 shadow-lg ${contentColor} ${isAlert ? 'h-10 px-3 py-2 rounded-md' : 'h-[50px] px-4 rounded-[8px] justify-center'}`}
+                className={cn('flex items-center gap-2.5 shadow-lg', contentColor, {
+                    'h-10 px-3 py-2 rounded-md': isAlert,
+                    'h-[50px] px-4 rounded-[8px] justify-center': !isAlert
+                })}
                 style={containerStyle}>
                 {isAlert ? (
                     <div className="size-5 flex items-center justify-center shrink-0">
@@ -82,7 +92,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
                     </div>
                 ) : (
                     <svg
-                        className={`w-4 h-4 shrink-0 ${contentColor}`}
+                        className={cn('w-4 h-4 shrink-0', contentColor)}
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -94,7 +104,10 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
                     </svg>
                 )}
                 <p
-                    className={`whitespace-nowrap leading-none font-['Poppins'] ${contentColor} ${isAlert ? 'text-xs font-semibold' : 'text-[12px] font-normal'}`}>
+                    className={cn("whitespace-nowrap leading-none font-['Poppins']", contentColor, {
+                        'text-xs font-semibold': isAlert,
+                        'text-[12px] font-normal': !isAlert
+                    })}>
                     {message}
                 </p>
             </div>

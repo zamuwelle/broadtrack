@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 
 const defaultItem = Object.freeze({})
 const noop = () => null
@@ -14,13 +15,18 @@ export const AdminMobileLinkItem = ({ item = defaultItem, activeTab = '', onSele
     }
 
     const isActive = activeTab === label
-    const buttonClass = isActive ? 'bg-sky-800 text-white' : 'bg-slate-50 text-text hover:bg-accent-subtle'
 
     return (
         <button
             type="button"
             onClick={handleClick}
-            className={`w-full h-12 px-4 rounded-lg flex items-center gap-3 text-base font-medium transition-colors ${buttonClass}`}>
+            className={cn(
+                'w-full h-12 px-4 rounded-lg flex items-center gap-3 text-base font-medium transition-colors',
+                {
+                    'bg-sky-800 text-white': isActive,
+                    'bg-slate-50 text-text hover:bg-accent-subtle': !isActive
+                }
+            )}>
             {Icon ? <Icon className="size-5 shrink-0" /> : null}
             <span>{label}</span>
         </button>

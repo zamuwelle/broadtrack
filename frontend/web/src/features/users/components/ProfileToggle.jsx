@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 import { ProfileMenu } from '@/features/users/components/ProfileMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -35,7 +36,10 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
             <button
                 type="button"
                 onClick={handleToggle}
-                className={`h-9 p-1.5 rounded-[8px] flex items-center gap-2 transition-colors ${open ? 'bg-sky-200' : 'bg-background'}`}>
+                className={cn('h-9 p-1.5 rounded-[8px] flex items-center gap-2 transition-colors', {
+                    'bg-sky-200': open,
+                    'bg-background': !open
+                })}>
                 {profilePicture ? (
                     <img
                         src={profilePicture}
@@ -49,7 +53,7 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
                 <span className="hidden lg:inline text-[16px] font-medium text-text min-w-[60px] capitalize">
                     {firstName}
                 </span>
-                <Icon name="chevron" className={`hidden lg:inline transition-transform ${open ? 'rotate-180' : ''}`} />
+                <Icon name="chevron" className={cn('hidden lg:inline transition-transform', open && 'rotate-180')} />
             </button>
             {open && (
                 <div className="absolute right-0 top-full mt-2">

@@ -1,3 +1,5 @@
+import { cn } from 'cn'
+
 const defaultTransactions = Object.freeze([])
 const defaultBooking = Object.freeze({})
 
@@ -49,7 +51,7 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
                     <div className="text-sm font-semibold text-gray-900 truncate">{equipmentTitle}</div>
                     <div className="text-xs font-normal text-gray-600 mt-0.5 truncate">{borrowerInfo}</div>
                 </div>
-                <span className={`px-2.5 py-1 text-[11px] font-semibold shrink-0 ${statusBadge.className}`}>
+                <span className={cn('px-2.5 py-1 text-[11px] font-semibold shrink-0', statusBadge.className)}>
                     {statusBadge.label}
                 </span>
             </div>
@@ -68,7 +70,10 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
 
             <div className="hidden md:flex md:w-44 md:justify-end shrink-0 self-center">
                 <div
-                    className={`px-3.5 py-2 text-xs font-semibold inline-flex items-center justify-center ${statusBadge.className}`}>
+                    className={cn(
+                        'px-3.5 py-2 text-xs font-semibold inline-flex items-center justify-center',
+                        statusBadge.className
+                    )}>
                     {statusBadge.label}
                 </div>
             </div>

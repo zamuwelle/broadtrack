@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { SelectedEquipmentList } from '@/features/borrow/request/components/SelectedEquipmentList'
 import { BookingDateInputs } from '@/features/borrow/request/components/BookingDateInputs'
 import { XButton } from '@/components/ui/XButton'
@@ -87,11 +88,13 @@ export const SummaryFormView = (props) => {
                     type="button"
                     disabled={!isSubmittable}
                     onClick={onSubmit}
-                    className={`h-10 rounded-lg px-3 py-2 text-base font-medium transition-colors font-['Poppins'] ${
-                        isSubmittable
-                            ? 'bg-sky-800 text-white hover:bg-sky-900 cursor-pointer'
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}>
+                    className={cn(
+                        "h-10 rounded-lg px-3 py-2 text-base font-medium transition-colors font-['Poppins']",
+                        {
+                            'bg-sky-800 text-white hover:bg-sky-900 cursor-pointer': isSubmittable,
+                            'bg-slate-200 text-slate-400 cursor-not-allowed': !isSubmittable
+                        }
+                    )}>
                     {isSubmitting ? 'Submitting...' : 'Submit Request'}
                 </button>
             </div>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { cn } from 'cn'
 import { resolveBookingScheduleStatus } from '@shared/util/booking'
 
 const defaultBookings = Object.freeze([])
@@ -44,22 +45,31 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
         <button
             type="button"
             onClick={handleClick}
-            className={`aspect-square lg:aspect-auto h-full min-h-0 lg:min-h-[56px] rounded-lg outline outline-1 outline-offset-[-1px] flex flex-col items-center justify-between pt-1 pb-1 lg:pt-2 lg:pb-2 px-0.5 lg:px-1 transition cursor-pointer ${getCellClasses(isSelected, hasActiveBooking, hasPendingBooking)}`}>
+            className={cn(
+                'aspect-square lg:aspect-auto h-full min-h-0 lg:min-h-[56px] rounded-lg outline outline-1 outline-offset-[-1px] flex flex-col items-center justify-between pt-1 pb-1 lg:pt-2 lg:pb-2 px-0.5 lg:px-1 transition cursor-pointer',
+                getCellClasses(isSelected, hasActiveBooking, hasPendingBooking)
+            )}>
             <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs lg:text-sm font-medium pointer-events-none ${
-                    isSelected ? 'bg-calendar-blue text-primary-dark font-semibold' : 'text-slate-800'
-                }`}>
+                className={cn(
+                    'w-6 h-6 rounded-full flex items-center justify-center text-xs lg:text-sm font-medium pointer-events-none',
+                    {
+                        'bg-calendar-blue text-primary-dark font-semibold': isSelected,
+                        'text-slate-800': !isSelected
+                    }
+                )}>
                 {day}
             </div>
             <div className="flex items-center justify-center gap-1 flex-wrap max-w-full px-0.5 pointer-events-none min-h-[8px]">
                 {displayBookings.map((booking) => {
                     const scheduleStatus = resolveBookingScheduleStatus(booking)
-                    const dotColorClass = scheduleStatus === 'active' ? 'bg-green-500' : 'bg-amber-500'
 
                     return (
                         <div
                             key={`dot-${booking.id ?? booking.ticket_id}`}
-                            className={`w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full shrink-0 ${dotColorClass}`}
+                            className={cn('w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full shrink-0', {
+                                'bg-green-500': scheduleStatus === 'active',
+                                'bg-amber-500': scheduleStatus !== 'active'
+                            })}
                         />
                     )
                 })}

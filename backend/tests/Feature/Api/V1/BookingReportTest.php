@@ -19,6 +19,7 @@ test('admin can export transactions report as PDF', function () {
     $response->assertOk()
         ->assertHeader('content-type', 'application/pdf');
     expect($response->getContent())->not->toBeEmpty();
+    expect($response->headers->get('content-disposition'))->toContain('inline');
 });
 
 test('admin can export transactions report as CSV with UTF-8 BOM', function () {

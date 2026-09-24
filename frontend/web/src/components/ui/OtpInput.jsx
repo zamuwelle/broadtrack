@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { cn } from 'cn'
 
 export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, disabled = false }) => {
     const containerRef = useRef(null)
@@ -83,9 +84,6 @@ export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, 
         [length, onChange]
     )
 
-    const invalidBorder = isInvalid ? 'outline-red-500 bg-red-50/20 text-red-600' : 'outline-slate-300'
-    const focusStyle = isInvalid ? 'focus:outline-red-500' : 'focus:outline-primary focus:outline-2'
-
     return (
         <div ref={containerRef} className="w-full flex items-center justify-between gap-2" onPaste={handlePaste}>
             {digits.map((slot) => (
@@ -101,7 +99,13 @@ export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, 
                     value={slot.char}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    className={`w-12 h-10 text-center text-sm font-semibold text-black rounded-lg outline outline-1 outline-offset-[-1px] transition-all bg-white font-['Poppins'] ${invalidBorder} ${focusStyle} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={cn(
+                        "w-12 h-10 text-center text-sm font-semibold text-black rounded-lg outline outline-1 outline-offset-[-1px] transition-all bg-white font-['Poppins'] disabled:opacity-50 disabled:cursor-not-allowed",
+                        {
+                            'outline-red-500 bg-red-50/20 text-red-600 focus:outline-red-500': isInvalid,
+                            'outline-slate-300 focus:outline-primary focus:outline-2': !isInvalid
+                        }
+                    )}
                 />
             ))}
         </div>

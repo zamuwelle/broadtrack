@@ -25,10 +25,10 @@ export const PasswordInput = ({
             <div className="relative">
                 <input
                     type={isVisible ? 'text' : 'password'}
-                    className={cn(
-                        className || 'w-full border h-10 pl-3 pr-10 rounded-lg text-[14px] outline-none',
-                        error ? 'border-red-500' : 'border-gray-300'
-                    )}
+                    className={cn(className || 'w-full border h-10 pl-3 pr-10 rounded-lg text-[14px] outline-none', {
+                        'border-red-500': Boolean(error),
+                        'border-gray-300': !error
+                    })}
                     value={value}
                     onChange={onChange}
                     {...rest}

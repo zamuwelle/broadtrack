@@ -2,12 +2,12 @@
 
 [`backend/routes/console.php`](../../backend/routes/console.php) maps scheduled commands. The application scheduler must be run by the deployment environment; this repository does not establish that production is running it.
 
-| Command | Schedule | Effect |
-| --- | --- | --- |
-| `bookings:cancel-expired` | Every minute, `Asia/Manila` | Cancels pending bookings whose `end_date` is before the current time and records an expiry reason. |
-| `reminders:send-return-due-emails` | Daily, `Asia/Manila` | Enqueues due-soon and overdue return reminders for approved, unreturned bookings. |
-| `sanctum:prune-expired --hours=24` | Daily, `Asia/Manila` | Prunes expired Sanctum tokens using Laravel's command. |
-| `model:prune --model=App\Models\User` | Daily, `Asia/Manila` | Runs the user model's pruning query for unverified accounts. |
+| Command                               | Schedule                    | Effect                                                                                             |
+| ------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `bookings:cancel-expired`             | Every minute, `Asia/Manila` | Cancels pending bookings whose `end_date` is before the current time and records an expiry reason. |
+| `reminders:send-return-due-emails`    | Daily, `Asia/Manila`        | Enqueues due-soon and overdue return reminders for approved, unreturned bookings.                  |
+| `sanctum:prune-expired --hours=24`    | Daily, `Asia/Manila`        | Prunes expired Sanctum tokens using Laravel's command.                                             |
+| `model:prune --model=App\Models\User` | Daily, `Asia/Manila`        | Runs the user model's pruning query for unverified accounts.                                       |
 
 ## Pending booking expiry
 

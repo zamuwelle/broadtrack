@@ -31,7 +31,7 @@ class BookingReportController extends ApiController
 
         $timestamp = now()->timezone('Asia/Manila')->format('Ymd_His');
 
-        return $pdf->download("transactions_report_{$timestamp}.pdf");
+        return $pdf->stream("transactions_report_{$timestamp}.pdf");
     }
 
     public function exportCsv(Request $request): StreamedResponse
@@ -88,7 +88,7 @@ class BookingReportController extends ApiController
             }
 
             fclose($handle);
-        }, $filename, $headers);
+        }, $filename, $headers, 'inline');
     }
 
     private function getFilteredBookings(Request $request): Collection

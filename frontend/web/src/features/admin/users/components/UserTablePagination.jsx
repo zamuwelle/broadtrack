@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 
 const noop = () => null
@@ -33,14 +34,19 @@ export const UserTablePagination = ({
             </button>
             {pageNumbers.map((pageNumber) => {
                 const isActive = pageNumber === activePage
-                const colorClass = isActive ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-slate-50'
                 return (
                     <button
                         key={pageNumber}
                         type="button"
                         data-page={pageNumber}
                         onClick={handlePageClick}
-                        className={`h-10 w-10 flex items-center justify-center text-xs font-normal border-r border-slate-300 last:border-r-0 cursor-pointer ${colorClass}`}>
+                        className={cn(
+                            'h-10 w-10 flex items-center justify-center text-xs font-normal border-r border-slate-300 last:border-r-0 cursor-pointer',
+                            {
+                                'bg-blue-600 text-white': isActive,
+                                'text-blue-600 hover:bg-slate-50': !isActive
+                            }
+                        )}>
                         {pageNumber}
                     </button>
                 )

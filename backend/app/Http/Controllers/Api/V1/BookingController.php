@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Enums\EquipmentStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ApproveBookingRequest;
 use App\Http\Requests\Api\V1\IndexBookingRequest;
@@ -30,7 +31,7 @@ class BookingController extends ApiController
         if ($user && $user->isAdmin()) {
             $query = Booking::query();
         } elseif ($request->validated('view') === 'calendar') {
-            $query = Booking::active();
+            $query = Booking::whereIn('status', [BookingStatus::Approved, BookingStatus::Pending]);
         } else {
             $query = $user->bookings();
         }
@@ -58,7 +59,7 @@ class BookingController extends ApiController
         return DB::transaction(function () use ($request, $equipmentIds, $startDate, $endDate): JsonResponse {
             $equipment = Equipment::whereIn('id', $equipmentIds)->orderBy('id')->lockForUpdate()->get();
 
-            if ($equipment->count() !== count($equipmentIds) || $equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
+            if ($equipment->count() !== count($equipmentIds) || $equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance() || $item->status === EquipmentStatus::Borrowed)) {
                 return $this->error('One or more selected items are unavailable.', 422);
             }
 
@@ -116,6 +117,10 @@ class BookingController extends ApiController
 
             if ($equipment->contains(static fn (Equipment $item): bool => $item->isUnderMaintenance())) {
                 return $this->error('Equipment under maintenance cannot be approved.', 422);
+            }
+
+            if ($equipment->contains(static fn (Equipment $item): bool => $item->status === EquipmentStatus::Borrowed)) {
+                return $this->error('Equipment that is currently borrowed cannot be approved.', 422);
             }
 
             $hasOverlap = Booking::overlapping($booking->start_date, $booking->end_date)

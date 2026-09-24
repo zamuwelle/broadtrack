@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import flatpickr from 'flatpickr'
 import 'flatpickr/dist/flatpickr.min.css'
+import { cn } from 'cn'
 import { formatDate } from '@shared/util/date'
 import { Icon } from '@/components/ui/Icon'
 
@@ -111,10 +112,6 @@ export const BookingDateInputs = (props) => {
 
     const startLabel = startDate ? formatDate(startDate) : 'Select start date & time'
     const endLabel = endDate ? formatDate(endDate) : 'Select end date & time'
-    const startOutlineClass = isStartInvalid ? 'outline-red-500' : 'outline-slate-300'
-    const endOutlineClass = isEndInvalid ? 'outline-red-500' : 'outline-slate-300'
-    const startTextClass = startDate ? 'text-black' : 'text-neutral-400'
-    const endTextClass = endDate ? 'text-black' : 'text-neutral-400'
 
     return (
         <div className="flex flex-col lg:flex-row w-full items-start justify-start gap-3 lg:gap-4">
@@ -123,9 +120,15 @@ export const BookingDateInputs = (props) => {
                     Start Date <span className="text-red-500">*</span>
                 </div>
                 <div
-                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${startOutlineClass}`}>
+                    className={cn(
+                        'relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer outline-slate-300',
+                        isStartInvalid && 'outline-red-500'
+                    )}>
                     <span
-                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${startTextClass}`}>
+                        className={cn(
+                            "text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate text-neutral-400",
+                            startDate && 'text-black'
+                        )}>
                         {startLabel}
                     </span>
                     <Icon name="calendar" className="size-4 shrink-0 pointer-events-none" />
@@ -143,9 +146,15 @@ export const BookingDateInputs = (props) => {
                     End Date <span className="text-red-500">*</span>
                 </div>
                 <div
-                    className={`relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer ${endOutlineClass}`}>
+                    className={cn(
+                        'relative flex h-10 w-full items-center justify-between rounded-lg bg-slate-50 px-3 outline outline-1 outline-offset-[-1px] cursor-pointer outline-slate-300',
+                        isEndInvalid && 'outline-red-500'
+                    )}>
                     <span
-                        className={`text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate ${endTextClass}`}>
+                        className={cn(
+                            "text-xs font-normal font-['Poppins'] whitespace-nowrap select-none mr-2 truncate text-neutral-400",
+                            endDate && 'text-black'
+                        )}>
                         {endLabel}
                     </span>
                     <Icon name="calendar" className="size-4 shrink-0 pointer-events-none" />

@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { resolveBookingScheduleStatus } from '@shared/util/booking'
 import { getOptimizedImageUrl } from '@shared/util/image'
 
@@ -6,11 +7,16 @@ const defaultBooking = Object.freeze({})
 export const BookingCardItem = ({ booking = defaultBooking }) => {
     const scheduleStatus = resolveBookingScheduleStatus(booking)
     const isActive = scheduleStatus === 'active'
-    const cardBorderClass = isActive ? 'border-green-500' : 'border-amber-500'
 
     return (
         <div
-            className={`w-full min-h-32 pr-3 lg:pr-9 bg-white rounded-xl border-l-[6px] border-r border-t border-b overflow-hidden flex items-stretch font-['Poppins'] ${cardBorderClass}`}>
+            className={cn(
+                "w-full min-h-32 pr-3 lg:pr-9 bg-white rounded-xl border-l-[6px] border-r border-t border-b overflow-hidden flex items-stretch font-['Poppins']",
+                {
+                    'border-green-500': isActive,
+                    'border-amber-500': !isActive
+                }
+            )}>
             <div className="w-20 lg:w-28 shrink-0 bg-white border-r border-slate-200 p-2 flex items-center justify-center self-stretch">
                 {booking.equipmentImage ? (
                     <img
@@ -37,19 +43,18 @@ export const BookingCardItem = ({ booking = defaultBooking }) => {
                             </div>
                         ) : null}
                     </div>
-                    {isActive ? (
-                        <div className="h-6 px-1.5 py-1 bg-green-500 rounded-xl inline-flex justify-center items-center gap-2.5 shrink-0">
-                            <div className="text-center justify-start text-white text-xs font-semibold font-['Poppins']">
-                                ACTIVE
-                            </div>
+                    <div
+                        className={cn(
+                            "h-6 px-1.5 py-1 rounded-xl inline-flex justify-center items-center gap-2.5 shrink-0",
+                            {
+                                'bg-green-500': isActive,
+                                'bg-amber-500': !isActive
+                            }
+                        )}>
+                        <div className="text-center justify-start text-white text-xs font-semibold font-['Poppins']">
+                            {isActive ? 'ACTIVE' : 'PENDING'}
                         </div>
-                    ) : (
-                        <div className="h-6 px-1.5 py-1 bg-amber-500 rounded-xl inline-flex justify-center items-center gap-2.5 shrink-0">
-                            <div className="text-center justify-start text-white text-xs font-semibold font-['Poppins']">
-                                PENDING
-                            </div>
-                        </div>
-                    )}
+                    </div>
                 </div>
 
                 {booking.borrowerName ? (

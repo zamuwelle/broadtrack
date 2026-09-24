@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { getBookingStatus, getBookingStatusBadge } from '@shared/util/booking'
 import { formatSimpleDate } from '@shared/util/date'
 
@@ -58,7 +59,10 @@ export const TransactionTableRow = ({ booking = defaultBooking, onViewDetails = 
             </td>
             <td className="px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-6 lg:py-4 whitespace-nowrap">
                 <span
-                    className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg inline-flex items-center justify-center ${badgeClass}`}>
+                    className={cn(
+                        'px-2.5 py-1 text-[10px] font-semibold rounded-lg inline-flex items-center justify-center',
+                        badgeClass
+                    )}>
                     {statusBadge.label}
                 </span>
             </td>

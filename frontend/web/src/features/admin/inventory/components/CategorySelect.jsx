@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 
 const defaultOptions = Object.freeze([])
@@ -42,19 +43,24 @@ export const CategorySelect = ({
 
     const selectedOption = options.find((option) => String(option.id) === String(value))
 
-    const roundedClass = isOpen ? 'rounded-t-[8px]' : 'rounded-[8px]'
-    const borderClass = error ? 'border-red-500' : 'border-border-subtle'
-
     return (
         <div className="relative font-['Poppins']" ref={dropdownReference}>
             <button
                 type="button"
                 onClick={onToggle}
-                className={`w-full h-[40px] px-3.5 ${roundedClass} border ${borderClass} text-[14px] bg-white flex items-center justify-between cursor-pointer outline-none focus:border-amber-500`}>
-                <span className={selectedOption ? 'text-text' : 'text-muted'}>
+                className={cn(
+                    'w-full h-[40px] px-3.5 border text-[14px] bg-white flex items-center justify-between cursor-pointer outline-none focus:border-amber-500',
+                    {
+                        'rounded-t-[8px]': isOpen,
+                        'rounded-[8px]': !isOpen,
+                        'border-red-500': Boolean(error),
+                        'border-border-subtle': !error
+                    }
+                )}>
+                <span className={cn({ 'text-text': Boolean(selectedOption), 'text-muted': !selectedOption })}>
                     {selectedOption ? selectedOption.name : placeholder}
                 </span>
-                <Icon name="chevron5" className={`text-slate-600 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                <Icon name="chevron5" className={cn('text-slate-600 shrink-0', isOpen && 'rotate-180')} />
             </button>
 
             {isOpen && (

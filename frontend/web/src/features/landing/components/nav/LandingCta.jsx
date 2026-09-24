@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { Button } from '@/components/ui/Button'
 
 export const LandingCta = ({
@@ -11,7 +12,7 @@ export const LandingCta = ({
         <Button onClick={onOpenRegister} className={buttonClassName}>
             Sign Up
         </Button>
-        <Button onClick={onOpenLogin} className={`${buttonClassName} ${loginClassName}`} variant="secondary">
+        <Button onClick={onOpenLogin} className={cn(buttonClassName, loginClassName)} variant="secondary">
             Login
         </Button>
     </div>

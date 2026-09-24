@@ -47,6 +47,7 @@ Route::prefix('v1')->group(function () {
         // Bookings
         Route::get('/bookings', [BookingController::class, 'index']);
         Route::get('/bookings/{booking}', [BookingController::class, 'show']);
+        Route::get('/bookings/{booking}/slip', [BookingSlipController::class, 'show']);
         Route::get('/bookings/{booking}/slip/pdf', [BookingSlipController::class, 'show']);
         Route::put('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
 

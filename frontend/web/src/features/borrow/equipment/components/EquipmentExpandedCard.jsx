@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { StatusBadge } from '@/features/borrow/equipment/components/StatusBadge'
 import { XButton } from '@/components/ui/XButton'
 import { ScheduleNotice } from '@/features/borrow/equipment/components/ScheduleNotice'
@@ -21,7 +22,13 @@ export const EquipmentExpandedCard = ({
     return (
         <div className="scroll-mb-[24px] w-full overflow-hidden rounded-[8px] border border-border-subtle bg-surface shadow-[0px_4px_4px_rgba(0,0,0,0.05)]">
             <div
-                className={`relative flex h-[267px] items-start justify-end gap-[14px] border-b border-border-subtle ${equipment.image ? 'bg-white' : 'bg-slate-100'} pr-[19px] pt-[22px]`}>
+                className={cn(
+                    'relative flex h-[267px] items-start justify-end gap-[14px] border-b border-border-subtle pr-[19px] pt-[22px]',
+                    {
+                        'bg-white': Boolean(equipment.image),
+                        'bg-slate-100': !equipment.image
+                    }
+                )}>
                 {equipment.image ? (
                     <div className="absolute inset-0 flex items-center justify-center p-4 pt-10 pointer-events-none">
                         <img

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { cn } from 'cn'
 import { LandingCta } from '@/features/landing/components/nav/LandingCta'
 import { LandingLinks } from '@/features/landing/components/nav/LandingLinks'
 import { landingLinks } from '@/features/landing/components/nav/landingNavLinks'
@@ -44,7 +45,13 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
 
     return (
         <nav
-            className={`fixed top-0 left-0 w-full h-16 md:h-20 z-40 transition-all duration-150 ease-in bg-white ${scrollDirection === 'down' && !isAtTop ? '-translate-y-full shadow-none' : 'translate-y-0 shadow-sm'}`}>
+            className={cn(
+                'fixed top-0 left-0 w-full h-16 md:h-20 z-40 transition-all duration-150 ease-in bg-white',
+                {
+                    '-translate-y-full shadow-none': scrollDirection === 'down' && !isAtTop,
+                    'translate-y-0 shadow-sm': scrollDirection !== 'down' || isAtTop
+                }
+            )}>
             <div className="w-full px-6 md:px-12 lg:px-[90px] h-full flex items-center justify-between">
                 <div className="flex-1 flex items-center justify-start">
                     <Logo />

@@ -1,3 +1,5 @@
+import { cn } from 'cn'
+
 const statusBadgeMap = Object.freeze({
     approved: {
         bg: 'bg-green-500/20',
@@ -43,8 +45,12 @@ export const SlipStatusBadge = ({ status = '' }) => {
 
     return (
         <div
-            className={`h-6 px-2 py-0.5 ${badge.bg} rounded-xl outline outline-[0.50px] outline-offset-[-0.50px] ${badge.outline} flex items-center justify-center`}>
-            <span className={`text-center ${badge.text} text-xs font-semibold`}>
+            className={cn(
+                'h-6 px-2 py-0.5 rounded-xl outline outline-[0.50px] outline-offset-[-0.50px] flex items-center justify-center',
+                badge.bg,
+                badge.outline
+            )}>
+            <span className={cn('text-center text-xs font-semibold', badge.text)}>
                 {normalizedStatus === 'canceled' ? 'CANCELLED' : normalizedStatus.toUpperCase()}
             </span>
         </div>

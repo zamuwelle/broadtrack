@@ -1,4 +1,5 @@
 import { Ban, Check } from 'lucide-react'
+import { cn } from 'cn'
 
 export const DecisionForm = (props) => {
     const {
@@ -18,13 +19,10 @@ export const DecisionForm = (props) => {
         ? 'e.g. Approved. Please pick up at DSR 101 before 1:00 PM.'
         : 'e.g. The equipment is scheduled for maintenance.'
 
-    const borderClass = isApprove ? 'focus:border-amber-500' : 'focus:border-rose-500'
-
     let submitLabel = isApprove ? 'Confirm Approval' : 'Confirm Rejection'
     if (isSubmitting) {
         submitLabel = isApprove ? 'Approving...' : 'Rejecting...'
     }
-    const buttonClass = isApprove ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'
 
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-4 mt-5">
@@ -75,7 +73,13 @@ export const DecisionForm = (props) => {
                     value={text}
                     onChange={onTextChange}
                     placeholder={placeholder}
-                    className={`w-full text-xs p-3 rounded-lg border border-slate-300 focus:outline-none text-slate-800 resize-none ${borderClass}`}
+                    className={cn(
+                        'w-full text-xs p-3 rounded-lg border border-slate-300 focus:outline-none text-slate-800 resize-none',
+                        {
+                            'focus:border-amber-500': isApprove,
+                            'focus:border-rose-500': !isApprove
+                        }
+                    )}
                 />
             </div>
 
@@ -89,7 +93,13 @@ export const DecisionForm = (props) => {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`flex-1 sm:flex-initial h-10 px-6 rounded-lg text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors ${buttonClass}`}>
+                    className={cn(
+                        'flex-1 sm:flex-initial h-10 px-6 rounded-lg text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors',
+                        {
+                            'bg-amber-500 hover:bg-amber-600': isApprove,
+                            'bg-rose-500 hover:bg-rose-600': !isApprove
+                        }
+                    )}>
                     {isApprove ? <Check size={16} /> : <Ban size={16} />}
                     {submitLabel}
                 </button>

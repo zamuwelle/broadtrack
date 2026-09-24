@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@shared/schemas/common'
 
 const fieldClass =
@@ -45,7 +46,10 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                             maxLength={def.maxLength}
                             {...register(def.name)}
                             placeholder={def.placeholder}
-                            className={`${fieldClass} ${fieldError ? 'border-red-400' : 'border-transparent'}`}
+                            className={cn(fieldClass, {
+                                'border-red-400': Boolean(fieldError),
+                                'border-transparent': !fieldError
+                            })}
                         />
                         <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
                             {fieldError ? (
@@ -61,7 +65,10 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                     maxLength={MAX_MESSAGE_LENGTH}
                     {...register('message')}
                     placeholder="* How can we help you?"
-                    className={`${textareaClass} ${errors.message ? 'border-red-400' : 'border-transparent'}`}
+                    className={cn(textareaClass, {
+                        'border-red-400': Boolean(errors.message),
+                        'border-transparent': !errors.message
+                    })}
                 />
                 <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
                     {errors.message ? (
@@ -78,7 +85,10 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
             <button
                 type="submit"
                 disabled={!isValid || isPending}
-                className={`${sendClass} ${!isValid || isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                className={cn(sendClass, {
+                    'opacity-50 cursor-not-allowed': !isValid || isPending,
+                    'cursor-pointer': isValid && !isPending
+                })}>
                 {isPending ? 'Sending...' : 'Send'}
             </button>
         </form>

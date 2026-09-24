@@ -1,4 +1,5 @@
 import { RotateCcw } from 'lucide-react'
+import { cn } from 'cn'
 import { DateBlock } from '@/features/admin/transactions/components/DateBlock'
 import { ActivityStatusSection } from '@/features/admin/transactions/components/ActivityStatusSection'
 
@@ -30,7 +31,7 @@ export const ActivityLogSection = ({
 
         <div className="flex items-start gap-3 sm:gap-4">
             <div className="flex flex-col items-center self-stretch shrink-0 pt-2">
-                <div className={`size-3 sm:size-3.5 rounded-full ${timelineColor} shrink-0`} />
+                <div className={cn('size-3 sm:size-3.5 rounded-full shrink-0', timelineColor)} />
                 <div className="w-[2px] bg-slate-200 flex-1 my-2" />
             </div>
 
@@ -43,7 +44,10 @@ export const ActivityLogSection = ({
                     </div>
 
                     <span
-                        className={`px-4 py-1 text-xs font-semibold rounded-xl inline-flex items-center justify-center ${statusBadge.className}`}>
+                        className={cn(
+                            'px-4 py-1 text-xs font-semibold rounded-xl inline-flex items-center justify-center',
+                            statusBadge.className
+                        )}>
                         {statusBadge.label}
                     </span>
                 </div>

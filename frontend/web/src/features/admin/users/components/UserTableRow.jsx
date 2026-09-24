@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 import { formatDateTime } from '@shared/util/date'
 import { DEPARTMENT_SHORTHANDS } from '@shared/constants'
@@ -43,7 +44,10 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
             </td>
             <td className="px-3 py-2.5 border-r border-slate-200 text-center">
                 <span
-                    className={`w-20 py-0.5 text-xs font-medium rounded-full capitalize inline-block text-center ${badgeClass}`}>
+                    className={cn(
+                        'w-20 py-0.5 text-xs font-medium rounded-full capitalize inline-block text-center',
+                        badgeClass
+                    )}>
                     {user.role}
                 </span>
             </td>

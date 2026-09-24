@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 
 const defaultCategories = Object.freeze(['All'])
 const noop = () => null
@@ -27,11 +28,14 @@ export const CategoryButtons = ({
                     type="button"
                     data-option={option}
                     onClick={handleClick}
-                    className={`h-[38px] px-4 rounded-[8px] text-[15px] font-medium flex items-center justify-center border transition-colors cursor-pointer font-['Poppins'] ${
-                        selected === option
-                            ? 'bg-primary text-surface border-transparent shadow-xs'
-                            : 'bg-background text-text border-border-subtle hover:bg-accent-subtle hover:border-accent-subtle'
-                    }`}>
+                    className={cn(
+                        "h-[38px] px-4 rounded-[8px] text-[15px] font-medium flex items-center justify-center border transition-colors cursor-pointer font-['Poppins']",
+                        {
+                            'bg-primary text-surface border-transparent shadow-xs': selected === option,
+                            'bg-background text-text border-border-subtle hover:bg-accent-subtle hover:border-accent-subtle':
+                                selected !== option
+                        }
+                    )}>
                     {option}
                 </button>
             ))}

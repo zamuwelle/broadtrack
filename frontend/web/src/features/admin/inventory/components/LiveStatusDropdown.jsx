@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 import { EQUIPMENT_STATUSES } from '@shared/constants'
 
@@ -74,17 +75,23 @@ export const LiveStatusDropdown = ({ currentStatus = 'available', onSelectStatus
             <button
                 type="button"
                 onClick={handleToggle}
-                className={`w-32 h-6 left-0 top-0 absolute rounded-2xl flex items-center justify-between px-3 text-[9.89px] font-semibold cursor-pointer ${activeConfiguration.pillClass}`}>
+                className={cn(
+                    'w-32 h-6 left-0 top-0 absolute rounded-2xl flex items-center justify-between px-3 text-[9.89px] font-semibold cursor-pointer',
+                    activeConfiguration.pillClass
+                )}>
                 <span className="flex items-center gap-1">
                     <span>{activeConfiguration.icon}</span>
                     <span>{activeConfiguration.label}</span>
                 </span>
-                <Icon name="chevron5" className={`shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                <Icon name="chevron5" className={cn('shrink-0', isOpen && 'rotate-180')} />
             </button>
 
             {isOpen && (
                 <div
-                    className={`w-28 left-[9px] top-[23.25px] absolute rounded-b-xl z-30 inline-flex flex-col justify-start items-start overflow-hidden shadow-md ${activeConfiguration.menuClass}`}>
+                    className={cn(
+                        'w-28 left-[9px] top-[23.25px] absolute rounded-b-xl z-30 inline-flex flex-col justify-start items-start overflow-hidden shadow-md',
+                        activeConfiguration.menuClass
+                    )}>
                     {EQUIPMENT_STATUSES.map((statusKey) => {
                         const optionConfig = STATUS_CONFIGURATIONS[statusKey]
                         return (
@@ -95,7 +102,7 @@ export const LiveStatusDropdown = ({ currentStatus = 'available', onSelectStatus
                                 onClick={handleSelect}
                                 className="self-stretch h-6 px-3 flex items-center gap-1.5 hover:bg-black/5 cursor-pointer text-left">
                                 <span className="text-[9.89px] leading-none">{optionConfig.icon}</span>
-                                <span className={`text-[9.89px] font-semibold ${optionConfig.itemTextClass}`}>
+                                <span className={cn('text-[9.89px] font-semibold', optionConfig.itemTextClass)}>
                                     {optionConfig.label}
                                 </span>
                             </button>

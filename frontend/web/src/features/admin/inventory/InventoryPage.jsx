@@ -129,8 +129,12 @@ export const InventoryPage = (props) => {
             })
             try {
                 await updateEquipmentMutation.mutateAsync({ id: equipmentId, data: { status: newStatus } })
+                await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: ['equipment'] }),
+                    queryClient.invalidateQueries({ queryKey: ['bookings'] })
+                ])
             } catch (error) {
-                showToast((error && error.message) || 'Failed to update equipment status.', 'danger')
+                showToast(error.message, 'danger')
                 await queryClient.invalidateQueries({ queryKey: ['equipment'] })
             }
         },

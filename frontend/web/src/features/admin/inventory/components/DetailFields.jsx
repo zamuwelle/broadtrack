@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import { CategorySelect } from '@/features/admin/inventory/components/CategorySelect'
 import { ErrorText } from '@/components/ui/form/ErrorText'
 
@@ -46,7 +47,13 @@ export const DetailFields = ({
                 value={shortDescription}
                 onChange={onDescChange}
                 placeholder="Brief overview of the equipment item..."
-                className={`p-3 rounded-lg border ${descriptionError ? 'border-red-500' : 'border-slate-300'} bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none`}
+                className={cn(
+                    'p-3 rounded-lg border bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none',
+                    {
+                        'border-red-500': Boolean(descriptionError),
+                        'border-slate-300': !descriptionError
+                    }
+                )}
             />
             <ErrorText message={descriptionError} />
         </div>

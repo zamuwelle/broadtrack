@@ -29,7 +29,7 @@ const triggerDownload = (blob, filename) => {
 export const downloadBookingSlip = async ({ bookingId, ticketId = 'slip' } = {}) => {
     let data
     try {
-        data = await api.get(`/bookings/${bookingId}/slip/pdf`, {
+        data = await api.get(`/bookings/${bookingId}/slip`, {
             responseType: 'blob'
         })
     } catch (error) {

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Enums\EquipmentStatus;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ImageRequest;
 use App\Http\Requests\Api\V1\StoreEquipmentRequest;
 use App\Http\Requests\Api\V1\UpdateEquipmentRequest;
 use App\Http\Resources\Api\V1\EquipmentResource;
+use App\Models\Booking;
 use App\Models\Equipment;
 use App\Services\CloudinaryService;
 use Illuminate\Http\JsonResponse;
@@ -46,9 +48,41 @@ class EquipmentController extends ApiController
     {
         $this->authorize('manage', Equipment::class);
 
-        $equipment->update($request->validated());
+        return DB::transaction(function () use ($request, $equipment): JsonResponse {
+            $lockedEquipment = Equipment::whereKey($equipment->id)->lockForUpdate()->firstOrFail();
+            $validated = $request->validated();
 
-        return $this->success(new EquipmentResource($equipment), 'Equipment updated successfully.');
+            if (isset($validated['status'])) {
+                $newStatus = EquipmentStatus::from($validated['status']);
+                $hasActiveBookings = $lockedEquipment->bookings()->active()->lockForUpdate()->exists();
+                $isCurrentlyBooked = $lockedEquipment->status === EquipmentStatus::Booked || $hasActiveBookings;
+
+                if ($isCurrentlyBooked && in_array($newStatus, [EquipmentStatus::Available, EquipmentStatus::Borrowed], true)) {
+                    return $this->error('Cannot change status while equipment is currently booked.', 422);
+                }
+
+                if ($newStatus === EquipmentStatus::Booked && ! $hasActiveBookings) {
+                    return $this->error('Equipment can only be marked as booked through an approved booking.', 422);
+                }
+
+                if ($newStatus === EquipmentStatus::Maintenance) {
+                    $affectedBookings = $lockedEquipment->bookings()
+                        ->whereIn('bookings.status', [BookingStatus::Pending, BookingStatus::Approved])
+                        ->lockForUpdate()
+                        ->get();
+
+                    foreach ($affectedBookings as $booking) {
+                        assert($booking instanceof Booking);
+                        $booking->reject('Equipment is under maintenance.');
+                    }
+                }
+            }
+
+            $lockedEquipment->update($validated);
+            $resolved = Equipment::resolveStatuses(collect([$lockedEquipment]))->first();
+
+            return $this->success(new EquipmentResource($resolved), 'Equipment updated successfully.');
+        });
     }
 
     public function upload(ImageRequest $request, Equipment $equipment, CloudinaryService $cloudinary): JsonResponse

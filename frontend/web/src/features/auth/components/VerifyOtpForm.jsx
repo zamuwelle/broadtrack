@@ -1,4 +1,5 @@
 import { AlertTriangle, Loader2 } from 'lucide-react'
+import { cn } from 'cn'
 import { OtpInput } from '@/components/ui/OtpInput'
 import { submitClass } from '@/features/auth/components/authStyles'
 import { useVerifyOtp } from '@/features/auth/components/useVerifyOtp'
@@ -31,7 +32,7 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
                     <button
                         type="button"
                         onClick={handleContinueToLogin}
-                        className={`w-full ${submitClass} hover:opacity-90 cursor-pointer flex items-center justify-center`}>
+                        className={cn('w-full hover:opacity-90 cursor-pointer flex items-center justify-center', submitClass)}>
                         Continue to Login
                     </button>
                 </div>
@@ -40,7 +41,7 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
     }
 
     const isComplete = otp.length === 6
-    const submitButtonClass = `${submitClass} ${isComplete && !isVerifying ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'} flex items-center justify-center gap-2`
+    const canSubmit = isComplete && !isVerifying
 
     return (
         <form onSubmit={handleVerify} className="w-full flex flex-col justify-start items-start gap-6 font-['Poppins']">
@@ -93,7 +94,14 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
                     <button
                         type="submit"
                         disabled={!isComplete || isVerifying}
-                        className={`w-full ${submitButtonClass}`}>
+                        className={cn(
+                            'w-full flex items-center justify-center gap-2',
+                            submitClass,
+                            {
+                                'hover:opacity-90': canSubmit,
+                                'opacity-50 cursor-not-allowed': !canSubmit
+                            }
+                        )}>
                         {isVerifying ? (
                             <>
                                 <Loader2 className="size-4 animate-spin shrink-0" />

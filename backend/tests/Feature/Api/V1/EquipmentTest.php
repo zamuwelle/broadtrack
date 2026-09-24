@@ -86,10 +86,21 @@ test('admin selected live equipment status survives refetch', function (Equipmen
     expect($equipment->fresh()->status)->toBe($status);
 })->with([
     'available' => [EquipmentStatus::Available],
-    'booked' => [EquipmentStatus::Booked],
     'borrowed' => [EquipmentStatus::Borrowed],
     'maintenance' => [EquipmentStatus::Maintenance],
 ]);
+
+test('admin cannot manually set equipment status to booked without active booking', function (): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/equipment/{$equipment->id}", [
+        'status' => EquipmentStatus::Booked->value,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Equipment can only be marked as booked through an approved booking.');
+});
 
 test('active approved booking keeps equipment booked until returned', function (): void {
     $admin = User::factory()->admin()->create();
@@ -265,4 +276,54 @@ test('guest cannot view single equipment', function () {
     $response = $this->getJson("/api/v1/equipment/{$equipment->id}");
 
     $response->assertUnauthorized();
+});
+
+test('admin cannot change status to available or borrowed when equipment has active approved bookings', function (EquipmentStatus $targetStatus): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->approved()->create([
+        'start_date' => now()->subHour(),
+        'end_date' => now()->addHour(),
+    ]);
+    $booking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/equipment/{$equipment->id}", [
+        'status' => $targetStatus->value,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'Cannot change status while equipment is currently booked.');
+})->with([
+    'available' => [EquipmentStatus::Available],
+    'borrowed' => [EquipmentStatus::Borrowed],
+]);
+
+test('admin changing equipment to maintenance auto-rejects pending and approved bookings', function (): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $pendingBooking = Booking::factory()->pending()->create();
+    $pendingBooking->equipments()->attach($equipment->id);
+    $approvedBooking = Booking::factory()->approved()->create();
+    $approvedBooking->equipments()->attach($equipment->id);
+    $returnedBooking = Booking::factory()->returned()->create();
+    $returnedBooking->equipments()->attach($equipment->id);
+
+    $response = $this->actingAs($admin)->putJson("/api/v1/equipment/{$equipment->id}", [
+        'status' => EquipmentStatus::Maintenance->value,
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.status', EquipmentStatus::Maintenance->value);
+
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Maintenance);
+
+    $pendingFresh = $pendingBooking->fresh();
+    expect($pendingFresh->status)->toBe(BookingStatus::Rejected)
+        ->and($pendingFresh->rejection_reason)->toBe('Equipment is under maintenance.');
+
+    $approvedFresh = $approvedBooking->fresh();
+    expect($approvedFresh->status)->toBe(BookingStatus::Rejected)
+        ->and($approvedFresh->rejection_reason)->toBe('Equipment is under maintenance.');
+
+    expect($returnedBooking->fresh()->status)->toBe(BookingStatus::Returned);
 });
