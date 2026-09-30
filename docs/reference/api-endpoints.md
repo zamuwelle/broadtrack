@@ -16,7 +16,9 @@ The Laravel routes are defined in [`backend/routes/api.php`](../../backend/route
 | `GET`  | `/api/v1/me`                  | Authenticated | Read the current user's profile.         |
 | `POST` | `/api/v1/contact`             | Public        | Submit a contact inquiry.                |
 
-There are no Google OAuth routes in the current API route file. Public registration, login, password reset, verification resend, and contact routes are throttled; `/verify-email` allows 10 requests per minute, while the other listed public routes allow 5.
+The Google OAuth routes are defined in [`backend/routes/web.php`](../../backend/routes/web.php): `GET /api/v1/auth/google/redirect` starts sign-in, and `GET /api/v1/auth/google/callback` handles the provider's response. See the [authentication lifecycle](../architecture/auth-lifecycle.md#google-oauth) for the session and redirect flow.
+
+Public registration, login, password reset, verification resend, and contact routes are throttled; `/verify-email` allows 10 requests per minute, while the other listed public routes allow 5.
 
 ## Equipment
 

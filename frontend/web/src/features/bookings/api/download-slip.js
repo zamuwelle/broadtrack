@@ -1,17 +1,5 @@
 import { api } from '@/lib/api-client'
-
-const parseBlobError = async (data, defaultMessage) => {
-    if (!(data instanceof Blob) || !data.type.includes('application/json')) {
-        return null
-    }
-    const text = await data.text()
-    try {
-        const parsed = JSON.parse(text)
-        return parsed.message || defaultMessage
-    } catch {
-        return defaultMessage
-    }
-}
+import { parseBlobError } from '@/features/bookings/api/parse-blob-error'
 
 const triggerDownload = (blob, filename) => {
     const url = globalThis.URL.createObjectURL(blob)

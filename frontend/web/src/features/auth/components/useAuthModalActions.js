@@ -193,10 +193,7 @@ export const useAuthModalActions = ({ onLoginSuccess, onClose, updateAuthState, 
         initialFormState
     })
 
-    const { registerPending, handleRegister } = useAuthRegisterHandlers({
-        updateAuthState,
-        showToast
-    })
+    const { registerPending, handleRegister } = useAuthRegisterHandlers({ updateAuthState })
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({
         updateAuthState,

@@ -13,6 +13,7 @@ import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 
 const defaultEmptyArray = Object.freeze([])
 const filterParams = Object.freeze({ view: 'calendar' })
+const getEquipmentLabel = (equipment) => [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name
 
 const normalizeBookingItem = (booking, equipment) => {
     const borrowerName = booking.user?.full_name || 'Borrower'
@@ -26,7 +27,7 @@ const normalizeBookingItem = (booking, equipment) => {
         id: `${booking.id}-${equipment.id}`,
         bookingId: booking.id,
         equipmentId: equipment.id,
-        equipmentName: [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name,
+        equipmentName: getEquipmentLabel(equipment),
         categoryName:
             (typeof equipment.category === 'string' ? equipment.category : equipment.category?.name) || 'Equipment',
         borrowerName,
@@ -106,11 +107,7 @@ const useCalendarPageLogic = () => {
     const equipmentOptions = useMemo(
         () => [
             'All Equipment Bookings',
-            ...new Set(
-                equipmentList
-                    .map((equipment) => [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name)
-                    .filter(Boolean)
-            )
+            ...new Set(equipmentList.map((equipment) => getEquipmentLabel(equipment)).filter(Boolean))
         ],
         [equipmentList]
     )

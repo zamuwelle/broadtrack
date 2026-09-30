@@ -16,7 +16,7 @@ Models use PHP attributes for configuration and the `casts()` method for casts; 
 
 ## Booking integrity and dates
 
-Booking creation and approval lock the affected equipment and recheck overlaps with approved bookings inside transactions. Other transitions lock the booking row and apply their own status checks. Preserve these checks when changing booking behavior. An approved booking contributes to the computed `booked` equipment status, except when equipment is under maintenance. The application does not automatically transition equipment to `borrowed` when a booking time arrives.
+Booking creation and approval lock the affected equipment and recheck overlaps with approved bookings inside transactions. Other transitions lock the booking row and apply their own status checks. Preserve these checks when changing booking behavior. An approved booking contributes to the computed `booked` equipment status, except when equipment is marked `maintenance` or `borrowed`. The application does not automatically transition equipment to `borrowed` when a booking time arrives.
 
 Booking database columns use timezone-naive `DATETIME` values. The frontend treats input without a timezone as Manila local time; Laravel parses that request under its configured timezone (`APP_TIMEZONE`, falling back to UTC). Eloquent date casts serialize as UTC ISO timestamps ending in `Z`. Format returned values with the API/frontend date helpers; do not slice the UTC timestamp to get a Manila calendar day. The booking migration and [`BookingTest`](../../backend/tests/Feature/Api/V1/BookingTest.php) show these storage and serialization details.
 
