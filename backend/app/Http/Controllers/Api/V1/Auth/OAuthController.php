@@ -15,7 +15,7 @@ class OAuthController extends ApiController
 {
     public function redirect(): SymfonyResponse
     {
-        return Socialite::driver('google')->stateless()->redirect();
+        return Socialite::driver('google')->redirect();
     }
 
     public function callback(): JsonResponse|RedirectResponse
@@ -32,7 +32,7 @@ class OAuthController extends ApiController
         }
 
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $googleUser = Socialite::driver('google')->user();
         } catch (Throwable) {
             return $fail('Google authentication failed. Please try again');
         }

@@ -169,6 +169,13 @@ test('authenticated user can logout', function () {
         ->assertJsonPath('message', 'Logged out successfully.');
 });
 
+test('google callback rejects missing OAuth state before exchanging a code', function (): void {
+    $response = $this->get('/api/v1/auth/google/callback?code=mock-code');
+
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->toContain('error=Google+authentication+failed');
+});
+
 test('oauth callback redirects unverified user with error message', function () {
     $user = User::factory()->unverified()->create([
         'email' => 'unverified@student.laverdad.edu.ph',
@@ -179,7 +186,6 @@ test('oauth callback redirects unverified user with error message', function () 
     $socialiteUser->shouldReceive('getAvatar')->andReturn(null);
 
     $provider = Mockery::mock(GoogleProvider::class);
-    $provider->shouldReceive('stateless')->andReturnSelf();
     $provider->shouldReceive('user')->andReturn($socialiteUser);
 
     Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
@@ -198,7 +204,6 @@ test('oauth callback redirects unregistered user to register tab', function () {
     $socialiteUser->user = ['given_name' => 'New', 'family_name' => 'Student'];
 
     $provider = Mockery::mock(GoogleProvider::class);
-    $provider->shouldReceive('stateless')->andReturnSelf();
     $provider->shouldReceive('user')->andReturn($socialiteUser);
 
     Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
@@ -381,10 +386,10 @@ test('forgot password keeps its success response and logs queue failures for exi
         ->assertJsonPath('message', 'Reset link sent to your email.');
 });
 
-test('forgot password retains the not found response for an unknown account', function (): void {
+test('forgot password gives the same response for an unknown account', function (): void {
     $this->postJson('/api/v1/forgot-password', ['email' => 'missing@student.laverdad.edu.ph'])
-        ->assertNotFound()
-        ->assertJsonPath('message', 'No account found with this email.');
+        ->assertOk()
+        ->assertJsonPath('message', 'Reset link sent to your email.');
 });
 
 test('resending verification for non-existent email returns generic success message', function () {

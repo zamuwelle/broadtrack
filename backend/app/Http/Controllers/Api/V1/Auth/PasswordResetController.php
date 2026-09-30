@@ -24,7 +24,7 @@ class PasswordResetController extends ApiController
         $user = User::where('email', $validated['email'])->first();
 
         if (! $user) {
-            return $this->notFound('No account found with this email.');
+            return $this->success(message: 'Reset link sent to your email.');
         }
 
         $token = Str::random(64);
