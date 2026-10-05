@@ -45,6 +45,7 @@ export const SelectedEquipmentList = ({ selectedItems = defaultSelectedItems, on
                                 </div>
                                 <button
                                     type="button"
+                                    aria-label={`Remove ${item.name} ${item.serial_no || ''}`.trim()}
                                     data-id={item.id}
                                     onClick={handleRemoveClick}
                                     className="cursor-pointer hover:opacity-80">
