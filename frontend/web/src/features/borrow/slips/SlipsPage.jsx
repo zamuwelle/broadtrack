@@ -79,7 +79,7 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
     useDocumentTitle('My Booking Slips')
     const [searchParams, setSearchParams] = useSearchParams()
     const { data: user = DEFAULT_EMPTY_USER } = useUser()
-    const { data: bookings = DEFAULT_BOOKINGS, isLoading } = useBookings()
+    const { data: bookings = DEFAULT_BOOKINGS, isLoading, isError } = useBookings()
     const cancelMutation = useCancelBooking()
     const urlStatus = searchParams.get('status')
     const selectedStatus =
@@ -131,7 +131,7 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
             : `No slips matching the "${selectedStatus}" status.`
 
     const hasBookings = !isLoading && filteredBookings.length > 0
-    const hasNoBookings = !isLoading && filteredBookings.length === 0
+    const hasNoBookings = !isLoading && !isError && filteredBookings.length === 0
 
     return (
         <div className="flex flex-col gap-6 font-['Poppins']">
@@ -145,18 +145,8 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
                 <FilterDropdown value={selectedStatus} onChange={handleStatusChange} options={BOOKING_FILTER_OPTIONS} />
             </div>
 
-            {isLoading ? (
-                <div className="w-full max-w-[1034px] mx-auto flex flex-wrap items-start justify-start gap-6 lg:gap-8 animate-pulse">
-                    {[1, 2].map((placeholderIndex) => (
-                        <div
-                            key={placeholderIndex}
-                            className="w-full max-w-[501px] h-[680px] lg:h-[751px] rounded-lg bg-slate-100 border border-slate-200"
-                        />
-                    ))}
-                </div>
-            ) : null}
             {hasBookings ? (
-                <div className="w-full max-w-[1034px] mx-auto flex flex-wrap items-start justify-start gap-6 lg:gap-8">
+                <div className="w-full max-w-[1034px] mx-auto flex flex-wrap items-start justify-center gap-6 lg:justify-start lg:gap-8">
                     {filteredBookings.map((booking) => (
                         <BookingSlipCard
                             key={booking.id}
@@ -171,7 +161,6 @@ export const SlipsPage = ({ selectedStatus: propStatus, onSelectStatus: propSetS
             {hasNoBookings ? (
                 <EmptyState icon="summary" title="No booking slips found" description={emptyDesc} />
             ) : null}
-
             <ConfirmModal
                 isOpen={Boolean(cancellingBookingId)}
                 onClose={handleCloseCancelModal}

@@ -91,10 +91,6 @@ export const Component = ({ onReady, children }) => {
 
     useBookingNotification(handleSelectNotificationStatus)
 
-    if (!isReady) {
-        return null
-    }
-
     const containerClass = activeTab === 'Calendar' ? 'flex-1 flex flex-col p-4 lg:min-h-0 lg:p-8' : 'p-4 lg:p-8'
 
     return (
