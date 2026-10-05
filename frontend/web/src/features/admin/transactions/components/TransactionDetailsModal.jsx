@@ -257,6 +257,7 @@ export const TransactionDetailsModal = (props) => {
             <SendReminderModal isOpen={isSendReminderOpen} onClose={handleCloseSendReminder} booking={booking} />
 
             <ConfirmReturnModal
+                key={`return-${isConfirmReturnOpen ? booking?.id : 'closed'}`}
                 isOpen={isConfirmReturnOpen}
                 onClose={handleCloseConfirmReturn}
                 booking={booking}

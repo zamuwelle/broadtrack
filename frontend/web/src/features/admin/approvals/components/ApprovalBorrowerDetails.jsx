@@ -28,7 +28,7 @@ export const ApprovalBorrowerDetails = ({ booking = defaultBooking }) => {
                 <span className="text-slate-700 font-normal">{borrowerEmail}</span>
             </p>
             <p>
-                <span className="font-semibold text-black">Period: </span>
+                <span className="font-semibold text-black max-[374px]:block">Period: </span>
                 <span className="text-slate-700 font-normal">{periodText}</span>
             </p>
 
