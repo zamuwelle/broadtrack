@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { Select } from '@/components/ui/Select'
+import { ErrorText } from '@/components/ui/form/ErrorText'
 import { DEPARTMENTS } from '@shared/constants'
 
 export const ProfileInputField = ({ field, value = '', error = '', card = false, onValueChange, onErrorChange }) => {
@@ -40,8 +41,8 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
         : 'mt-1.5 w-[401px] h-10 bg-gray-100 border border-border-subtle rounded-[8px] px-3'
 
     return (
-        <div className={`flex flex-col ${card ? 'w-full gap-1.5' : 'w-[401px]'}`}>
-            <label className="text-[12px] font-normal text-text">{label}</label>
+        <div className={`flex flex-col ${card ? 'w-full' : 'w-[401px]'}`}>
+            <label className={`text-[12px] font-normal text-text ${card ? 'mb-1.5' : ''}`}>{label}</label>
             {key === 'department' ? (
                 <Select
                     value={value}
@@ -77,9 +78,7 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
                     />
                 </div>
             )}
-            <div className="h-[12px] mt-1 flex items-center leading-none">
-                {error ? <span className="text-[12px] leading-none text-red-500">{error}</span> : null}
-            </div>
+            <ErrorText message={error} />
         </div>
     )
 }
