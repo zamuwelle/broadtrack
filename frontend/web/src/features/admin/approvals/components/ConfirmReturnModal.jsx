@@ -64,8 +64,8 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
             <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[560px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl flex flex-col p-4 sm:p-7 relative z-10">
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                            CONFIRM EQUIPMENT RETURN
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                            Confirm Equipment Return
                         </h2>
                         <p className="text-xs font-medium text-slate-500">Ticket ID: {booking.ticket_id}</p>
                     </div>
