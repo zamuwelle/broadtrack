@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { resetPasswordSchema } from '@shared/schemas/auth'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
+import { FormError } from '@/components/ui/form/FormError'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
@@ -67,7 +68,7 @@ export const ResetForm = (props) => {
         <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
             <input type="hidden" {...register('token')} />
             <input type="hidden" {...register('email')} />
-            {error ? <div className="text-[13px] text-red-500 bg-red-50 p-2.5 rounded-[6px]">{error}</div> : null}
+            <FormError message={error} />
             <PasswordInput
                 maxLength={64}
                 label="New Password"

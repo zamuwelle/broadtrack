@@ -1,8 +1,14 @@
 import { cn } from 'cn'
+import { Icon } from '@/components/ui/Icon'
+import { MAX_BOOKING_PURPOSE_LENGTH } from '@shared/schemas/booking'
 import { SelectedEquipmentList } from '@/features/borrow/request/components/SelectedEquipmentList'
 import { BookingDateInputs } from '@/features/borrow/request/components/BookingDateInputs'
 import { XButton } from '@/components/ui/XButton'
 import { ErrorText } from '@/components/ui/form/ErrorText'
+import { FormError } from '@/components/ui/form/FormError'
+
+const getDateMessage = ({ hasConflict, conflicts, error, helper }) =>
+    hasConflict && conflicts.length > 0 ? '' : error || helper
 
 export const SummaryFormView = (props) => {
     const {
@@ -15,12 +21,15 @@ export const SummaryFormView = (props) => {
         hasStartConflict,
         hasEndConflict,
         hasScheduleConflict,
+        conflictMessages,
         purpose,
         isSubmittable,
         isSubmitting,
         errorMessage,
+        requestError,
         helperMessage = '',
         onClose,
+        onEdit,
         onRemoveItem,
         onStartDateChange,
         onEndDateChange,
@@ -35,9 +44,18 @@ export const SummaryFormView = (props) => {
                 <XButton onClick={onClose} className="absolute right-0 top-0 size-7 flex items-center justify-center" />
             </div>
 
+            <FormError message={requestError} className="w-full" />
+
             <div className="flex w-full flex-col items-end justify-start gap-3 rounded-lg bg-zinc-100/40 p-4 outline outline-1 outline-offset-[-1px] outline-slate-300">
-                <div className="w-full">
+                <div className="inline-flex w-full items-start justify-between">
                     <span className="text-xs font-normal text-neutral-400">BORROWER DETAILS</span>
+                    <button
+                        type="button"
+                        aria-label="Edit borrower details"
+                        onClick={onEdit}
+                        className="size-4 cursor-pointer hover:opacity-80">
+                        <Icon name="edit" className="size-4" />
+                    </button>
                 </div>
                 <div className="flex w-full flex-col items-start justify-start gap-1 text-xs font-normal text-text">
                     <div>Name: {user?.full_name || user?.name || 'User Name'}</div>
@@ -60,7 +78,19 @@ export const SummaryFormView = (props) => {
                         onStartDateChange={onStartDateChange}
                         onEndDateChange={onEndDateChange}
                     />
-                    <ErrorText message={errorMessage || helperMessage} variant={errorMessage ? 'error' : 'muted'} />
+                    <ErrorText
+                        message={getDateMessage({
+                            hasConflict: hasScheduleConflict,
+                            conflicts: conflictMessages,
+                            error: errorMessage,
+                            helper: helperMessage
+                        })}
+                        variant={errorMessage ? 'error' : 'muted'}
+                        className="min-h-4 flex items-center mt-1"
+                    />
+                    {conflictMessages.map((message) => (
+                        <ErrorText key={message} message={message} className="min-h-4 flex items-start mt-1" />
+                    ))}
                 </div>
 
                 <div className="flex w-full flex-col items-start justify-start gap-1.5">
@@ -71,13 +101,14 @@ export const SummaryFormView = (props) => {
                         value={purpose}
                         onChange={onPurposeChange}
                         placeholder="Type your purpose or notes here... e.g., Thesis Project"
+                        maxLength={MAX_BOOKING_PURPOSE_LENGTH}
                         rows={3}
                         className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-400 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
                     />
                 </div>
             </div>
 
-            <div className="flex w-full items-center justify-end gap-3">
+            <div className="mt-2 sm:mt-0 flex w-full items-center justify-end gap-3">
                 <button
                     type="button"
                     onClick={onClose}

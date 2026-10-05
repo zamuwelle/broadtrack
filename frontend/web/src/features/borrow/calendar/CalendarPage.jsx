@@ -16,7 +16,7 @@ const filterParams = Object.freeze({ view: 'calendar' })
 const getEquipmentLabel = (equipment) => [equipment.brand, equipment.name].filter(Boolean).join(' ') || equipment.name
 
 const normalizeBookingItem = (booking, equipment) => {
-    const borrowerName = booking.user?.full_name || 'Borrower'
+    const borrowerName = booking.user?.full_name || ''
     const borrowerDepartment = booking.user ? booking.user.department || '' : ''
     const startDate = getBookingDateKey(booking.start_date)
     const endDate = getBookingDateKey(booking.end_date)
@@ -230,7 +230,7 @@ export const CalendarPage = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col gap-4 lg:flex-1 lg:min-h-0">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col gap-4 flex-1 lg:min-h-0">
                 <CalendarGrid
                     year={year}
                     monthIndex={monthIndex}

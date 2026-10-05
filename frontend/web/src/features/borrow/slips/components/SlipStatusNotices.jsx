@@ -32,9 +32,11 @@ const renderPickupNotice = (approvalNote) => (
                 strokeLinejoin="round"
             />
         </svg>
-        <div className="flex-1 flex flex-col justify-start items-start">
+        <div className="flex-1 min-w-0 flex flex-col justify-start items-start">
             <div className="self-stretch justify-start text-green-500 text-xs font-semibold">PICKUP NOTES:</div>
-            <div className="self-stretch justify-start text-slate-900 text-xs font-normal">{approvalNote}</div>
+            <div className="self-stretch min-w-0 justify-start text-slate-900 text-xs font-normal break-words">
+                {approvalNote}
+            </div>
         </div>
     </div>
 )
@@ -51,9 +53,11 @@ const renderRefusalNotice = (rejectionReason) => (
                 strokeLinejoin="round"
             />
         </svg>
-        <div className="flex-1 flex flex-col justify-start items-start">
+        <div className="flex-1 min-w-0 flex flex-col justify-start items-start">
             <div className="self-stretch justify-start text-red-700 text-xs font-semibold">ADMIN REFUSAL REASON:</div>
-            <div className="self-stretch justify-start text-slate-900 text-xs font-normal">{rejectionReason}</div>
+            <div className="self-stretch min-w-0 justify-start text-slate-900 text-xs font-normal break-words">
+                {rejectionReason}
+            </div>
         </div>
     </div>
 )
@@ -71,7 +75,7 @@ export const SlipStatusNotices = ({ booking, status }) => {
 
             <div className="self-stretch flex flex-col justify-start items-start">
                 <div className="self-stretch justify-start text-neutral-400 text-xs font-medium">PURPOSE / NOTES:</div>
-                <div className="self-stretch justify-start text-slate-900 text-xs font-normal break-words">
+                <div className="self-stretch min-w-0 justify-start text-slate-900 text-xs font-normal break-words">
                     {booking.purpose}
                 </div>
             </div>

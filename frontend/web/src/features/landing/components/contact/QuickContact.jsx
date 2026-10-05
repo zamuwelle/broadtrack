@@ -111,7 +111,9 @@ export const QuickContact = () => {
                     className="w-[28px] sm:w-[32px] h-[120px] sm:h-[160px] flex items-center justify-center bg-primary text-surface text-[12px] sm:text-[14px] font-bold rounded-l-[8px] outline-none shrink-0 cursor-pointer">
                     <span className="-rotate-90 whitespace-nowrap">{isOpen ? 'CLOSE' : 'CONTACT'}</span>
                 </button>
-                <div className="w-[calc(100vw-36px)] max-w-[448px] max-h-[94dvh] sm:h-[660px] bg-primary rounded-l-[8px] flex flex-col items-center justify-start sm:justify-center p-6 sm:p-8 overflow-y-auto shrink-0">
+                <div
+                    inert={!isOpen}
+                    className="w-[calc(100vw-36px)] max-w-[448px] max-h-[94dvh] sm:h-[660px] bg-primary rounded-l-[8px] flex flex-col items-center justify-start sm:justify-center p-6 sm:p-8 overflow-y-auto shrink-0">
                     {sent ? (
                         <div className="w-full max-w-[368px] flex flex-col items-center justify-center text-center text-surface py-8 my-auto">
                             <h4 className="text-[22px] font-bold">Message Sent!</h4>

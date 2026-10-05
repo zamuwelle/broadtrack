@@ -7,6 +7,7 @@ import { useVerifyOtp } from '@/features/auth/components/useVerifyOtp'
 export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
     const {
         otp,
+        isComplete,
         countdown,
         error,
         isVerifying,
@@ -32,7 +33,10 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
                     <button
                         type="button"
                         onClick={handleContinueToLogin}
-                        className={cn('w-full hover:opacity-90 cursor-pointer flex items-center justify-center', submitClass)}>
+                        className={cn(
+                            'w-full hover:opacity-90 cursor-pointer flex items-center justify-center',
+                            submitClass
+                        )}>
                         Continue to Login
                     </button>
                 </div>
@@ -40,7 +44,6 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
         )
     }
 
-    const isComplete = otp.length === 6
     const canSubmit = isComplete && !isVerifying
 
     return (
@@ -94,14 +97,10 @@ export const VerifyOtpForm = ({ email = '', onSwitchTab }) => {
                     <button
                         type="submit"
                         disabled={!isComplete || isVerifying}
-                        className={cn(
-                            'w-full flex items-center justify-center gap-2',
-                            submitClass,
-                            {
-                                'hover:opacity-90': canSubmit,
-                                'opacity-50 cursor-not-allowed': !canSubmit
-                            }
-                        )}>
+                        className={cn('w-full flex items-center justify-center gap-2', submitClass, {
+                            'hover:opacity-90': canSubmit,
+                            'opacity-50 cursor-not-allowed': !canSubmit
+                        })}>
                         {isVerifying ? (
                             <>
                                 <Loader2 className="size-4 animate-spin shrink-0" />

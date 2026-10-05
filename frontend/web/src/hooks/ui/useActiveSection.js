@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export const useActiveSection = () => {
+export const useActiveSection = (pathname) => {
     const [active, setActive] = useState('')
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -17,6 +17,6 @@ export const useActiveSection = () => {
             observer.observe(section)
         }
         return () => observer.disconnect()
-    }, [])
+    }, [pathname])
     return active
 }

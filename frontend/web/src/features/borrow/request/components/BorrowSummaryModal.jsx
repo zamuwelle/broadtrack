@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { EditProfileForm } from '@/features/users/components/EditProfileForm'
+import { XButton } from '@/components/ui/XButton'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummaryLogic'
 import { SubmittedView } from '@/features/borrow/request/components/SubmittedView'
@@ -8,8 +10,6 @@ import { SummaryFormView } from '@/features/borrow/request/components/SummaryFor
 const noop = () => null
 
 export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab = noop, user: propUser }) => {
-    useEscapeKey(onClose)
-
     const {
         user,
         selectedItems,
@@ -21,17 +21,23 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         hasStartConflict,
         hasEndConflict,
         hasScheduleConflict,
+        conflictMessages,
         purpose,
         isSubmittable,
         isSubmitting,
         errorMessage,
+        requestError,
         helperMessage,
+        handleOpenEdit,
+        handleCloseEdit,
         handleStartDateChange,
         handleEndDateChange,
         handleRemoveItem,
         handlePurposeChange,
         handleSubmit
     } = useBorrowSummaryLogic({ isOpen, propUser })
+
+    useEscapeKey(modalView === 'edit' ? handleCloseEdit : onClose)
 
     const handleBrowse = useCallback(() => {
         onClose()
@@ -61,6 +67,21 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
 
                 {modalView === 'empty' ? <EmptyView onClose={onClose} onBrowse={handleBrowse} /> : null}
 
+                {modalView === 'edit' ? (
+                    <div className="relative flex w-full flex-col items-start justify-start gap-4 sm:gap-6 rounded-lg bg-white p-4 sm:p-6 lg:p-7 shadow-xl font-['Poppins'] max-h-[88dvh] overflow-y-scroll my-auto">
+                        <div className="relative flex w-full items-center justify-between">
+                            <h3 className="w-full text-center text-lg font-medium text-text px-6">
+                                Edit Borrower Details
+                            </h3>
+                            <XButton
+                                onClick={handleCloseEdit}
+                                className="absolute right-0 top-0 size-7 flex items-center justify-center"
+                            />
+                        </div>
+                        <EditProfileForm onClose={handleCloseEdit} card />
+                    </div>
+                ) : null}
+
                 {modalView === 'summary' ? (
                     <SummaryFormView
                         user={user}
@@ -72,12 +93,15 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         hasStartConflict={hasStartConflict}
                         hasEndConflict={hasEndConflict}
                         hasScheduleConflict={hasScheduleConflict}
+                        conflictMessages={conflictMessages}
                         purpose={purpose}
                         isSubmittable={isSubmittable}
                         isSubmitting={isSubmitting}
                         errorMessage={errorMessage}
+                        requestError={requestError}
                         helperMessage={helperMessage}
                         onClose={onClose}
+                        onEdit={handleOpenEdit}
                         onRemoveItem={handleRemoveItem}
                         onStartDateChange={handleStartDateChange}
                         onEndDateChange={handleEndDateChange}

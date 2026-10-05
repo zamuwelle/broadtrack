@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { cn } from 'cn'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useBookings } from '@/features/bookings/api/get-bookings'
 import { useEquipment } from '@/features/equipment/api/get-equipment'
@@ -90,14 +91,10 @@ export const Component = ({ onReady, children }) => {
 
     useBookingNotification(handleSelectNotificationStatus)
 
-    if (!isReady) {
-        return null
-    }
-
     const containerClass = activeTab === 'Calendar' ? 'flex-1 flex flex-col p-4 lg:min-h-0 lg:p-8' : 'p-4 lg:p-8'
 
     return (
-        <div className="h-screen flex flex-col font-['Poppins']">
+        <div className={cn("flex flex-col font-['Poppins']", activeTab === 'Calendar' ? 'h-dvh' : 'h-screen')}>
             <BorrowNavbar
                 bookings={bookings}
                 onSelectTab={handleSelectTab}

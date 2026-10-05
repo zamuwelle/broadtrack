@@ -6,7 +6,7 @@ export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, 
     const digits = Array.from({ length }, (_, i) => ({
         id: `otp-box-${i}`,
         index: i,
-        char: value[i] || ''
+        char: value[i]?.trim() || ''
     }))
 
     useEffect(() => {
@@ -21,10 +21,10 @@ export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, 
             const index = Number(e.currentTarget.dataset.index)
             const raw = e.target.value
             const digit = raw.replaceAll(/\D/gu, '').slice(-1)
-            const currentDigits = Array.from({ length }, (_, i) => value[i] || '')
+            const currentDigits = Array.from({ length }, (_, i) => value[i] || ' ')
 
-            currentDigits[index] = digit
-            const nextValue = currentDigits.join('')
+            currentDigits[index] = digit || ' '
+            const nextValue = currentDigits.join('').trimEnd()
             onChange(nextValue)
 
             if (digit && index < length - 1) {
@@ -41,11 +41,11 @@ export const OtpInput = ({ value = '', onChange, length = 6, isInvalid = false, 
         (e) => {
             const index = Number(e.currentTarget.dataset.index)
             if (e.key === 'Backspace') {
-                const currentDigits = Array.from({ length }, (_, i) => value[i] || '')
-                if (!currentDigits[index] && index > 0) {
+                const currentDigits = Array.from({ length }, (_, i) => value[i] || ' ')
+                if (!currentDigits[index].trim() && index > 0) {
                     e.preventDefault()
-                    currentDigits[index - 1] = ''
-                    onChange(currentDigits.join(''))
+                    currentDigits[index - 1] = ' '
+                    onChange(currentDigits.join('').trimEnd())
                     const prevInput = containerRef.current?.querySelector(`input[data-index="${index - 1}"]`)
                     if (prevInput) {
                         prevInput.focus()

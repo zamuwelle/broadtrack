@@ -312,6 +312,19 @@ test('user cannot verify email with invalid code format', function () {
         ->assertJsonValidationErrors(['code']);
 });
 
+test('reset link validation checks validity without consuming the token', function () {
+    DB::table('password_reset_tokens')->insert([
+        'email' => 'link@student.laverdad.edu.ph',
+        'token' => 'reset-link-token',
+        'created_at' => now(),
+    ]);
+    $payload = ['email' => 'link@student.laverdad.edu.ph', 'token' => 'reset-link-token'];
+    $this->postJson('/api/v1/check-reset-token', $payload)->assertOk()->assertJsonPath('data.valid', true);
+    $this->postJson('/api/v1/check-reset-token', [...$payload, 'token' => 'wrong'])->assertOk()->assertJsonPath('data.valid', false);
+    DB::table('password_reset_tokens')->where('email', $payload['email'])->update(['created_at' => now()->subMinutes(16)]);
+    $this->postJson('/api/v1/check-reset-token', $payload)->assertOk()->assertJsonPath('data.valid', false);
+});
+
 test('password reset revokes existing sanctum tokens', function () {
     $user = User::factory()->borrower()->create([
         'email' => 'reset.tokens@student.laverdad.edu.ph',

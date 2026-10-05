@@ -16,7 +16,24 @@ export const useBookingDateDefaults = ({
         if (!isOpen) {
             return
         }
-        const updateMinuteTick = () => setMinuteTick(Date.now())
+        const updateMinuteTick = () => {
+            const now = Date.now()
+            const currentDateTime = getCurrentBookingDateTimeValue(new Date(now))
+            const defaultStartDate = minStartDate && minStartDate > currentDateTime ? minStartDate : currentDateTime
+            updateSummaryState((prev) => {
+                if (prev.modalView !== 'summary') {
+                    return {}
+                }
+                const startDate = startDateIsAutomaticRef.current ? defaultStartDate : prev.startDate
+                return {
+                    ...(startDateIsAutomaticRef.current ? { startDate } : {}),
+                    ...(endDateIsAutomaticRef.current
+                        ? { endDate: getNextBookingHourValue(startDate || defaultStartDate) }
+                        : {})
+                }
+            })
+            setMinuteTick(now)
+        }
         updateMinuteTick()
         let intervalId
         const timeoutId = globalThis.setTimeout(
@@ -30,7 +47,7 @@ export const useBookingDateDefaults = ({
             globalThis.clearTimeout(timeoutId)
             globalThis.clearInterval(intervalId)
         }
-    }, [isOpen, setMinuteTick])
+    }, [isOpen, minStartDate, setMinuteTick, updateSummaryState, startDateIsAutomaticRef, endDateIsAutomaticRef])
 
     useEffect(() => {
         if (!isOpen || modalView !== 'summary') {
@@ -68,7 +85,7 @@ export const useBookingDateDefaults = ({
             const defaultStartDate = minStartDate && minStartDate > currentDateTime ? minStartDate : currentDateTime
 
             updateSummaryState((prev) => {
-                if (prev.modalView === 'submitted') {
+                if (prev.modalView === 'submitted' || prev.modalView === 'edit') {
                     return {}
                 }
                 const newState = { modalView: selectedItemCount > 0 ? 'summary' : 'empty' }
@@ -85,7 +102,9 @@ export const useBookingDateDefaults = ({
                 modalView: selectedItemCount > 0 ? 'summary' : 'empty',
                 startDate: '',
                 endDate: '',
-                purpose: ''
+                purpose: '',
+                errorMessage: '',
+                requestError: ''
             })
         }
     }, [isOpen, selectedItemCount, minStartDate, updateSummaryState, startDateIsAutomaticRef, endDateIsAutomaticRef])

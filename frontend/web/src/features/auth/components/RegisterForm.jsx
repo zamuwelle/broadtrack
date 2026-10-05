@@ -4,6 +4,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { registerSchema } from '@shared/schemas/auth'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
+import { FormError } from '@/components/ui/form/FormError'
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -18,6 +19,7 @@ const noop = () => null
 export const RegisterForm = (props) => {
     const {
         form = DEFAULT_FORM,
+        serverError = '',
         firstnameError,
         lastnameError,
         emailError,
@@ -90,6 +92,7 @@ export const RegisterForm = (props) => {
     return (
         <>
             <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
+                <FormError message={serverError} />
                 <RegisterNameFields
                     firstname={firstname}
                     lastname={lastname}

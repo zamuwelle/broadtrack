@@ -9,16 +9,20 @@ The Laravel routes are defined in [`backend/routes/api.php`](../../backend/route
 | `POST` | `/api/v1/register`            | Public        | Register an account.                     |
 | `POST` | `/api/v1/login`               | Public        | Sign in and receive a token.             |
 | `POST` | `/api/v1/forgot-password`     | Public        | Request a password reset email.          |
+| `POST` | `/api/v1/check-reset-token`   | Public        | Check a password reset link.             |
 | `POST` | `/api/v1/reset-password`      | Public        | Reset a password.                        |
 | `POST` | `/api/v1/resend-verification` | Public        | Request another email verification code. |
 | `POST` | `/api/v1/verify-email`        | Public        | Verify an email address.                 |
 | `POST` | `/api/v1/logout`              | Authenticated | Revoke the current token.                |
 | `GET`  | `/api/v1/me`                  | Authenticated | Read the current user's profile.         |
+| `PUT`  | `/api/v1/profile`             | Authenticated | Update the current user’s name or department. |
 | `POST` | `/api/v1/contact`             | Public        | Submit a contact inquiry.                |
 
 The Google OAuth routes are defined in [`backend/routes/web.php`](../../backend/routes/web.php): `GET /api/v1/auth/google/redirect` starts sign-in, and `GET /api/v1/auth/google/callback` handles the provider's response. See the [authentication lifecycle](../architecture/auth-lifecycle.md#google-oauth) for the session and redirect flow.
 
 Public registration, login, password reset, verification resend, and contact routes are throttled; `/verify-email` allows 10 requests per minute, while the other listed public routes allow 5.
+
+`POST /api/v1/check-reset-token` accepts `email` and `token` and returns `data.valid` without consuming the token. It is limited to five requests per minute. The reset endpoint validates the token again when changing the password.
 
 ## Equipment
 

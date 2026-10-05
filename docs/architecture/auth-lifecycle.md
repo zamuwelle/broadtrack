@@ -28,6 +28,8 @@ Login rejects an unverified user and sends another verification code. On success
 
 For a valid email address, forgot-password requests return the same success message whether or not an account exists. For a known email, the controller creates a reset token that expires after 15 minutes and queues a reset email. If queuing throws, the failure is logged and the same success message is returned. Resetting a password deletes all of that user's Sanctum tokens and removes the reset-token record. See [`PasswordResetController`](../../backend/app/Http/Controllers/Api/V1/Auth/PasswordResetController.php).
 
+When a reset link opens, the frontend checks its email and token with the API. An invalid, expired, or used link opens the existing forgot-password form with a warning; a valid link opens the reset form. The reset request checks the token again before changing the password. If it expires while the form is open, the user returns to the forgot-password form with the same warning.
+
 ## Google OAuth
 
 Google sign-in is available through GET routes `/api/v1/auth/google/redirect` and `/api/v1/auth/google/callback`, defined in [`web.php`](../../backend/routes/web.php), rather than in [`api.php`](../../backend/routes/api.php). The login form opens the redirect route in a popup when possible; the frontend reads the callback's redirect parameters and sends the result to the opener. If a popup cannot be opened, the flow continues in the current window. See [`LoginForm.jsx`](../../frontend/web/src/features/auth/components/LoginForm.jsx) and [`auth.js`](../../frontend/web/src/lib/auth.js).
