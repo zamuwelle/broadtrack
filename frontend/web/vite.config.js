@@ -8,6 +8,10 @@ import { sharedDepsPlugin } from './plugins/vite-shared-deps.js'
 export default defineConfig({
     plugins: lazyPlugins(() => [react(), tailwindcss(), errorLogPlugin(), sharedDepsPlugin()]),
     server: {
+        host: '0.0.0.0',
+        proxy: {
+            '/api': 'http://127.0.0.1:8000'
+        },
         forwardConsole: {
             unhandledErrors: true,
             logLevels: ['error', 'warn', 'info', 'log']
