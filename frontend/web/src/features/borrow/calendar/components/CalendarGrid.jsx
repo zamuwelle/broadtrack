@@ -19,7 +19,7 @@ export const CalendarGrid = ({
     onSelectDate = noop,
     weeksCount = 5
 }) => {
-    const gridRowsStyle = useMemo(() => ({ gridTemplateRows: `repeat(${weeksCount}, minmax(0, 1fr))` }), [weeksCount])
+    const gridRowsStyle = useMemo(() => ({ gridTemplateRows: `repeat(${weeksCount}, minmax(44px, 1fr))` }), [weeksCount])
 
     return (
         <div className="flex flex-col gap-2 lg:flex-1 lg:min-h-0">
