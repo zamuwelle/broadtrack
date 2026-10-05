@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { forgotPasswordSchema } from '@shared/schemas/auth'
-import { Logo } from '@/components/ui/Logo'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { FormError } from '@/components/ui/form/FormError'
 import { inputClass, submitClass } from '@/features/auth/components/authStyles'
@@ -13,14 +12,12 @@ export const ForgotForm = ({
     form,
     serverError = '',
     error = '',
-    successMessage = '',
     isPending = false,
     onSwitchTab = noop,
     onSubmit = noop,
     onInvalid = noop,
     onClearError = noop
 }) => {
-    const [submittedEmail, setSubmittedEmail] = useState('')
     const {
         register,
         handleSubmit,
@@ -38,7 +35,6 @@ export const ForgotForm = ({
 
     useEffect(() => {
         reset({ email: form.email || '' })
-        setSubmittedEmail('')
     }, [form.email, reset])
 
     useEffect(() => {
@@ -53,33 +49,8 @@ export const ForgotForm = ({
         onSwitchTab('login')
     }, [onSwitchTab])
 
-    if (successMessage) {
-        return (
-            <div className="flex flex-col items-center gap-6">
-                <Logo />
-                <div className="flex flex-col items-center gap-2">
-                    <h4 className="text-[20px] font-bold text-text">Check Your Inbox</h4>
-                    <p className="text-[13px] text-text/70">We sent a password reset link to:</p>
-                    <p className="text-[14px] font-semibold text-primary break-all">{submittedEmail || form.email}</p>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleSwitchLogin}
-                    className="w-full bg-primary text-surface h-[44px] rounded-[8px] text-[15px] font-medium hover:opacity-90 transition-opacity">
-                    Back to Sign In
-                </button>
-            </div>
-        )
-    }
-
     return (
-        <form
-            noValidate
-            className="flex flex-col gap-2.5"
-            onSubmit={handleSubmit((values) => {
-                setSubmittedEmail(values.email)
-                onSubmit(values)
-            }, onInvalid)}>
+        <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
             <FormError message={serverError} />
             <TextInput
                 label="La Verdad Email"

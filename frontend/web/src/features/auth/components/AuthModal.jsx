@@ -27,7 +27,6 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
         showPass: false,
         error: initialError,
         isServerError: false,
-        successMessage: '',
         form: { ...initialFormState, ...initialData }
     })
 
@@ -37,7 +36,6 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
                 tab: targetTab,
                 showPass: false,
                 error: '',
-                successMessage: '',
                 form: targetTab === 'verify' ? prev.form : { ...initialFormState }
             }))
         },
@@ -48,7 +46,6 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
         updateAuthState({
             showPass: false,
             error: '',
-            successMessage: '',
             form: { ...initialFormState }
         })
         onClose()
@@ -81,7 +78,7 @@ export const AuthModal = ({
         initialData,
         onClose
     })
-    const { tab, showPass, error, isServerError, successMessage, form } = authState
+    const { tab, showPass, error, isServerError, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
     const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
     const resetLink = useCheckResetToken({
@@ -145,13 +142,12 @@ export const AuthModal = ({
                         className="absolute top-5 right-5 text-text/60 hover:text-text cursor-pointer">
                         <X size={18} />
                     </button>
-                    <AuthModalHeader tab={tab} successMessage={successMessage} />
+                    <AuthModalHeader tab={tab} />
                     <AuthModalBody
                         tab={tab}
                         form={form}
                         error={error}
                         isServerError={isServerError}
-                        successMessage={successMessage}
                         showPass={showPass}
                         actions={actions}
                         onClearError={handleClearError}

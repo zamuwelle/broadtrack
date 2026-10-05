@@ -27,7 +27,6 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
             updateAuthState({
                 showPass: false,
                 error: '',
-                successMessage: '',
                 form: { ...initialFormState }
             })
             onClose()
@@ -85,8 +84,7 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
         updateAuthState({
             tab: 'verify',
             showPass: false,
-            error: '',
-            successMessage: ''
+            error: ''
         })
     }, [updateAuthState])
 
@@ -128,8 +126,9 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
     const forgotMutation = useMutation({
         mutationFn: forgotPassword,
         onSuccess: useCallback(() => {
-            updateAuthState({ successMessage: 'Reset link sent! Check your inbox.' })
-        }, [updateAuthState]),
+            updateAuthState({ tab: 'login', error: '', isServerError: false, form: { ...initialFormState } })
+            showToast('Reset link sent! Check your inbox.')
+        }, [initialFormState, showToast, updateAuthState]),
         onError: useCallback(
             (forgotError = {}) => {
                 updateAuthState({
@@ -144,7 +143,7 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
     const resetMutation = useMutation({
         mutationFn: resetPassword,
         onSuccess: useCallback(() => {
-            updateAuthState({ tab: 'login', successMessage: '', error: '' })
+            updateAuthState({ tab: 'login', error: '' })
             showToast('Password reset successfully! You can now log in.')
         }, [updateAuthState, showToast]),
         onError: useCallback(

@@ -36,7 +36,6 @@ export const AuthModalBody = ({
     form,
     error,
     isServerError,
-    successMessage,
     showPass,
     actions,
     onClearError,
@@ -106,7 +105,6 @@ export const AuthModalBody = ({
                 form={form}
                 serverError={isServerError ? error : ''}
                 error={emailError}
-                successMessage={successMessage}
                 isPending={actions.forgotPending}
                 onSwitchTab={onSwitchTab}
                 onSubmit={actions.handleForgot}
