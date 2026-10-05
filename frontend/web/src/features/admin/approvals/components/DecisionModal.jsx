@@ -17,7 +17,8 @@ const getDecisionModalDetails = (booking) => {
     return {
         equipments,
         equipmentName: equipment.name || 'Equipment',
-        borrowerName: booking.user?.full_name || 'Borrower'
+        borrowerName: booking.user?.full_name || 'Borrower',
+        dateTimeRangeLabel: booking.date_time_range_label || '—'
     }
 }
 
@@ -59,8 +60,10 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
             if (isSubmitting || !bookingId) {
                 return
             }
-            if (!isApprove && !text.trim()) {
-                updateModalState({ errorMessage: 'Please provide a rejection reason' })
+            if (!text.trim()) {
+                updateModalState({
+                    errorMessage: isApprove ? 'Please provide pickup notes' : 'Please provide a rejection reason'
+                })
                 return
             }
             try {
@@ -99,7 +102,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
         return null
     }
 
-    const { equipments, equipmentName, borrowerName } = getDecisionModalDetails(booking)
+    const { equipments, equipmentName, borrowerName, dateTimeRangeLabel } = getDecisionModalDetails(booking)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -110,11 +113,11 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                 className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
                 onClick={onClose}
             />
-            <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[480px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl font-['Poppins'] flex flex-col p-4 sm:p-6 relative z-10">
+            <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[560px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl font-['Poppins'] flex flex-col p-4 sm:p-7 relative z-10">
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-900">
-                            {isApprove ? 'Approve Reservation' : 'Reject Request'}
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                            {isApprove ? 'Approve Ticket Request' : 'Reject Ticket Request'}
                         </h2>
                         <p className="text-xs font-medium text-slate-500 mt-0.5">Ticket ID: {booking.ticket_id}</p>
                     </div>
@@ -134,9 +137,9 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                     borrowerName={borrowerName}
                     equipments={equipments}
                     equipmentName={equipmentName}
+                    dateTimeRangeLabel={dateTimeRangeLabel}
                     onTextChange={handleTextChange}
                     onSubmit={handleSubmit}
-                    onClose={onClose}
                 />
             </div>
         </div>
