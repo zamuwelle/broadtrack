@@ -48,20 +48,20 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
         <div className="rounded-md border border-gray-200 p-3.5 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
             <div className="flex items-start justify-between gap-3 md:hidden">
                 <div className="min-w-0">
-                    <div className="text-sm font-semibold text-gray-900 truncate">{equipmentTitle}</div>
-                    <div className="text-xs font-normal text-gray-600 mt-0.5 truncate">{borrowerInfo}</div>
+                    <div className="text-sm font-semibold text-gray-900 whitespace-normal break-words">{equipmentTitle}</div>
+                    <div className="text-xs font-normal text-gray-600 mt-0.5 whitespace-normal break-words">{borrowerInfo}</div>
                 </div>
                 <span className={cn('px-2.5 py-1 text-[11px] font-semibold shrink-0', statusBadge.className)}>
                     {statusBadge.label}
                 </span>
             </div>
 
-            <div className="hidden md:block flex-1 min-w-0 md:min-w-[200px]">
+            <div className="hidden md:block flex-1 min-w-0">
                 <div className="text-base font-semibold text-gray-900">{equipmentTitle}</div>
                 <div className="text-xs font-normal text-gray-600 mt-1">{borrowerInfo}</div>
             </div>
 
-            <div className="flex items-center justify-between md:block flex-1 min-w-0 md:min-w-[240px] pt-2 md:pt-0 border-t border-gray-100 md:border-t-0">
+            <div className="flex items-center justify-between md:block flex-1 min-w-0 pt-2 md:pt-0 border-t border-gray-100 md:border-t-0">
                 <span className="text-[10px] md:text-xs font-semibold text-gray-500 md:text-gray-900 tracking-wider">
                     TIMELINE
                 </span>
