@@ -5,7 +5,7 @@ import { useActiveSection } from '@/hooks/ui/useActiveSection'
 
 export const LandingLinks = () => {
     const { pathname } = useLocation()
-    const activeSection = useActiveSection()
+    const activeSection = useActiveSection(pathname)
     const active = pathname === '/' ? activeSection : ''
 
     return (
@@ -14,13 +14,9 @@ export const LandingLinks = () => {
                 <a
                     key={id}
                     href={href}
-                    className={cn(
-                        'text-text text-[16px] font-semibold pb-[2px] hover:text-primary',
-                        {
-                            'text-primary border-b-2 border-primary': active === id,
-                            'border-b-2 border-transparent': active !== id
-                        }
-                    )}>
+                    className={cn('text-text text-[16px] font-semibold pb-[2px] hover:text-primary', {
+                        'text-primary': active === id
+                    })}>
                     {label}
                 </a>
             ))}

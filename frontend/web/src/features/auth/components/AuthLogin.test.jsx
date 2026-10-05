@@ -68,3 +68,13 @@ it('shows field errors when credentials are rejected', async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
     await waitFor(() => expect(screen.getAllByText('Email or password is incorrect')).toHaveLength(2))
 })
+
+it('shows network errors above the sign-in fields', async () => {
+    loginUser.mockRejectedValueOnce({ message: 'Network Error' })
+    const { container } = renderLogin()
+    const email = container.querySelector('input[type="email"]')
+    fireEvent.change(email, { target: { value: 'person@laverdad.edu.ph' } })
+    fireEvent.change(container.querySelector('input[type="password"]'), { target: { value: 'password123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
+    await waitFor(() => expect(container.querySelector('form').firstElementChild).toHaveTextContent('Network Error'))
+})

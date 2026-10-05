@@ -13,6 +13,7 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
         isVerified: false
     })
     const { otp, countdown, error, isVerifying, isResending, isVerified } = state
+    const isComplete = /^\d{6}$/u.test(otp)
 
     useEffect(() => {
         if (countdown > 0) {
@@ -35,7 +36,7 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
             if (e) {
                 e.preventDefault()
             }
-            if (otp.length !== 6 || isVerifying) {
+            if (!isComplete || isVerifying) {
                 return
             }
 
@@ -54,7 +55,7 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
                 setState({ isVerifying: false })
             }
         },
-        [email, otp, isVerifying, setState]
+        [email, otp, isComplete, isVerifying, setState]
     )
 
     const handleResend = useCallback(async () => {
@@ -82,6 +83,7 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
 
     return {
         otp,
+        isComplete,
         countdown,
         error,
         isVerifying,

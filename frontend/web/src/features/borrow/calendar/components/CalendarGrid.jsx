@@ -19,10 +19,10 @@ export const CalendarGrid = ({
     onSelectDate = noop,
     weeksCount = 5
 }) => {
-    const gridRowsStyle = useMemo(() => ({ gridTemplateRows: `repeat(${weeksCount}, minmax(0, 1fr))` }), [weeksCount])
+    const gridRowsStyle = useMemo(() => ({ gridTemplateRows: `repeat(${weeksCount}, minmax(44px, 1fr))` }), [weeksCount])
 
     return (
-        <div className="flex flex-col gap-2 lg:flex-1 lg:min-h-0">
+        <div className="flex flex-col gap-2 flex-1 lg:min-h-0">
             <div className="grid grid-cols-7 text-center shrink-0">
                 {weekDays.map((dayLabel) => (
                     <div key={dayLabel} className="text-xs lg:text-sm font-medium text-slate-800 py-0.5">
@@ -31,11 +31,11 @@ export const CalendarGrid = ({
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1 lg:gap-2 lg:flex-1 lg:min-h-0" style={gridRowsStyle}>
+            <div className="grid grid-cols-7 gap-1 lg:gap-2 flex-1 lg:min-h-0" style={gridRowsStyle}>
                 {leadingKeys.slice(0, leadingEmptyDays).map((key) => (
                     <div
                         key={key}
-                        className="aspect-square lg:aspect-auto h-full min-h-0 lg:min-h-[56px] bg-gray-100 rounded-lg border border-slate-300 pointer-events-none"
+                        className="w-full h-full min-h-0 lg:min-h-[56px] bg-gray-100 rounded-lg border border-slate-300 pointer-events-none"
                     />
                 ))}
 
@@ -59,7 +59,7 @@ export const CalendarGrid = ({
                 {trailingKeys.slice(0, trailingEmptyDays).map((key) => (
                     <div
                         key={key}
-                        className="aspect-square lg:aspect-auto h-full min-h-0 lg:min-h-[56px] bg-gray-100 rounded-lg border border-slate-300 pointer-events-none"
+                        className="w-full h-full min-h-0 lg:min-h-[56px] bg-gray-100 rounded-lg border border-slate-300 pointer-events-none"
                     />
                 ))}
             </div>

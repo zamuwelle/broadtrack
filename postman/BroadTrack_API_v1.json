@@ -478,6 +478,22 @@
                         "url": "{{base_url}}/me",
                         "description": "Requires a valid token. Returns the current user profile with 200. Missing or invalid bearer token returns 401."
                     }
+                },
+                {
+                    "name": "Update profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Walker\",\n  \"department\": \"BS Information Systems\"\n}"
+                        },
+                        "url": "{{base_url}}/profile",
+                        "description": "Requires authentication. Updates the current user's name or department. Returns 422 for invalid fields."
+                    }
                 }
             ]
         },

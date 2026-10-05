@@ -27,7 +27,6 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
             updateAuthState({
                 showPass: false,
                 error: '',
-                successMessage: '',
                 form: { ...initialFormState }
             })
             onClose()
@@ -53,7 +52,8 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
                     })
                 } else {
                     updateAuthState({
-                        error: loginError.message || 'Email or password is incorrect'
+                        error: loginError.message || 'Email or password is incorrect',
+                        isServerError: !loginError.status || loginError.status >= 500
                     })
                 }
             },
@@ -84,8 +84,7 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
         updateAuthState({
             tab: 'verify',
             showPass: false,
-            error: '',
-            successMessage: ''
+            error: ''
         })
     }, [updateAuthState])
 
@@ -97,7 +96,8 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
                 const errors = registerError.errors || {}
                 const emailMsg = errors.email ? errors.email[0] : null
                 updateAuthState({
-                    error: emailMsg || registerError.message || 'Registration failed'
+                    error: emailMsg || registerError.message || 'Registration failed',
+                    isServerError: !registerError.status || registerError.status >= 500
                 })
             },
             [updateAuthState]
@@ -122,16 +122,18 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
     }
 }
 
-const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
+const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState }) => {
     const forgotMutation = useMutation({
         mutationFn: forgotPassword,
         onSuccess: useCallback(() => {
-            updateAuthState({ successMessage: 'Reset link sent! Check your inbox.' })
-        }, [updateAuthState]),
+            updateAuthState({ tab: 'login', error: '', isServerError: false, form: { ...initialFormState } })
+            showToast('Reset link sent! Check your inbox.')
+        }, [initialFormState, showToast, updateAuthState]),
         onError: useCallback(
             (forgotError = {}) => {
                 updateAuthState({
-                    error: forgotError.message || 'Failed to send reset link'
+                    error: forgotError.message || 'Failed to send reset link',
+                    isServerError: !forgotError.status || forgotError.status >= 500
                 })
             },
             [updateAuthState]
@@ -141,16 +143,21 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
     const resetMutation = useMutation({
         mutationFn: resetPassword,
         onSuccess: useCallback(() => {
-            updateAuthState({ tab: 'login', successMessage: '', error: '' })
+            updateAuthState({ tab: 'login', error: '' })
             showToast('Password reset successfully! You can now log in.')
         }, [updateAuthState, showToast]),
         onError: useCallback(
             (resetError = {}) => {
+                if (resetError.status === 422 && resetError.message === 'Invalid or expired reset token.') {
+                    updateAuthState({ tab: 'forgot', error: '', form: { ...initialFormState } })
+                    showToast('Invalid or expired reset link. Please request a new one.', 'warning')
+                    return
+                }
                 updateAuthState({
                     error: resetError.message || 'Password reset failed. Please try again.'
                 })
             },
-            [updateAuthState]
+            [initialFormState, showToast, updateAuthState]
         )
     })
 
@@ -197,7 +204,8 @@ export const useAuthModalActions = ({ onLoginSuccess, onClose, updateAuthState, 
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({
         updateAuthState,
-        showToast
+        showToast,
+        initialFormState
     })
 
     return {

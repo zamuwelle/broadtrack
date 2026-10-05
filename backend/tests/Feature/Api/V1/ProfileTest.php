@@ -23,14 +23,26 @@ test('authenticated user can view their profile', function (): void {
         ->assertJsonMissingPath('data.phone');
 });
 
-test('authenticated user cannot update their profile or upload a picture', function (): void {
+test('borrower can update their own profile', function (): void {
     $user = User::factory()->borrower()->create(['firstname' => 'Alice']);
+    $other = User::factory()->borrower()->create(['firstname' => 'Other']);
+    $this->actingAs($user)->putJson('/api/v1/profile', [
+        'firstname' => 'Updated', 'lastname' => 'Name',
+        'department' => Department::InformationSystems->value, 'role' => 'admin',
+    ])->assertOk()->assertJsonPath('data.firstname', 'Updated');
+    $this->assertDatabaseHas('users', ['id' => $user->id, 'firstname' => 'Updated', 'role' => $user->role->value]);
+    $this->assertDatabaseHas('users', ['id' => $other->id, 'firstname' => 'Other']);
+});
 
-    $this->actingAs($user)
-        ->putJson('/api/v1/profile', ['firstname' => 'Updated'])
-        ->assertNotFound();
-    $this->postJson('/api/v1/profile/picture')->assertNotFound();
-    $this->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.firstname', 'Alice');
+test('profile updates require authentication and valid details', function (): void {
+    $this->putJson('/api/v1/profile', ['firstname' => 'Updated'])->assertUnauthorized();
+    $this->actingAs(User::factory()->borrower()->create())
+        ->putJson('/api/v1/profile', ['firstname' => '', 'department' => 'invalid'])
+        ->assertUnprocessable()->assertJsonValidationErrors(['firstname', 'department']);
+});
+
+test('profile picture upload remains unavailable', function (): void {
+    $this->actingAs(User::factory()->borrower()->create())->postJson('/api/v1/profile/picture')->assertNotFound();
 });
 
 test('bearer authentication returns typed or empty department shorthand', function (?Department $department, ?string $shorthand): void {
