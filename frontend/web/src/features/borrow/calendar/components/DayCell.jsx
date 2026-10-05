@@ -50,7 +50,8 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
         return () => observer.disconnect()
     }, [matchingBookings.length])
 
-    const { width, height, dateHeight } = size
+    const { height, dateHeight } = size
+    const width = size.width * 0.8
     const columns = Math.max(1, Math.floor((width + 4) / 10))
     const rows = Math.max(1, Math.floor((height - dateHeight + 1) / 10))
     const countWidth = String(matchingBookings.length).length * 6 + 6
@@ -69,7 +70,7 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
             type="button"
             onClick={handleClick}
             className={cn(
-                'relative aspect-square lg:aspect-auto h-full min-h-0 lg:min-h-[56px] rounded-lg outline outline-1 outline-offset-[-1px] flex flex-col items-center justify-between pt-1 pb-1 lg:pt-2 lg:pb-2 px-0.5 lg:px-1 transition cursor-pointer',
+                'relative w-full h-full min-h-0 lg:min-h-[56px] rounded-lg outline outline-1 outline-offset-[-1px] flex flex-col items-center justify-between pt-1 pb-1 lg:pt-2 lg:pb-2 px-0.5 lg:px-1 transition cursor-pointer',
                 getCellClasses(isSelected, hasActiveBooking, hasPendingBooking)
             )}>
             <div
@@ -83,7 +84,7 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
                 {day}
             </div>
             <div className="flex flex-1 items-center justify-center w-full min-h-0 pointer-events-none">
-                <div className="flex flex-wrap items-center justify-center gap-1 w-full">
+                <div className="flex flex-wrap items-center justify-center gap-1 w-[80%]">
                     {displayBookings.map((booking) => {
                         const scheduleStatus = resolveBookingScheduleStatus(booking)
 

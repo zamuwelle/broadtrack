@@ -10,7 +10,7 @@ it('shows more booking dots and counts the remaining bookings', () => {
         endDate: '2026-10-30'
     }))
     render(<DayCell day={30} dateKey="2026-10-30" filteredBookings={bookings} onSelectDate={vi.fn()} />)
-    expect(screen.getByRole('button', { name: '30 +7' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '30 +9' })).toBeInTheDocument()
 })
 
 it('uses the available width to show all dots on a wide day', () => {
@@ -39,7 +39,7 @@ it('uses additional rows when the day has enough height', () => {
             this.disconnect = vi.fn()
         })
     )
-    const bookings = Array.from({ length: 20 }, (_, id) => ({
+    const bookings = Array.from({ length: 12 }, (_, id) => ({
         id,
         status: 'pending',
         startDate: '2026-10-30',
@@ -50,3 +50,21 @@ it('uses additional rows when the day has enough height', () => {
 })
 
 afterEach(() => vi.unstubAllGlobals())
+
+it('reserves side space while counting dots that fit', () => {
+    vi.stubGlobal(
+        'ResizeObserver',
+        vi.fn(function mockResizeObserver(onResize) {
+            this.observe = () => onResize([{ contentRect: { width: 100, height: 44 } }])
+            this.disconnect = vi.fn()
+        })
+    )
+    const bookings = Array.from({ length: 20 }, (_, id) => ({
+        id,
+        status: 'pending',
+        startDate: '2026-10-30',
+        endDate: '2026-10-30'
+    }))
+    render(<DayCell day={30} dateKey="2026-10-30" filteredBookings={bookings} />)
+    expect(screen.getByRole('button', { name: '30 +6' })).toBeInTheDocument()
+})
