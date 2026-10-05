@@ -39,14 +39,21 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
         if (matchingBookings.length === 0 || typeof ResizeObserver === 'undefined') {
             return
         }
-        const observer = new ResizeObserver(([entry]) =>
+        const cell = cellRef.current
+        if (!cell) {
+            return
+        }
+        const observer = new ResizeObserver(([entry]) => {
+            if (!entry || !cell.isConnected) {
+                return
+            }
             setSize({
                 width: entry.contentRect.width,
                 height: entry.contentRect.height || 44,
-                dateHeight: cellRef.current.firstElementChild.getBoundingClientRect().height || 20
+                dateHeight: cell.firstElementChild?.getBoundingClientRect().height || 20
             })
-        )
-        observer.observe(cellRef.current)
+        })
+        observer.observe(cell)
         return () => observer.disconnect()
     }, [matchingBookings.length])
 

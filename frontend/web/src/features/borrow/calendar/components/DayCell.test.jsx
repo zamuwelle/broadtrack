@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vite-plus/test'
 import { DayCell } from '@/features/borrow/calendar/components/DayCell'
 
+const singleBooking = [{ id: 1, status: 'pending', startDate: '2026-10-30', endDate: '2026-10-30' }]
+
 it('shows more booking dots and counts the remaining bookings', () => {
     const bookings = Array.from({ length: 11 }, (_, id) => ({
         id,
@@ -67,4 +69,27 @@ it('reserves side space while counting dots that fit', () => {
     }))
     render(<DayCell day={30} dateKey="2026-10-30" filteredBookings={bookings} />)
     expect(screen.getByRole('button', { name: '30 +6' })).toBeInTheDocument()
+})
+
+it('ignores a queued resize after the day cell unmounts', () => {
+    let onResize
+    vi.stubGlobal(
+        'ResizeObserver',
+        vi.fn(function mockResizeObserver(resize) {
+            onResize = resize
+            this.observe = vi.fn()
+            this.disconnect = vi.fn()
+        })
+    )
+    const { unmount } = render(<DayCell day={30} dateKey="2026-10-30" filteredBookings={singleBooking} />)
+
+    unmount()
+
+    let resizeError
+    try {
+        onResize([{ contentRect: { width: 120, height: 44 } }])
+    } catch (error) {
+        resizeError = error
+    }
+    expect(resizeError).toBeUndefined()
 })
