@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class TestSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $defaultPassword = Hash::make('password123');
 
@@ -28,7 +28,13 @@ class TestSeeder extends Seeder
             ['suffix' => 'sysadmin', 'role' => UserRole::Sysadmin, 'domain' => 'laverdad.edu.ph'],
         ];
 
-        User::withoutEvents(function () use ($teamMembers, $roleDefinitions, $defaultPassword) {
+        $testAccounts = [
+            ['email' => 'sysadmin.test@laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Sysadmin', 'role' => UserRole::Sysadmin],
+            ['email' => 'admin.test@laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Admin', 'role' => UserRole::Admin],
+            ['email' => 'borrower.test@student.laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Borrower', 'role' => UserRole::Borrower],
+        ];
+
+        User::withoutEvents(function () use ($teamMembers, $roleDefinitions, $testAccounts, $defaultPassword): void {
             foreach ($teamMembers as $member) {
                 foreach ($roleDefinitions as $roleDefinition) {
                     User::updateOrCreate(
@@ -43,6 +49,20 @@ class TestSeeder extends Seeder
                         ]
                     );
                 }
+            }
+
+            foreach ($testAccounts as $account) {
+                User::updateOrCreate(
+                    ['email' => $account['email']],
+                    [
+                        'firstname' => $account['firstname'],
+                        'lastname' => $account['lastname'],
+                        'password' => $defaultPassword,
+                        'role' => $account['role'],
+                        'department' => Department::InformationSystems,
+                        'email_verified_at' => now(),
+                    ]
+                );
             }
         });
     }
