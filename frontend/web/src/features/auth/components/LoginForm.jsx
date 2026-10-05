@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { cn } from 'cn'
 import { loginSchema } from '@shared/schemas/auth'
+import { VALIDATION_MESSAGES } from '@shared/schemas/common'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
 import { Icon } from '@/components/ui/Icon'
@@ -157,6 +158,7 @@ export const LoginForm = ({
     } = useForm({
         resolver: zodResolver(loginSchema),
         mode: 'onChange',
+        shouldFocusError: false,
         defaultValues: {
             email: form.email || '',
             password: form.password || ''
@@ -164,14 +166,13 @@ export const LoginForm = ({
     })
     const emailValue = watch('email')
     const passwordValue = watch('password')
-    const firstChange = useRef(true)
+    const previousValues = useRef({ email: emailValue, password: passwordValue })
 
     useEffect(() => {
-        if (firstChange.current) {
-            firstChange.current = false
-            return
+        if (previousValues.current.email !== emailValue || previousValues.current.password !== passwordValue) {
+            previousValues.current = { email: emailValue, password: passwordValue }
+            onClearError()
         }
-        onClearError()
     }, [emailValue, onClearError, passwordValue])
 
     useEffect(() => {
@@ -209,7 +210,9 @@ export const LoginForm = ({
                     type="email"
                     maxLength={255}
                     autoComplete="email"
-                    error={errors.email?.message || emailError}
+                    error={
+                        (errors.email?.message !== VALIDATION_MESSAGES.REQUIRED && errors.email?.message) || emailError
+                    }
                     {...register('email')}
                     className={inputClass}
                 />
@@ -217,7 +220,10 @@ export const LoginForm = ({
                     maxLength={64}
                     label="Password"
                     autoComplete="current-password"
-                    error={errors.password?.message || passwordError}
+                    error={
+                        (errors.password?.message !== VALIDATION_MESSAGES.REQUIRED && errors.password?.message) ||
+                        passwordError
+                    }
                     {...register('password')}
                     className={passwordClass}
                     showPass={showPass}
@@ -227,7 +233,7 @@ export const LoginForm = ({
                 />
                 <button
                     type="submit"
-                    disabled={isPending || !isValid}
+                    disabled={isPending}
                     className={cn(submitClass, {
                         'hover:opacity-90': isValid,
                         'opacity-50 cursor-not-allowed': !isValid

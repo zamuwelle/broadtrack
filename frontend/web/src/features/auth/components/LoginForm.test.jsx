@@ -11,7 +11,7 @@ describe('LoginForm', () => {
 
         fireEvent.submit(container.querySelector('form'))
 
-        await waitFor(() => expect(screen.getAllByText('This field is required')).toHaveLength(2))
+        await waitFor(() => expect(screen.queryByText('This field is required')).not.toBeInTheDocument())
         expect(onSubmit).not.toHaveBeenCalled()
     })
 

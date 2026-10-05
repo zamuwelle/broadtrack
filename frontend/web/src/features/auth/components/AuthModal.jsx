@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
@@ -82,6 +82,12 @@ export const AuthModal = ({
     const { tab, showPass, error, successMessage, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
     const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
+
+    useEffect(() => {
+        if (isOpen && initialError) {
+            showToast(initialError, 'danger')
+        }
+    }, [initialError, isOpen, showToast])
 
     const isVerifyTab = tab === 'verify'
     useEscapeKey(isVerifyTab ? null : onClose)

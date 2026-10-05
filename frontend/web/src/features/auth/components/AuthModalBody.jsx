@@ -51,9 +51,10 @@ export const AuthModalBody = ({
     )
     const handleInvalid = useCallback(
         (invalidErrors) => {
-            const message = invalidErrors.email
-                ? VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT
-                : VALIDATION_MESSAGES.MISSING_FIELDS
+            const message =
+                invalidErrors.email && invalidErrors.email.message !== VALIDATION_MESSAGES.REQUIRED
+                    ? VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT
+                    : VALIDATION_MESSAGES.MISSING_FIELDS
             showToast(message, 'warning')
         },
         [showToast]
