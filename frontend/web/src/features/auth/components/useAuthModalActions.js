@@ -122,7 +122,7 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
     }
 }
 
-const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
+const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState }) => {
     const forgotMutation = useMutation({
         mutationFn: forgotPassword,
         onSuccess: useCallback(() => {
@@ -146,11 +146,16 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast }) => {
         }, [updateAuthState, showToast]),
         onError: useCallback(
             (resetError = {}) => {
+                if (resetError.status === 422 && resetError.message === 'Invalid or expired reset token.') {
+                    updateAuthState({ tab: 'forgot', error: '', form: { ...initialFormState } })
+                    showToast('Invalid or expired reset link. Please request a new one.', 'warning')
+                    return
+                }
                 updateAuthState({
                     error: resetError.message || 'Password reset failed. Please try again.'
                 })
             },
-            [updateAuthState]
+            [initialFormState, showToast, updateAuthState]
         )
     })
 
@@ -197,7 +202,8 @@ export const useAuthModalActions = ({ onLoginSuccess, onClose, updateAuthState, 
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({
         updateAuthState,
-        showToast
+        showToast,
+        initialFormState
     })
 
     return {

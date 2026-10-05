@@ -7,6 +7,7 @@ import { useAuthModalActions } from '@/features/auth/components/useAuthModalActi
 import { Toast } from '@/components/ui/Toast'
 import { AuthModalHeader } from '@/features/auth/components/AuthModalHeader'
 import { AuthModalBody } from '@/features/auth/components/AuthModalBody'
+import { useCheckResetToken } from '@/features/auth/api/check-reset-token'
 
 const initialFormState = Object.freeze({
     firstname: '',
@@ -82,6 +83,26 @@ export const AuthModal = ({
     const { tab, showPass, error, successMessage, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
     const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
+    const resetLink = useCheckResetToken({
+        email: initialData.email,
+        token: initialData.token,
+        enabled: isOpen && mode === 'reset'
+    })
+
+    useEffect(() => {
+        if (tab !== 'reset') {
+            return
+        }
+        if (resetLink.isError || (resetLink.isSuccess && !resetLink.data)) {
+            updateAuthState({ tab: 'forgot', error: '', form: { ...initialFormState } })
+            showToast(
+                resetLink.isError
+                    ? 'Could not check the reset link. Please try again.'
+                    : 'Invalid or expired reset link. Please request a new one.',
+                'warning'
+            )
+        }
+    }, [resetLink.data, resetLink.isError, resetLink.isSuccess, showToast, tab, updateAuthState])
 
     useEffect(() => {
         if (isOpen && initialError) {
@@ -101,7 +122,7 @@ export const AuthModal = ({
         initialFormState
     })
 
-    if (!isOpen) {
+    if (!isOpen || (tab === 'reset' && (resetLink.isPending || resetLink.isError || !resetLink.data))) {
         return null
     }
 

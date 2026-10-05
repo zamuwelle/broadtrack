@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\V1\Auth\CheckResetTokenRequest;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Mail\ResetPasswordMail;
@@ -48,16 +49,25 @@ class PasswordResetController extends ApiController
         return $this->success(message: 'Reset link sent to your email.');
     }
 
+    public function checkResetToken(CheckResetTokenRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        return $this->success(['valid' => $this->isValidToken($validated['email'], $validated['token'])]);
+    }
+
+    private function isValidToken(string $email, string $token): bool
+    {
+        $record = DB::table('password_reset_tokens')->where('email', $email)->where('token', $token)->first();
+
+        return $record && ! Carbon::parse($record->created_at)->addMinutes(15)->isPast();
+    }
+
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $record = DB::table('password_reset_tokens')
-            ->where('email', $validated['email'])
-            ->where('token', $validated['token'])
-            ->first();
-
-        if (! $record || Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
+        if (! $this->isValidToken($validated['email'], $validated['token'])) {
             return $this->validationError(message: 'Invalid or expired reset token.');
         }
 
