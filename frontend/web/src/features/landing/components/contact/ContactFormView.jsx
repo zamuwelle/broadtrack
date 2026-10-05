@@ -1,5 +1,6 @@
 import { cn } from 'cn'
 import { MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@shared/schemas/common'
+import { ErrorText } from '@/components/ui/form/ErrorText'
 
 const fieldClass =
     'w-full h-[44px] sm:h-[48px] rounded-[8px] bg-placeholder px-4 text-text placeholder:text-[14px] sm:placeholder:text-[15px] text-[14px] sm:text-[15px] outline-none border'
@@ -7,6 +8,8 @@ const textareaClass =
     'w-full h-[80px] sm:h-[96px] rounded-[8px] bg-placeholder p-3.5 text-text placeholder:text-[14px] sm:placeholder:text-[15px] text-[14px] sm:text-[15px] outline-none resize-none border'
 const sendClass =
     'w-full h-[44px] sm:h-[48px] flex items-center justify-center rounded-[8px] border border-placeholder text-placeholder text-[15px] sm:text-[16px] font-medium hover:bg-white/10 transition-colors'
+const errorClass = 'h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1'
+const errorTextClass = 'text-[11px] sm:text-[12px] text-red-300'
 
 const inputDefs = Object.freeze([
     {
@@ -51,11 +54,7 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                                 'border-transparent': !fieldError
                             })}
                         />
-                        <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                            {fieldError ? (
-                                <span className="text-[11px] sm:text-[12px] text-red-300">{fieldError}</span>
-                            ) : null}
-                        </div>
+                        <ErrorText message={fieldError} className={errorClass} textClassName={errorTextClass} />
                     </div>
                 )
             })}
@@ -70,11 +69,7 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                         'border-transparent': !errors.message
                     })}
                 />
-                <div className="h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1">
-                    {errors.message ? (
-                        <span className="text-[11px] sm:text-[12px] text-red-300">{errors.message.message}</span>
-                    ) : null}
-                </div>
+                <ErrorText message={errors.message?.message} className={errorClass} textClassName={errorTextClass} />
             </div>
             <div className="h-1" />
             {error ? (
