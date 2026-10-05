@@ -26,6 +26,7 @@ const useAuthModalState = ({ mode, initialError, initialData, onClose }) => {
         tab: mode,
         showPass: false,
         error: initialError,
+        isServerError: false,
         successMessage: '',
         form: { ...initialFormState, ...initialData }
     })
@@ -80,7 +81,7 @@ export const AuthModal = ({
         initialData,
         onClose
     })
-    const { tab, showPass, error, successMessage, form } = authState
+    const { tab, showPass, error, isServerError, successMessage, form } = authState
     const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
     const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
     const resetLink = useCheckResetToken({
@@ -149,6 +150,7 @@ export const AuthModal = ({
                         tab={tab}
                         form={form}
                         error={error}
+                        isServerError={isServerError}
                         successMessage={successMessage}
                         showPass={showPass}
                         actions={actions}

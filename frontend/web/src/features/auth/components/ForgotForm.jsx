@@ -4,12 +4,14 @@ import { useForm } from 'react-hook-form'
 import { forgotPasswordSchema } from '@shared/schemas/auth'
 import { Logo } from '@/components/ui/Logo'
 import { TextInput } from '@/components/ui/form/TextInput'
+import { FormError } from '@/components/ui/form/FormError'
 import { inputClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
 
 export const ForgotForm = ({
     form,
+    serverError = '',
     error = '',
     successMessage = '',
     isPending = false,
@@ -78,6 +80,7 @@ export const ForgotForm = ({
                 setSubmittedEmail(values.email)
                 onSubmit(values)
             }, onInvalid)}>
+            <FormError message={serverError} />
             <TextInput
                 label="La Verdad Email"
                 type="email"

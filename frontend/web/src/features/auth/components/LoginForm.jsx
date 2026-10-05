@@ -6,6 +6,7 @@ import { loginSchema } from '@shared/schemas/auth'
 import { VALIDATION_MESSAGES } from '@shared/schemas/common'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
+import { FormError } from '@/components/ui/form/FormError'
 import { Icon } from '@/components/ui/Icon'
 import { env } from '@/config/env'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
@@ -138,6 +139,7 @@ const useGooglePopup = () => {
 
 export const LoginForm = ({
     form,
+    serverError = '',
     emailError = '',
     passwordError = '',
     showPass = false,
@@ -205,6 +207,7 @@ export const LoginForm = ({
                 <div className="flex-1 h-[1px] bg-gray-200" />
             </div>
             <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
+                <FormError message={serverError} />
                 <TextInput
                     label="La Verdad Email"
                     type="email"

@@ -35,6 +35,7 @@ export const AuthModalBody = ({
     tab,
     form,
     error,
+    isServerError,
     successMessage,
     showPass,
     actions,
@@ -46,7 +47,7 @@ export const AuthModalBody = ({
     const isCredentialError = error === 'Email or password is incorrect'
     const { firstnameError, lastnameError, emailError, passwordError, departmentError } = resolveFormErrors(
         form,
-        error,
+        isServerError ? '' : error,
         isCredentialError
     )
     const handleInvalid = useCallback(
@@ -64,6 +65,7 @@ export const AuthModalBody = ({
         return (
             <LoginForm
                 form={form}
+                serverError={isServerError ? error : ''}
                 emailError={emailError}
                 passwordError={passwordError}
                 showPass={showPass}
@@ -81,6 +83,7 @@ export const AuthModalBody = ({
         return (
             <RegisterForm
                 form={form}
+                serverError={isServerError ? error : ''}
                 firstnameError={firstnameError}
                 lastnameError={lastnameError}
                 emailError={emailError}
@@ -101,6 +104,7 @@ export const AuthModalBody = ({
         return (
             <ForgotForm
                 form={form}
+                serverError={isServerError ? error : ''}
                 error={emailError}
                 successMessage={successMessage}
                 isPending={actions.forgotPending}

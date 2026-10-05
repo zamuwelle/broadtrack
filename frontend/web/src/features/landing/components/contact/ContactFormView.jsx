@@ -1,6 +1,7 @@
 import { cn } from 'cn'
 import { MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { ErrorText } from '@/components/ui/form/ErrorText'
+import { FormError } from '@/components/ui/form/FormError'
 
 const fieldClass =
     'w-full h-[44px] sm:h-[48px] rounded-[8px] bg-placeholder px-4 text-text placeholder:text-[14px] sm:placeholder:text-[15px] text-[14px] sm:text-[15px] outline-none border'
@@ -8,7 +9,7 @@ const textareaClass =
     'w-full h-[80px] sm:h-[96px] rounded-[8px] bg-placeholder p-3.5 text-text placeholder:text-[14px] sm:placeholder:text-[15px] text-[14px] sm:text-[15px] outline-none resize-none border'
 const sendClass =
     'w-full h-[44px] sm:h-[48px] flex items-center justify-center rounded-[8px] border border-placeholder text-placeholder text-[15px] sm:text-[16px] font-medium hover:bg-white/10 transition-colors'
-const errorClass = 'h-[14px] sm:h-[16px] flex items-center mt-0.5 px-1'
+const errorClass = 'h-[16px] flex items-center mt-0.5 px-1'
 const errorTextClass = 'text-[11px] sm:text-[12px] text-red-300'
 
 const inputDefs = Object.freeze([
@@ -38,7 +39,11 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
             <br className="hidden sm:inline" /> feedback!
         </h3>
         <div className="h-3 sm:h-5" />
-        <form onSubmit={onSubmit} className="flex flex-col gap-1.5 sm:gap-2 w-full max-w-[368px] items-center">
+        <form onSubmit={onSubmit} className="flex flex-col gap-2 w-full max-w-[368px] items-center">
+            <FormError
+                message={error ? error.message || 'Something went wrong, try again.' : ''}
+                className="text-red-300 text-center bg-transparent p-0 rounded-none"
+            />
             {inputDefs.map((def) => {
                 const fieldError = errors[def.name]?.message
                 return (
@@ -72,11 +77,6 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                 <ErrorText message={errors.message?.message} className={errorClass} textClassName={errorTextClass} />
             </div>
             <div className="h-1" />
-            {error ? (
-                <p className="text-[13px] text-red-300 text-center">
-                    {error.message || 'Something went wrong, try again.'}
-                </p>
-            ) : null}
             <button
                 type="submit"
                 disabled={!isValid || isPending}

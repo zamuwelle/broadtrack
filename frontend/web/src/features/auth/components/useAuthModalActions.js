@@ -53,7 +53,8 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
                     })
                 } else {
                     updateAuthState({
-                        error: loginError.message || 'Email or password is incorrect'
+                        error: loginError.message || 'Email or password is incorrect',
+                        isServerError: !loginError.status || loginError.status >= 500
                     })
                 }
             },
@@ -97,7 +98,8 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
                 const errors = registerError.errors || {}
                 const emailMsg = errors.email ? errors.email[0] : null
                 updateAuthState({
-                    error: emailMsg || registerError.message || 'Registration failed'
+                    error: emailMsg || registerError.message || 'Registration failed',
+                    isServerError: !registerError.status || registerError.status >= 500
                 })
             },
             [updateAuthState]
@@ -131,7 +133,8 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
         onError: useCallback(
             (forgotError = {}) => {
                 updateAuthState({
-                    error: forgotError.message || 'Failed to send reset link'
+                    error: forgotError.message || 'Failed to send reset link',
+                    isServerError: !forgotError.status || forgotError.status >= 500
                 })
             },
             [updateAuthState]
