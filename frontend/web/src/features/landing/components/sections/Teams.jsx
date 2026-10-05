@@ -1,12 +1,17 @@
 import { useEffect, useRef } from 'react'
 import lightImg from '@/assets/icons/landing/teams/light.png?inline'
+import member1 from '@/assets/teams/member-1.webp'
+import member2 from '@/assets/teams/member-2.webp'
+import member3 from '@/assets/teams/member-3.webp'
+import member4 from '@/assets/teams/member-4.webp'
+import member5 from '@/assets/teams/member-5.webp'
 
 const members = Object.freeze([
-    { name: 'Ydrey Ann Ramirez', role: 'UI/UX Designer' },
-    { name: 'Anne Stephanne Buenaflor', role: 'Business Analyst' },
-    { name: 'Rocelyn Lava', role: 'Project Manager' },
-    { name: 'Luisa Padillon', role: 'UI/UX Designer' },
-    { name: 'Karl Ashton Mahusay', role: 'Quality Assurance' }
+    { name: 'Ydrey Ann Ramirez', role: 'UI/UX Designer', image: member1, scale: 'scale-125' },
+    { name: 'Anne Stephanne Buenaflor', role: 'Business Analyst', image: member2, scale: 'scale-125' },
+    { name: 'Rocelyn Lava', role: 'Project Manager', image: member3, scale: 'scale-125' },
+    { name: 'Luisa Padillon', role: 'UI/UX Designer', image: member4, scale: 'scale-150 translate-y-1' },
+    { name: 'Karl Ashton Mahusay', role: 'Quality Assurance', image: member5, scale: 'scale-100' }
 ])
 
 export const Teams = () => {
@@ -49,7 +54,14 @@ export const Teams = () => {
                             key={member.name}
                             ref={member.role === 'Project Manager' ? projectManagerRef : null}
                             className="relative w-[160px] lg:w-[180px] h-[430px] shrink-0 flex flex-col items-center text-center snap-center">
-                            <div className="relative z-10 w-[118px] h-[118px] bg-gray-200" />
+                            <div className="relative z-10 w-[118px] h-[118px] overflow-hidden bg-gray-200">
+                                <img
+                                    src={member.image}
+                                    alt=""
+                                    loading="lazy"
+                                    className={`w-full h-full object-cover object-top origin-top ${member.scale}`}
+                                />
+                            </div>
                             <p className="relative z-10 text-primary text-[15px] lg:text-[16px] font-bold uppercase leading-snug mt-6 min-h-[44px] flex items-center justify-center">
                                 {member.name}
                             </p>
