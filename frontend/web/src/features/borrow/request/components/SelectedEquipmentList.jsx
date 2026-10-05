@@ -19,7 +19,7 @@ export const SelectedEquipmentList = ({ selectedItems = defaultSelectedItems, on
     return (
         <div className="flex w-full flex-col items-start justify-start gap-4">
             <span className="text-xs font-normal text-neutral-400">
-                SELECTED EQUIPMENT ({selectedItems.length} Items)
+                SELECTED EQUIPMENT ({selectedItems.length} {selectedItems.length === 1 ? 'Item' : 'Items'})
             </span>
             <div className="flex w-full flex-col items-start justify-start gap-4">
                 {selectedItems.map((item) => (
