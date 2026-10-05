@@ -85,7 +85,7 @@ export const useBookingDateDefaults = ({
             const defaultStartDate = minStartDate && minStartDate > currentDateTime ? minStartDate : currentDateTime
 
             updateSummaryState((prev) => {
-                if (prev.modalView === 'submitted') {
+                if (prev.modalView === 'submitted' || prev.modalView === 'edit') {
                     return {}
                 }
                 const newState = { modalView: selectedItemCount > 0 ? 'summary' : 'empty' }

@@ -15,6 +15,7 @@ The Laravel routes are defined in [`backend/routes/api.php`](../../backend/route
 | `POST` | `/api/v1/verify-email`        | Public        | Verify an email address.                 |
 | `POST` | `/api/v1/logout`              | Authenticated | Revoke the current token.                |
 | `GET`  | `/api/v1/me`                  | Authenticated | Read the current user's profile.         |
+| `PUT`  | `/api/v1/profile`             | Authenticated | Update the current user’s name or department. |
 | `POST` | `/api/v1/contact`             | Public        | Submit a contact inquiry.                |
 
 The Google OAuth routes are defined in [`backend/routes/web.php`](../../backend/routes/web.php): `GET /api/v1/auth/google/redirect` starts sign-in, and `GET /api/v1/auth/google/callback` handles the provider's response. See the [authentication lifecycle](../architecture/auth-lifecycle.md#google-oauth) for the session and redirect flow.

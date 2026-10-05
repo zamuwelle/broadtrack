@@ -309,6 +309,9 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         endDateIsAutomaticRef
     })
 
+    const handleOpenEdit = useCallback(() => updateSummaryState({ modalView: 'edit' }), [updateSummaryState])
+    const handleCloseEdit = useCallback(() => updateSummaryState({ modalView: 'summary' }), [updateSummaryState])
+
     const handleSubmit = useBorrowSubmitHandler({
         createBookingMutation,
         isSubmittable,
@@ -344,6 +347,8 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
         requestError,
         helperMessage,
         ...handlers,
+        handleOpenEdit,
+        handleCloseEdit,
         handleSubmit
     }
 }

@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import { Icon } from '@/components/ui/Icon'
 import { MAX_BOOKING_PURPOSE_LENGTH } from '@shared/schemas/booking'
 import { SelectedEquipmentList } from '@/features/borrow/request/components/SelectedEquipmentList'
 import { BookingDateInputs } from '@/features/borrow/request/components/BookingDateInputs'
@@ -28,6 +29,7 @@ export const SummaryFormView = (props) => {
         requestError,
         helperMessage = '',
         onClose,
+        onEdit,
         onRemoveItem,
         onStartDateChange,
         onEndDateChange,
@@ -45,8 +47,15 @@ export const SummaryFormView = (props) => {
             <FormError message={requestError} className="w-full" />
 
             <div className="flex w-full flex-col items-end justify-start gap-3 rounded-lg bg-zinc-100/40 p-4 outline outline-1 outline-offset-[-1px] outline-slate-300">
-                <div className="w-full">
+                <div className="inline-flex w-full items-start justify-between">
                     <span className="text-xs font-normal text-neutral-400">BORROWER DETAILS</span>
+                    <button
+                        type="button"
+                        aria-label="Edit borrower details"
+                        onClick={onEdit}
+                        className="size-4 cursor-pointer hover:opacity-80">
+                        <Icon name="edit" className="size-4" />
+                    </button>
                 </div>
                 <div className="flex w-full flex-col items-start justify-start gap-1 text-xs font-normal text-text">
                     <div>Name: {user?.full_name || user?.name || 'User Name'}</div>
