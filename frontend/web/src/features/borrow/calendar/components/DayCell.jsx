@@ -83,7 +83,7 @@ export const DayCell = ({ day, dateKey, isSelected, filteredBookings = defaultBo
                 )}>
                 {day}
             </div>
-            <div className="flex flex-1 items-center justify-center w-full min-h-0 pointer-events-none">
+            <div className="flex flex-1 items-center justify-center w-full min-h-0 contain-size pointer-events-none">
                 <div className="flex flex-wrap items-center justify-center gap-1 w-[80%]">
                     {displayBookings.map((booking) => {
                         const scheduleStatus = resolveBookingScheduleStatus(booking)
