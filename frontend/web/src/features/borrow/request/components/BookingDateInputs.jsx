@@ -114,7 +114,7 @@ export const BookingDateInputs = (props) => {
     const endLabel = endDate ? formatDate(endDate) : 'Select end date & time'
 
     return (
-        <div className="flex flex-col lg:flex-row w-full items-start justify-start gap-3 lg:gap-4">
+        <div className="flex flex-col lg:flex-row w-full items-start justify-start gap-8 lg:gap-4">
             <div className="w-full lg:flex-1 min-w-0 inline-flex flex-col justify-start items-start gap-1.5">
                 <div className="self-stretch justify-start text-xs font-normal font-['Poppins'] text-black">
                     Start Date <span className="text-red-500">*</span>

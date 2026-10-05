@@ -21,10 +21,12 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
         hasStartConflict,
         hasEndConflict,
         hasScheduleConflict,
+        conflictMessages,
         purpose,
         isSubmittable,
         isSubmitting,
         errorMessage,
+        requestError,
         helperMessage,
         handleStartDateChange,
         handleEndDateChange,
@@ -72,10 +74,12 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
                         hasStartConflict={hasStartConflict}
                         hasEndConflict={hasEndConflict}
                         hasScheduleConflict={hasScheduleConflict}
+                        conflictMessages={conflictMessages}
                         purpose={purpose}
                         isSubmittable={isSubmittable}
                         isSubmitting={isSubmitting}
                         errorMessage={errorMessage}
+                        requestError={requestError}
                         helperMessage={helperMessage}
                         onClose={onClose}
                         onRemoveItem={handleRemoveItem}
