@@ -13,6 +13,7 @@ export const UserModalShell = ({ title, subtitle, onClose, children, onSubmit, s
                     </div>
                     <button
                         type="button"
+                        aria-label="Close dialog"
                         onClick={onClose}
                         className="size-10 flex items-center justify-center rounded-[10px] border border-slate-300 hover:bg-slate-50 text-text/60 hover:text-text cursor-pointer">
                         <X size={14} />

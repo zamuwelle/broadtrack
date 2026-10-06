@@ -30,7 +30,11 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         color === 'var(--color-border-focus)' ||
         color === '#BBD7EE'
     const backgroundColor = getBackgroundColor(type, color)
-    const contentColor = cn({ 'text-primary': isWelcome, 'text-white': !isWelcome })
+    const contentColor = cn({
+        'text-primary': isWelcome,
+        'text-text': type === 'user-success',
+        'text-white': !isWelcome && type !== 'user-success'
+    })
     const containerStyle = useMemo(() => ({ backgroundColor }), [backgroundColor])
 
     useEffect(() => {

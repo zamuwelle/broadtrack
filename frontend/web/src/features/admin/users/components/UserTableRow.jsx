@@ -26,7 +26,7 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
     const deptShorthand = user.department_shorthand || DEPARTMENT_SHORTHANDS[user.department] || user.department
 
     return (
-        <tr className="hover:bg-slate-50/70 transition-colors h-14">
+        <tr className="hover:bg-slate-50/70 transition-[background-color] h-14">
             <td className="px-3 py-2.5 text-xs text-slate-700 border-r border-slate-200 text-center">{index}</td>
             <td className="px-3 py-2.5 text-xs text-slate-900 border-r border-slate-200 capitalize">
                 {user.firstname}
@@ -59,12 +59,14 @@ export const UserTableRow = ({ user = defaultUser, index = 0, onEdit = noop, onR
             <td className="px-3 py-2.5 flex items-center justify-center gap-2">
                 <button
                     type="button"
+                    aria-label={`Edit ${user.firstname} ${user.lastname} (${user.email})`}
                     onClick={handleEdit}
                     className="hover:opacity-80 transition-opacity cursor-pointer">
                     <Icon name="userEdit" />
                 </button>
                 <button
                     type="button"
+                    aria-label={`Delete ${user.firstname} ${user.lastname} (${user.email})`}
                     onClick={handleRemove}
                     className="hover:opacity-80 transition-opacity cursor-pointer">
                     <Icon name="userDelete" />
