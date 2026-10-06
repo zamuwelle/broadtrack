@@ -40,6 +40,16 @@ export const Select = ({
         setOpen((prev) => !prev)
     }, [setOpen])
 
+    const handleKeyDown = useCallback(
+        (event) => {
+            if (event.key === 'Escape' && open) {
+                event.stopPropagation()
+                setOpen(false)
+            }
+        },
+        [open, setOpen]
+    )
+
     const createOptionClickHandler = useCallback(
         (option) => () => {
             if (onChange) {
@@ -57,6 +67,8 @@ export const Select = ({
             <button
                 type="button"
                 onClick={toggleOpen}
+                onKeyDown={handleKeyDown}
+                aria-expanded={open}
                 style={dynamicStyle}
                 className={cn(
                     'flex items-center text-left cursor-pointer rounded-[8px]',
@@ -87,6 +99,7 @@ export const Select = ({
                             key={option}
                             type="button"
                             onClick={createOptionClickHandler(option)}
+                            onKeyDown={handleKeyDown}
                             className={cn(
                                 'w-full h-10 px-4 flex items-center text-left text-[14px] whitespace-nowrap text-text cursor-pointer',
                                 value === option && selectedClass,

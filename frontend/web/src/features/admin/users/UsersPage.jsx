@@ -18,7 +18,7 @@ const useUserModals = (updatePageState, queryClient, selectedUser, showToast) =>
     const handleUserAdded = useCallback(
         (message) => {
             handleInvalidate()
-            showToast(message)
+            showToast(message, 'user-success')
         },
         [handleInvalidate, showToast]
     )
@@ -28,15 +28,16 @@ const useUserModals = (updatePageState, queryClient, selectedUser, showToast) =>
             handleInvalidate()
             const updatedName = [updatedUser?.firstname, updatedUser?.lastname].filter(Boolean).join(' ').trim()
             const selectedName = [selectedUser?.firstname, selectedUser?.lastname].filter(Boolean).join(' ').trim()
-            showToast(`User (${updatedName || selectedName || 'User'}) edited successfully!`)
+            showToast(`User (${updatedName || selectedName || 'User'}) edited successfully!`, 'user-success')
         },
         [handleInvalidate, selectedUser, showToast]
     )
 
     const handleUserRemoved = useCallback(() => {
         handleInvalidate()
-        showToast('User removed successfully!')
-    }, [handleInvalidate, showToast])
+        const name = [selectedUser?.firstname, selectedUser?.lastname].filter(Boolean).join(' ').trim()
+        showToast(name ? `User (${name}) removed successfully!` : 'User removed successfully!', 'user-success')
+    }, [handleInvalidate, selectedUser, showToast])
 
     const handleUserRemoveError = useCallback(
         (message) => {
@@ -120,14 +121,14 @@ export const UsersPage = (props) => {
                     <button
                         type="button"
                         onClick={handleOpenAddBorrower}
-                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-3 py-2.5 bg-sky-800 rounded-lg text-white text-base font-medium hover:bg-sky-900 cursor-pointer">
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 min-[375px]:gap-2.5 px-2 min-[375px]:px-3 py-2.5 bg-sky-800 rounded-lg text-white text-sm min-[375px]:text-base font-medium whitespace-nowrap hover:bg-sky-900 cursor-pointer">
                         <Icon name="addUser" className="w-5 h-4" />
                         Add Borrower
                     </button>
                     <button
                         type="button"
                         onClick={handleOpenAddAdmin}
-                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2.5 px-3 py-2.5 bg-white rounded-lg border border-slate-300 text-text text-base font-medium hover:bg-slate-50 cursor-pointer">
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 min-[375px]:gap-2.5 px-2 min-[375px]:px-3 py-2.5 bg-white rounded-lg border border-slate-300 text-text text-sm min-[375px]:text-base font-medium whitespace-nowrap hover:bg-slate-50 cursor-pointer">
                         <Icon name="addUser" className="w-5 h-4 text-text" />
                         Add Admin
                     </button>
@@ -137,6 +138,7 @@ export const UsersPage = (props) => {
             <SearchInput value={search} onChange={handleSearchChange} placeholder="Search name..." />
 
             <UserTable
+                key={search}
                 users={filteredUsers}
                 isLoading={isTableLoading}
                 onEdit={handleOpenEdit}

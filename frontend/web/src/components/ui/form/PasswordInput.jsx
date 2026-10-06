@@ -35,6 +35,7 @@ export const PasswordInput = ({
                 />
                 <button
                     type="button"
+                    aria-label={isVisible ? 'Hide password' : 'Show password'}
                     onClick={onToggleShow}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text/60 hover:text-text cursor-pointer">
                     {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}

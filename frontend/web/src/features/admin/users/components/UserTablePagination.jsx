@@ -21,12 +21,14 @@ export const UserTablePagination = ({
         [onSelectPage]
     )
 
-    const pageNumbers = Array.from({ length: totalPages }, (_, pageIndex) => pageIndex + 1)
+    const firstPage = Math.max(1, Math.min(activePage - 2, totalPages - 4))
+    const pageNumbers = Array.from({ length: Math.min(totalPages, 5) }, (_, pageIndex) => firstPage + pageIndex)
 
     return (
         <div className="inline-flex items-center rounded-lg border border-slate-300 bg-white overflow-hidden shadow-xs">
             <button
                 type="button"
+                aria-label="Previous page"
                 onClick={onPrevPage}
                 disabled={activePage === 1}
                 className="h-10 w-10 flex items-center justify-center border-r border-slate-300 text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer">
@@ -53,6 +55,7 @@ export const UserTablePagination = ({
             })}
             <button
                 type="button"
+                aria-label="Next page"
                 onClick={onNextPage}
                 disabled={activePage === totalPages}
                 className="h-10 w-10 flex items-center justify-center text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer">
