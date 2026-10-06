@@ -5,6 +5,7 @@ const variants = Object.freeze({
     primary: 'bg-primary text-surface hover:opacity-90 shadow-sm',
     secondary: 'bg-surface text-text hover:bg-background shadow-sm',
     ghost: 'bg-gray-100 text-text hover:bg-accent-subtle',
+    success: 'bg-success text-surface hover:opacity-90',
     danger: 'bg-danger text-surface hover:bg-danger-hover'
 })
 
