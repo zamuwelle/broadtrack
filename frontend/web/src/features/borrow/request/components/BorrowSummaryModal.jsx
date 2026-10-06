@@ -55,13 +55,7 @@ export const BorrowSummaryModal = ({ isOpen = false, onClose = noop, onSelectTab
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-['Poppins']">
-            <button
-                type="button"
-                aria-label="Close dialog"
-                tabIndex={-1}
-                className="fixed inset-0 bg-black/40 border-none outline-none cursor-default"
-                onClick={onClose}
-            />
+            <div aria-hidden="true" className="fixed inset-0 bg-black/40 border-none outline-none cursor-default" />
             <div className="relative z-10 w-full max-w-[560px]">
                 {modalView === 'submitted' ? <SubmittedView onClose={onClose} onViewSlips={handleViewSlips} /> : null}
 

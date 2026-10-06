@@ -103,13 +103,7 @@ export const ConfirmModal = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-            <button
-                type="button"
-                aria-label="Close backdrop"
-                tabIndex={-1}
-                className="fixed inset-0 dim-screen cursor-default border-none outline-none"
-                onClick={onClose}
-            />
+            <div aria-hidden="true" className="fixed inset-0 dim-screen cursor-default border-none outline-none" />
             <dialog
                 open
                 ref={dialogRef}

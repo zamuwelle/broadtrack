@@ -106,13 +106,7 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-            <button
-                type="button"
-                aria-label="Close dialog"
-                tabIndex={-1}
-                className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
-                onClick={onClose}
-            />
+            <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
             <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[560px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl font-['Poppins'] flex flex-col p-4 sm:p-7 relative z-10">
                 <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
                     <div>

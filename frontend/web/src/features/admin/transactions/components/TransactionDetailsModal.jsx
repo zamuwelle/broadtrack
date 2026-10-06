@@ -211,13 +211,7 @@ export const TransactionDetailsModal = (props) => {
     return (
         <>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-                <button
-                    type="button"
-                    aria-label="Close dialog"
-                    tabIndex={-1}
-                    className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
-                    onClick={onClose}
-                />
+                <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
                 <div className="bg-slate-50 rounded-2xl border border-slate-300 w-full max-w-[760px] lg:max-w-[820px] max-h-[88dvh] overflow-y-scroll my-auto shadow-2xl font-['Poppins'] flex flex-col relative z-10">
                     <ModalHeader
                         equipmentTitle={equipmentTitle}
