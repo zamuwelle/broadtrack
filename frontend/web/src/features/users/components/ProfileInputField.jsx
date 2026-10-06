@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
@@ -41,8 +42,8 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
         : 'mt-1.5 w-[401px] h-10 bg-gray-100 border border-border-subtle rounded-[8px] px-3'
 
     return (
-        <div className={`flex flex-col ${card ? 'w-full' : 'w-[401px]'}`}>
-            <label className={`text-[12px] font-normal text-text ${card ? 'mb-1.5' : ''}`}>{label}</label>
+        <div className={cn('flex flex-col', card ? 'w-full' : 'w-[401px]')}>
+            <label className={cn('text-[12px] font-normal text-text', card && 'mb-1.5')}>{label}</label>
             {key === 'department' ? (
                 <Select
                     value={value}
@@ -52,16 +53,17 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
                     icon={icon}
                     wrapperClass={card ? 'w-full' : 'mt-1.5 w-[401px]'}
                     panelClass={card ? 'bg-slate-50 shadow-md' : 'bg-gray-100'}
-                    className={`w-full h-10 px-3 gap-3 text-[12px] text-text ${
+                    className={cn(
+                        'w-full h-10 px-3 gap-3 text-[12px] text-text',
                         card
                             ? 'rounded-lg bg-slate-50 outline outline-1 outline-offset-[-1px] outline-slate-300'
                             : 'bg-gray-100 border border-border-subtle rounded-[8px]'
-                    }`}
+                    )}
                     hoverClass={card ? 'hover:bg-slate-200' : 'hover:bg-disabled'}
                     selectedClass="bg-border-focus"
                 />
             ) : (
-                <div className={`flex items-center gap-3 text-text ${inputClass}`}>
+                <div className={cn('flex items-center gap-3 text-text', inputClass)}>
                     <Icon name={icon} className="shrink-0" />
                     <div className="w-px h-6 bg-border-subtle" />
                     <input
@@ -74,7 +76,10 @@ export const ProfileInputField = ({ field, value = '', error = '', card = false,
                         autoComplete="off"
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        className={`flex-1 bg-transparent text-[12px] outline-none placeholder:text-neutral-400 ${readOnly ? 'text-subtext cursor-not-allowed' : 'text-text'}`}
+                        className={cn(
+                            'flex-1 bg-transparent text-[12px] outline-none placeholder:text-neutral-400',
+                            readOnly ? 'text-subtext cursor-not-allowed' : 'text-text'
+                        )}
                     />
                 </div>
             )}
