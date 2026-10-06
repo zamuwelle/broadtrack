@@ -1,9 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { StatsCards } from '@/features/admin/dashboard/components/StatsCards'
 import { OverdueAlert } from '@/features/admin/dashboard/components/OverdueAlert'
 import { ActiveTransactionsCard } from '@/features/admin/dashboard/components/ActiveTransactionsCard'
-import { TransactionDetailsModal } from '@/features/admin/transactions/components/TransactionDetailsModal'
 import { useEquipment } from '@/features/equipment/api/get-equipment'
 import { useBookings } from '@/features/bookings/api/get-bookings'
 import { getBookingStatus } from '@shared/util/booking'
@@ -19,8 +18,6 @@ export const DashboardPage = (props) => {
     const { data: hookBookings = [] } = useBookings()
     const equipment = propEquipment ?? hookEquipment
     const bookings = propBookings ?? hookBookings
-
-    const [selectedOverdueBooking, setSelectedOverdueBooking] = useState(null)
 
     const totalInventory = equipment.length
     const pendingApproval = useMemo(
@@ -47,8 +44,8 @@ export const DashboardPage = (props) => {
     )
 
     const handleViewDetails = useCallback(() => {
-        setSelectedOverdueBooking(overdueBookings[0] || null)
-    }, [overdueBookings])
+        navigate(`${paths.app.adminTransactions}?category=overdue`)
+    }, [navigate])
 
     const handleGoToApprovals = useCallback(() => {
         if (typeof onNavigate === 'function') {
@@ -57,12 +54,6 @@ export const DashboardPage = (props) => {
             navigate(paths.app.adminApprovals)
         }
     }, [navigate, onNavigate])
-
-    const handleCloseModal = useCallback(() => {
-        setSelectedOverdueBooking(null)
-    }, [])
-
-    const isModalOpen = Boolean(selectedOverdueBooking)
 
     return (
         <div className="mt-4 sm:mt-6 lg:mt-8 flex flex-col gap-4 sm:gap-6 font-['Poppins']">
@@ -80,7 +71,6 @@ export const DashboardPage = (props) => {
             />
             <ActiveTransactionsCard transactions={activeTransactions} />
 
-            <TransactionDetailsModal isOpen={isModalOpen} onClose={handleCloseModal} booking={selectedOverdueBooking} />
         </div>
     )
 }
