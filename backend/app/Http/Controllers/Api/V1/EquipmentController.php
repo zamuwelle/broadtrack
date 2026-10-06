@@ -19,7 +19,7 @@ class EquipmentController extends ApiController
 {
     public function index(): JsonResponse
     {
-        $equipmentList = Equipment::select('id', 'category', 'name', 'brand', 'model', 'serial_no', 'status', 'image', 'description', 'specs')
+        $equipmentList = Equipment::select('id', 'category', 'name', 'brand', 'model', 'serial_no', 'status', 'image', 'description', 'specs', 'updated_at')
             ->get();
 
         return $this->success(EquipmentResource::collection(Equipment::resolveStatuses($equipmentList)));

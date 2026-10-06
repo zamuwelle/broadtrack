@@ -20,6 +20,7 @@ class EquipmentResource extends JsonResource
             'image' => $this->image,
             'description' => $this->description,
             'specs' => $this->specs,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

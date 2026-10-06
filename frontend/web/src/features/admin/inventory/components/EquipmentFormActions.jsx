@@ -12,7 +12,7 @@ export const EquipmentFormActions = ({
     }
 
     return (
-        <div className="flex items-center justify-end gap-3 mt-2">
+        <div className="flex items-center justify-end gap-3">
             <button
                 type="button"
                 onClick={onClose}

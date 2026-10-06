@@ -28,6 +28,21 @@ export const EQUIPMENT_CATEGORIES = Object.freeze([
 
 export const EQUIPMENT_STATUSES = Object.freeze(['available', 'booked', 'borrowed', 'maintenance'])
 
+export const EQUIPMENT_STATUS_CONFIRMATION = Object.freeze({
+    available: {
+        title: 'Mark as available?',
+        description: 'Borrowers can request this item again, but pending requests still need approval.'
+    },
+    borrowed: {
+        title: 'Mark as borrowed?',
+        description: 'This item will be used for an event or another purpose, so new requests and approvals are blocked.'
+    },
+    maintenance: {
+        title: 'Mark for maintenance?',
+        description: 'Pending and approved requests will be rejected.'
+    }
+})
+
 export const APPROVAL_STATUSES = Object.freeze(['All', 'Pending', 'Confirmed', 'Rejected', 'Completed'])
 
 export const TRANSACTION_CATEGORIES = Object.freeze(['All', 'Active', 'Completed', 'Overdue', 'Cancelled'])
