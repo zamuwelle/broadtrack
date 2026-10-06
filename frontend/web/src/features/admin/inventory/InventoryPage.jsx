@@ -24,6 +24,7 @@ const CATEGORIES = Object.freeze(
 )
 
 const ALL_CATEGORIES = Object.freeze(['All', ...EQUIPMENT_CATEGORIES])
+const STATUS_CONFIRM_VARIANTS = Object.freeze({ available: 'success', borrowed: 'primary', maintenance: 'danger' })
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -248,6 +249,7 @@ export const InventoryPage = (props) => {
                 title={EQUIPMENT_STATUS_CONFIRMATION[pendingStatusChange?.status]?.title}
                 description={EQUIPMENT_STATUS_CONFIRMATION[pendingStatusChange?.status]?.description}
                 confirmLabel="Confirm"
+                variant={STATUS_CONFIRM_VARIANTS[pendingStatusChange?.status]}
             />
         </div>
     )
