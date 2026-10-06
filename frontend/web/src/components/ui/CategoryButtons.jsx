@@ -21,7 +21,7 @@ export const CategoryButtons = ({
     )
 
     return (
-        <div className="flex flex-wrap gap-[12px]">
+        <div className="flex flex-wrap gap-[12px] max-lg:min-w-0 max-lg:flex-1 max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:[&>button]:shrink-0">
             {options.map((option) => (
                 <button
                     key={option}
