@@ -61,12 +61,10 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                 className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
                 onClick={onClose}
             />
-            <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[560px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl flex flex-col p-4 sm:p-7 relative z-10">
-                <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="bg-white rounded-2xl border border-slate-300 w-full max-w-[560px] max-h-[90dvh] overflow-y-scroll my-auto shadow-2xl flex flex-col p-4 sm:p-7 [@media(max-height:500px)]:p-4 relative z-10">
+                <div className="flex items-start justify-between gap-4 pb-4 [@media(max-height:500px)]:pb-2 border-b border-slate-100">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-                            Confirm Equipment Return
-                        </h2>
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900">Confirm Equipment Return</h2>
                         <p className="text-xs font-medium text-slate-500">Ticket ID: {booking.ticket_id}</p>
                     </div>
                     <button
@@ -83,7 +81,7 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                     </div>
                 ) : null}
 
-                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mt-5 flex flex-col gap-4">
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mt-5 [@media(max-height:500px)]:p-3 [@media(max-height:500px)]:mt-2 flex flex-col gap-4 [@media(max-height:500px)]:gap-2">
                     <div>
                         <div className="text-xs font-bold text-slate-500 tracking-wider">BORROWER</div>
                         <div className="text-sm font-semibold text-slate-900 mt-0.5">
@@ -120,7 +118,7 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                     </div>
                 </div>
 
-                <div className="pt-8 flex justify-center w-full">
+                <div className="pt-8 [@media(max-height:500px)]:pt-3 flex justify-center w-full">
                     <button
                         type="button"
                         disabled={isSubmitting}

@@ -183,7 +183,12 @@ export const TransactionsPage = (props) => {
                 )}
             </div>
 
-            <TransactionDetailsModal isOpen={isModalOpen} onClose={handleCloseModal} booking={selectedTransaction} />
+            <TransactionDetailsModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                booking={selectedTransaction}
+                bookings={bookings}
+            />
         </div>
     )
 }
