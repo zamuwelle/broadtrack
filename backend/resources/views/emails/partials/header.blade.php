@@ -1,4 +1,6 @@
-<div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
-	<img src="https://broadtrack.web.app/logo.png" width="64" height="64" alt="BroadTrack" style="display: inline-block; vertical-align: middle; background-color: #ffffff; border-radius: 8px;" />
-	<span style="display: inline-block; vertical-align: middle; margin-left: 8px; font-size: 24px; font-weight: 800; color: #0F4C81;">Broad<span style="color: #1F2937;">Track</span></span>
-</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; background:{{ config('theme.primary') }};">
+    <tr><td align="center" style="padding:16px 28px; text-align:center;">
+        <img src="https://broadtrack.web.app/logo.png" width="112" height="112" alt="BroadTrack logo" style="display:block; margin:0 auto; border:0;">
+        <div style="margin-top:12px; font-family:{{ config('theme.font_brand') }}; font-size:25px; line-height:1.2; font-weight:900; letter-spacing:-0.5px; color:{{ config('theme.surface') }};">BroadTrack</div>
+    </td></tr>
+</table>
