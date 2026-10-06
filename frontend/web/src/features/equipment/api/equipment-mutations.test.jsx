@@ -230,7 +230,9 @@ describe('EquipmentModalDialog validation and recovery', () => {
 
         await waitFor(() => {
             expect(onSuccess).toHaveBeenCalledTimes(1)
-            expect(screen.getByText('Image upload timed out')).toBeInTheDocument()
+            expect(
+                screen.getByText('Equipment details saved, but the image couldn’t be uploaded. Please try again.')
+            ).toBeInTheDocument()
         })
         expect(onClose).not.toHaveBeenCalled()
 
@@ -251,5 +253,44 @@ describe('EquipmentModalDialog validation and recovery', () => {
 
         const postCalls = api.post.mock.calls.filter(([url]) => url === '/equipment')
         expect(postCalls).toHaveLength(1)
+    })
+})
+
+describe('equipment edit validation', () => {
+    const equipment = Object.freeze({
+        id: 3,
+        name: 'Microphone',
+        category: 'Audio',
+        description: 'Microphone',
+        serial_no: 'SN-3'
+    })
+    beforeEach(() => {
+        vi.clearAllMocks()
+        globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-image')
+        globalThis.URL.revokeObjectURL = vi.fn()
+    })
+
+    it('blocks invalid images before saving and sends a cleared serial number', async () => {
+        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        api.put.mockResolvedValueOnce({ data: { id: 3 } })
+        api.post.mockResolvedValueOnce({ data: { id: 3 } })
+        const { container } = render(
+            <TestWrapper client={queryClient}>
+                <EquipmentModalDialog equipment={equipment} categories={categories} />
+            </TestWrapper>
+        )
+        fireEvent.change(screen.getByLabelText('Serial Number'), { target: { value: '' } })
+        const fileInput = container.querySelector('input[type="file"]')
+        const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' })
+        fireEvent.change(fileInput, { target: { files: [oversized] } })
+        expect(screen.getByText('Image must not exceed 5MB.')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Update Equipment' })).toBeDisabled()
+        fireEvent.submit(container.querySelector('form'))
+        expect(api.put).not.toHaveBeenCalled()
+        fireEvent.change(fileInput, { target: { files: [new File(['image'], 'ok.png', { type: 'image/png' })] } })
+        fireEvent.submit(container.querySelector('form'))
+        await waitFor(() =>
+            expect(api.put).toHaveBeenCalledWith('/equipment/3', expect.objectContaining({ serial_no: null }))
+        )
     })
 })

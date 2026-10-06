@@ -20,6 +20,15 @@ test('authenticated user can list equipment', function () {
         ->assertJsonCount(3, 'data');
 });
 
+test('equipment list includes the last updated time', function () {
+    $user = User::factory()->borrower()->create();
+    $equipment = Equipment::factory()->create();
+
+    $this->actingAs($user)->getJson('/api/v1/equipment')
+        ->assertOk()
+        ->assertJsonPath('data.0.updated_at', $equipment->updated_at->toJSON());
+});
+
 test('admin can create equipment', function () {
     $admin = User::factory()->admin()->create();
 
@@ -100,6 +109,19 @@ test('admin cannot manually set equipment status to booked without active bookin
 
     $response->assertStatus(422)
         ->assertJsonPath('message', 'Equipment can only be marked as booked through an approved booking.');
+});
+
+test('marking equipment borrowed leaves pending requests pending', function (): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    $booking = Booking::factory()->pending()->create();
+    $booking->equipments()->attach($equipment->id);
+
+    $this->actingAs($admin)->putJson("/api/v1/equipment/{$equipment->id}", [
+        'status' => EquipmentStatus::Borrowed->value,
+    ])->assertOk()->assertJsonPath('data.status', EquipmentStatus::Borrowed->value);
+
+    expect($booking->fresh()->status)->toBe(BookingStatus::Pending);
 });
 
 test('active approved booking keeps equipment booked until returned', function (): void {

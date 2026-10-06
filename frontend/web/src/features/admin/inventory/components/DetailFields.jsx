@@ -20,8 +20,8 @@ export const DetailFields = ({
     onSpecsChange = noop
 }) => (
     <>
-        <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-slate-800">
+        <div>
+            <span className="block mb-1 text-xs font-semibold text-slate-800">
                 Category <span className="text-red-500">*</span>
             </span>
             <CategorySelect
@@ -37,8 +37,8 @@ export const DetailFields = ({
             <ErrorText message={categoryError} />
         </div>
 
-        <div className="flex flex-col gap-1">
-            <label htmlFor="short-desc-input" className="text-xs font-semibold text-slate-800">
+        <div>
+            <label htmlFor="short-desc-input" className="block mb-1 text-xs font-semibold text-slate-800">
                 Short Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -48,7 +48,7 @@ export const DetailFields = ({
                 onChange={onDescChange}
                 placeholder="Brief overview of the equipment item..."
                 className={cn(
-                    'p-3 rounded-lg border bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none',
+                    'w-full p-3 rounded-lg border bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none',
                     {
                         'border-red-500': Boolean(descriptionError),
                         'border-slate-300': !descriptionError
@@ -58,8 +58,8 @@ export const DetailFields = ({
             <ErrorText message={descriptionError} />
         </div>
 
-        <div className="flex flex-col gap-1">
-            <label htmlFor="tech-specs-input" className="text-xs font-semibold text-slate-800">
+        <div>
+            <label htmlFor="tech-specs-input" className="block mb-1 text-xs font-semibold text-slate-800">
                 Technical Specifications (Optional)
             </label>
             <textarea
@@ -68,8 +68,9 @@ export const DetailFields = ({
                 value={technicalSpecs}
                 onChange={onSpecsChange}
                 placeholder="One spec per line, e.g.&#10;33MP Full-Frame Sensor&#10;4K 60p Video"
-                className="p-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none"
+                className="block w-full p-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 outline-none focus:border-amber-500 resize-none"
             />
+            <ErrorText />
         </div>
     </>
 )
