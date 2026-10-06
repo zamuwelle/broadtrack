@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
 import { TransactionTable } from '@/features/admin/transactions/components/TransactionTable'
@@ -85,7 +86,11 @@ export const TransactionsPage = (props) => {
     const { data: hookBookings = [] } = useBookings()
     const bookings = propBookings ?? hookBookings
 
-    const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [pageState, updatePageState] = useSetState({
+        ...INITIAL_PAGE_STATE,
+        selectedCategory: searchParams.get('category') === 'overdue' ? 'Overdue' : 'All'
+    })
     const { searchText, selectedCategory, selectedTransaction } = pageState
     const { show: showToast } = useToast()
 
@@ -101,8 +106,16 @@ export const TransactionsPage = (props) => {
     )
 
     const handleCategorySelect = useCallback(
-        (newCategory) => updatePageState({ selectedCategory: newCategory }),
-        [updatePageState]
+        (newCategory) => {
+            updatePageState({ selectedCategory: newCategory })
+            if (searchParams.has('category')) {
+                setSearchParams((params) => {
+                    params.delete('category')
+                    return params
+                }, { replace: true })
+            }
+        },
+        [searchParams, setSearchParams, updatePageState]
     )
 
     const handleViewDetails = useCallback(
