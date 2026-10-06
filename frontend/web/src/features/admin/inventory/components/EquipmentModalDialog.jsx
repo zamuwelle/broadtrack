@@ -9,9 +9,40 @@ import { BasicFields } from '@/features/admin/inventory/components/BasicFields'
 import { DetailFields } from '@/features/admin/inventory/components/DetailFields'
 import { EquipmentFormActions } from '@/features/admin/inventory/components/EquipmentFormActions'
 import { EquipmentImageBanner } from '@/features/admin/inventory/components/EquipmentImageBanner'
+import { ErrorText } from '@/components/ui/form/ErrorText'
 
 const defaultCategories = Object.freeze([])
 const noop = () => null
+const getImageError = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+        return 'Image must not exceed 5MB.'
+    }
+    if (['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        return ''
+    }
+    return 'Please select a PNG, JPG, or WEBP image.'
+}
+const useImageChange = (equipment, updateFormState) =>
+    useCallback(
+        (event) => {
+            const selectedFile = event.target.files?.[0]
+            if (selectedFile) {
+                const imageError = getImageError(selectedFile)
+                if (imageError) {
+                    updateFormState({ imageFile: null, previewUrl: equipment?.image || '', imageError })
+                    event.target.value = ''
+                    return
+                }
+                updateFormState({
+                    imageFile: selectedFile,
+                    previewUrl: globalThis.URL.createObjectURL(selectedFile),
+                    imageError: '',
+                    errorMessage: ''
+                })
+            }
+        },
+        [equipment, updateFormState]
+    )
 const ALL_TOUCHED = Object.freeze({
     equipmentName: true,
     categoryId: true,
@@ -31,6 +62,8 @@ const getInitialFormState = (equipment) => {
         shortDescription: item.description || '',
         technicalSpecs: item.specs || '',
         imageFile: null,
+        imageError: '',
+        uploadError: '',
         previewUrl: item.image || '',
         isSubmitting: false,
         errorMessage: '',
@@ -46,7 +79,7 @@ const createEquipmentPayload = (formValues, equipment, isEditMode) => {
         name: formValues.equipmentName.trim(),
         brand: isEditMode && item.brand ? item.brand : formValues.equipmentName.trim(),
         model: formValues.modelCode.trim() || null,
-        serial_no: formValues.serialNumber.trim() || (isEditMode ? item.serial_no : null) || null,
+        serial_no: formValues.serialNumber.trim() || null,
         category: formValues.categoryId,
         description: formValues.shortDescription.trim() || null,
         specs: formValues.technicalSpecs.trim() || null
@@ -72,6 +105,7 @@ const extractServerErrors = (error) => {
     const errors = (error && error.errors) || {}
     return {
         name: Array.isArray(errors.name) ? errors.name[0] : '',
+        model: Array.isArray(errors.model) ? errors.model[0] : '',
         category: Array.isArray(errors.category) ? errors.category[0] : '',
         description: Array.isArray(errors.description) ? errors.description[0] : '',
         serial_no: Array.isArray(errors.serial_no) ? errors.serial_no[0] : ''
@@ -83,19 +117,6 @@ const resolveFieldError = (isTouched, clientError, serverError) => {
         return clientError
     }
     return serverError || ''
-}
-
-const resolveActiveError = (errorMessage, touched, clientErrors) => {
-    if (errorMessage) {
-        return errorMessage
-    }
-    if (touched.serialNumber && clientErrors.serialNumber) {
-        return clientErrors.serialNumber
-    }
-    if (touched.modelCode && clientErrors.modelCode) {
-        return clientErrors.modelCode
-    }
-    return ''
 }
 
 const executeSave = async ({ isEditMode, currentEquipment, payload, createMutation, updateMutation }) => {
@@ -118,13 +139,11 @@ const tryUploadImage = async ({ uploadMutation, equipmentId, file, onSuccess, is
     try {
         await uploadMutation.mutateAsync({ id: equipmentId, file })
         return true
-    } catch (uploadError) {
+    } catch {
         onSuccess()
         if (isMounted.current) {
             updateFormState({
-                errorMessage:
-                    (uploadError && uploadError.message) ||
-                    'Equipment saved, but image upload failed. Retry to upload the image.'
+                uploadError: 'Equipment details saved, but the image couldn’t be uploaded. Please try again.'
             })
         }
         return false
@@ -146,7 +165,7 @@ const useEquipmentFieldHandlers = (updateFormState) => {
 
     return {
         handleNameChange: useCallback((e) => updateField('equipmentName', e.target.value, 'name'), [updateField]),
-        handleModelChange: useCallback((e) => updateField('modelCode', e.target.value), [updateField]),
+        handleModelChange: useCallback((e) => updateField('modelCode', e.target.value, 'model'), [updateField]),
         handleSerialChange: useCallback((e) => updateField('serialNumber', e.target.value, 'serial_no'), [updateField]),
         handleCategoryChange: useCallback((val) => updateField('categoryId', val, 'category'), [updateField]),
         handleCategoryToggle: useCallback(
@@ -184,7 +203,6 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
     const createEquipmentMutation = useCreateEquipment()
     const updateEquipmentMutation = useUpdateEquipment()
     const uploadImageMutation = useUploadEquipmentImage()
-
     useEffect(() => {
         isMounted.current = true
         return () => {
@@ -193,22 +211,9 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
     }, [])
 
     useCleanUpPreview(formState.imageFile, formState.previewUrl)
-
     const fieldHandlers = useEquipmentFieldHandlers(updateFormState)
 
-    const handleImageChange = useCallback(
-        (event) => {
-            const selectedFile = event.target.files ? event.target.files[0] : null
-            if (selectedFile) {
-                updateFormState({
-                    imageFile: selectedFile,
-                    previewUrl: globalThis.URL.createObjectURL(selectedFile),
-                    errorMessage: ''
-                })
-            }
-        },
-        [updateFormState]
-    )
+    const handleImageChange = useImageChange(equipment, updateFormState)
 
     const handleUploadClick = useCallback(() => {
         fileInputReference.current?.click()
@@ -222,13 +227,13 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
             }
 
             const clientErrors = parseClientErrors(formState)
-            if (Object.keys(clientErrors).length > 0) {
+            if (Object.keys(clientErrors).length > 0 || formState.imageError) {
                 updateFormState({ touched: ALL_TOUCHED })
                 return
             }
 
             isSubmittingReference.current = true
-            updateFormState({ isSubmitting: true, errorMessage: '', serverErrors: {} })
+            updateFormState({ isSubmitting: true, errorMessage: '', uploadError: '', serverErrors: {} })
             const currentEquipment = savedEquipmentReference.current
             const isEditMode = Boolean(currentEquipment?.id)
             const payload = createEquipmentPayload(formState, currentEquipment, isEditMode)
@@ -263,7 +268,7 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
                     const fallbackMessage = (error && error.message) || 'Failed to save equipment asset'
                     updateFormState({
                         serverErrors,
-                        errorMessage: serverErrors.serial_no || fallbackMessage
+                        errorMessage: Object.values(serverErrors).some(Boolean) ? '' : fallbackMessage
                     })
                 }
             } finally {
@@ -339,12 +344,16 @@ export const EquipmentModalDialog = ({
         technicalSpecs,
         previewUrl,
         errorMessage,
+        imageError,
+        uploadError,
         serverErrors,
         touched,
         isCategoryOpen
     } = formState
 
     const nameError = resolveFieldError(touched.equipmentName, clientErrors.equipmentName, serverErrors.name)
+    const modelError = resolveFieldError(touched.modelCode, clientErrors.modelCode, serverErrors.model)
+    const serialError = resolveFieldError(touched.serialNumber, clientErrors.serialNumber, serverErrors.serial_no)
     const categoryError = resolveFieldError(touched.categoryId, clientErrors.categoryId, serverErrors.category)
     const descriptionError = resolveFieldError(
         touched.shortDescription,
@@ -352,8 +361,7 @@ export const EquipmentModalDialog = ({
         serverErrors.description
     )
 
-    const isFormValid = Object.keys(clientErrors).length === 0
-    const activeErrorMessage = resolveActiveError(errorMessage, touched, clientErrors)
+    const isFormValid = Object.keys(clientErrors).length === 0 && !imageError
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">
@@ -379,12 +387,15 @@ export const EquipmentModalDialog = ({
                     <X className="size-4" />
                 </button>
 
-                <form onSubmit={handleSubmit} className="p-4 sm:p-6 flex flex-col gap-3.5">
+                {imageError ? <ErrorText message={imageError} className="shrink-0 min-h-4 px-4 pt-2 sm:px-6" /> : null}
+                <form onSubmit={handleSubmit} className="p-4 pt-6 sm:p-6 flex flex-col gap-2.5">
                     <BasicFields
                         equipmentName={equipmentName}
                         nameError={nameError}
                         modelCode={modelCode}
+                        modelError={modelError}
                         serialNumber={serialNumber}
+                        serialError={serialError}
                         onNameChange={handleNameChange}
                         onModelChange={handleModelChange}
                         onSerialChange={handleSerialChange}
@@ -405,11 +416,10 @@ export const EquipmentModalDialog = ({
                         onSpecsChange={handleSpecsChange}
                     />
 
-                    {activeErrorMessage ? (
-                        <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">
-                            {activeErrorMessage}
-                        </p>
-                    ) : null}
+                    {errorMessage && (
+                        <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{errorMessage}</p>
+                    )}
+                    {uploadError ? <ErrorText message={uploadError} className="min-h-4 mt-1" /> : null}
 
                     <EquipmentFormActions
                         isFormValid={isFormValid}

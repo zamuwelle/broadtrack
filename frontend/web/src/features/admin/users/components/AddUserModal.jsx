@@ -9,6 +9,7 @@ import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSe
 import { UserModalShell } from '@/features/admin/users/components/UserModalShell'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
+import { FormError } from '@/components/ui/form/FormError'
 
 const noop = () => null
 
@@ -29,6 +30,7 @@ export const AddUserModal = ({
     role = userRole || 'borrower'
 }) => {
     const [error, setError] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const { show: showToast } = useToast()
     const createUserMutation = useCreateUser()
     const {
@@ -37,13 +39,20 @@ export const AddUserModal = ({
         handleSubmit,
         watch,
         reset,
+        setError: setFieldError,
         formState: { errors, isValid }
     } = useForm({
         resolver: zodResolver(addUserSchema),
         mode: 'onChange',
         defaultValues: getDefaultValues(role)
     })
-    const watchedValues = watch(['firstname', 'lastname', 'email', 'department', 'password'])
+    const [firstname, lastname, email, department, password] = watch([
+        'firstname',
+        'lastname',
+        'email',
+        'department',
+        'password'
+    ])
     const firstChange = useRef(true)
     const isBorrower = role === 'borrower'
 
@@ -53,11 +62,14 @@ export const AddUserModal = ({
             return
         }
         setError('')
-    }, [watchedValues])
+    }, [firstname, lastname, email, department, password])
+
+    const handleTogglePassword = useCallback(() => setShowPassword((visible) => !visible), [])
 
     const handleClose = useCallback(() => {
         reset(getDefaultValues(role))
         setError('')
+        setShowPassword(false)
         onClose()
     }, [onClose, reset, role])
 
@@ -82,11 +94,15 @@ export const AddUserModal = ({
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
                 const message = serverErrors.email?.[0] || submitError?.message || 'Failed to create user'
-                setError(message)
+                if (serverErrors.email?.[0]) {
+                    setFieldError('email', { type: 'server', message })
+                } else {
+                    setError(message)
+                }
                 showToast(message, 'danger')
             }
         },
-        [createUserMutation, isBorrower, onClose, onSuccess, reset, role, showToast]
+        [createUserMutation, isBorrower, onClose, onSuccess, reset, role, setFieldError, showToast]
     )
     const renderDepartment = useCallback(
         ({ field }) => {
@@ -124,7 +140,7 @@ export const AddUserModal = ({
             submitLabel="Add"
             isPending={createUserMutation.isPending}
             disabled={!isValid}>
-            {error ? <p className="text-[13px] text-red-500">{error}</p> : null}
+            <FormError message={error} />
             <div className="grid grid-cols-2 gap-2.5">
                 <TextInput
                     autoComplete="off"
@@ -154,6 +170,8 @@ export const AddUserModal = ({
             />
             {isBorrower ? <Controller name="department" control={control} render={renderDepartment} /> : null}
             <PasswordInput
+                showPassword={showPassword}
+                onToggleShow={handleTogglePassword}
                 maxLength={64}
                 autoComplete="new-password"
                 name="new-user-password"

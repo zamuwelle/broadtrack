@@ -164,6 +164,7 @@ export const ApprovalsPage = (props) => {
                 type="reject"
             />
             <ConfirmReturnModal
+                key={`return-${returningBooking?.id ?? 'closed'}`}
                 isOpen={Boolean(returningBooking)}
                 onClose={modalHandlers.handleCloseReturn}
                 booking={returningBooking}

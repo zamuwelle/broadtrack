@@ -16,7 +16,7 @@ export const EquipmentImageBanner = ({
         style={checkeredBackgroundStyle}
         className="h-36 sm:h-52 relative flex items-center justify-center overflow-hidden border-b border-slate-200 group shrink-0 cursor-pointer select-none w-full">
         {previewUrl ? (
-            <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
+            <img src={previewUrl} alt="Preview" className="h-full w-full object-contain" />
         ) : (
             <div className="text-center p-4">
                 <p className="text-xs font-medium text-slate-700">Click to upload equipment image</p>

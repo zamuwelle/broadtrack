@@ -11,6 +11,7 @@ import { UserModalShell } from '@/features/admin/users/components/UserModalShell
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
+import { FormError } from '@/components/ui/form/FormError'
 import { EDITABLE_ROLES } from '@shared/constants'
 
 const noop = () => null
@@ -26,6 +27,7 @@ const getDefaultValues = (user) => ({
 
 export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onSuccess = noop }) => {
     const [error, setError] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const { show: showToast } = useToast()
     const updateUserMutation = useUpdateUser()
     const {
@@ -34,6 +36,7 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
         watch,
         reset,
         handleSubmit,
+        setError: setFieldError,
         formState: { errors, isValid }
     } = useForm({
         resolver: zodResolver(editUserSchema),
@@ -41,7 +44,13 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
         defaultValues: getDefaultValues(user)
     })
     const role = watch('role')
-    const watchedValues = watch(['firstname', 'lastname', 'email', 'role', 'department', 'password'])
+    const [firstname, lastname, email, department, password] = watch([
+        'firstname',
+        'lastname',
+        'email',
+        'department',
+        'password'
+    ])
     const firstChange = useRef(true)
     const isBorrower = role === 'borrower'
 
@@ -56,11 +65,14 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             return
         }
         setError('')
-    }, [watchedValues])
+    }, [firstname, lastname, email, role, department, password])
+
+    const handleTogglePassword = useCallback(() => setShowPassword((visible) => !visible), [])
 
     const handleClose = useCallback(() => {
         reset(getDefaultValues(user))
         setError('')
+        setShowPassword(false)
         onClose()
     }, [onClose, reset, user])
 
@@ -88,11 +100,15 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
                 const message = serverErrors.email?.[0] || submitError?.message || 'Failed to update user'
-                setError(message)
+                if (serverErrors.email?.[0]) {
+                    setFieldError('email', { type: 'server', message })
+                } else {
+                    setError(message)
+                }
                 showToast(message, 'danger')
             }
         },
-        [isBorrower, onClose, onSuccess, reset, showToast, updateUserMutation, user]
+        [isBorrower, onClose, onSuccess, reset, setFieldError, showToast, updateUserMutation, user]
     )
     const renderRole = useCallback(({ field }) => {
         const handleRoleChange = field.onChange
@@ -139,7 +155,7 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             submitLabel="Update"
             isPending={updateUserMutation.isPending}
             disabled={!isValid}>
-            {error ? <p className="text-[13px] text-red-500">{error}</p> : null}
+            <FormError message={error} />
             <div className="grid grid-cols-2 gap-2.5">
                 <TextInput
                     autoComplete="off"
@@ -173,6 +189,8 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             </Field>
             {isBorrower ? <Controller name="department" control={control} render={renderDepartment} /> : null}
             <PasswordInput
+                showPassword={showPassword}
+                onToggleShow={handleTogglePassword}
                 maxLength={64}
                 autoComplete="new-password"
                 name="edit-user-password"

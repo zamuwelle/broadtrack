@@ -1,4 +1,4 @@
-import { Ban, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { cn } from 'cn'
 
 export const DecisionForm = (props) => {
@@ -10,16 +10,16 @@ export const DecisionForm = (props) => {
         borrowerName,
         equipments = [],
         equipmentName,
+        dateTimeRangeLabel,
         onTextChange,
-        onSubmit,
-        onClose
+        onSubmit
     } = props
 
     const placeholder = isApprove
-        ? 'e.g. Approved. Please pick up at DSR 101 before 1:00 PM.'
-        : 'e.g. The equipment is scheduled for maintenance.'
+        ? 'Approved. Pick up at DSR 101...'
+        : 'The requested equipment is already committed to...'
 
-    let submitLabel = isApprove ? 'Confirm Approval' : 'Confirm Rejection'
+    let submitLabel = isApprove ? 'Approve & Notify' : 'Reject Request'
     if (isSubmitting) {
         submitLabel = isApprove ? 'Approving...' : 'Rejecting...'
     }
@@ -31,45 +31,50 @@ export const DecisionForm = (props) => {
                     {errorMessage}
                 </div>
             ) : null}
-            <div className="bg-slate-50 rounded-xl p-4 text-xs flex flex-col gap-1 border border-slate-200">
+            <div className="bg-slate-50 rounded-xl p-4 text-sm flex flex-col gap-1 border border-slate-200">
                 <p>
                     <span className="font-semibold text-slate-700">Borrower: </span>
                     <span className="text-slate-900">{borrowerName}</span>
                 </p>
                 <div>
-                    <span className="font-semibold text-slate-700">
-                        {equipments.length > 1 ? `Equipment (${equipments.length} items):` : 'Equipment: '}
-                    </span>
                     {equipments.length > 1 ? (
-                        <div className="mt-1 flex flex-col gap-0.5">
+                        <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-slate-700">Equipment:</span>
                             {equipments.map((item) => (
-                                <span key={item.id} className="text-slate-900 font-medium">
-                                    • {item.name} {item.model ? `(${item.model})` : ''}
+                                <span key={item.id} className="text-slate-900">
+                                    {item.name} {item.model ? `(${item.model})` : ''}
                                 </span>
                             ))}
-                            <span className="text-[11px] text-amber-600 font-medium mt-0.5">
-                                Note: {isApprove ? 'Approval' : 'Rejection'} applies to the entire reservation ticket.
-                            </span>
                         </div>
                     ) : (
-                        <span className="text-slate-900">{equipmentName}</span>
+                        <p>
+                            <span className="font-semibold text-slate-700">Equipment: </span>
+                            <span className="text-slate-900">{equipmentName}</span>
+                        </p>
                     )}
                 </div>
+                <p>
+                    <span className="font-semibold text-slate-700">Dates: </span>
+                    <span className="text-slate-900">{dateTimeRangeLabel}</span>
+                </p>
             </div>
 
             <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-700">
+                <label htmlFor="decision-note" className="text-xs font-semibold text-slate-700">
                     {isApprove ? (
-                        'Pickup Note / Instructions for Borrower'
+                        <>
+                            Pickup Location / Cabinet Notes<span className="ml-1 text-danger">*</span>
+                        </>
                     ) : (
                         <>
-                            Reason for Rejection <span className="text-rose-500">*</span>
+                            Rejection Reason<span className="ml-1 text-danger">*</span>
                         </>
                     )}
                 </label>
                 <textarea
+                    id="decision-note"
                     rows={3}
-                    required={!isApprove}
+                    required
                     value={text}
                     onChange={onTextChange}
                     placeholder={placeholder}
@@ -83,24 +88,18 @@ export const DecisionForm = (props) => {
                 />
             </div>
 
-            <div className="flex flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100 w-full">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex-1 sm:flex-initial h-10 px-5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer">
-                    Cancel
-                </button>
+            <div className="flex justify-center pt-4 w-full">
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !text.trim()}
                     className={cn(
-                        'flex-1 sm:flex-initial h-10 px-6 rounded-lg text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors',
+                        'h-12 w-[200px] max-w-full rounded-xl text-white text-sm sm:text-base font-semibold inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
                         {
-                            'bg-amber-500 hover:bg-amber-600': isApprove,
-                            'bg-rose-500 hover:bg-rose-600': !isApprove
+                            'bg-warning hover:bg-warning/90': isApprove,
+                            'bg-danger hover:bg-danger-hover': !isApprove
                         }
                     )}>
-                    {isApprove ? <Check size={16} /> : <Ban size={16} />}
+                    {isApprove ? <Check size={18} /> : null}
                     {submitLabel}
                 </button>
             </div>

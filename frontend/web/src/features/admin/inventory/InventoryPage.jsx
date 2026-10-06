@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
 import { InventoryGrid } from '@/features/admin/inventory/components/InventoryGrid'
 import { EquipmentModal } from '@/features/admin/inventory/components/EquipmentModal'
@@ -9,7 +10,7 @@ import { useEquipment } from '@/features/equipment/api/get-equipment'
 import { useUpdateEquipment } from '@/features/equipment/api/update-equipment'
 import { useSetState } from '@shared/hooks/useSetState'
 import { matchesSearch } from '@shared/util/search'
-import { EQUIPMENT_CATEGORIES } from '@shared/constants'
+import { EQUIPMENT_CATEGORIES, EQUIPMENT_STATUS_CONFIRMATION } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 import { useToast } from '@/hooks/ui/useToast'
 
@@ -23,13 +24,15 @@ const CATEGORIES = Object.freeze(
 )
 
 const ALL_CATEGORIES = Object.freeze(['All', ...EQUIPMENT_CATEGORIES])
+const STATUS_CONFIRM_VARIANTS = Object.freeze({ available: 'success', borrowed: 'primary', maintenance: 'danger' })
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
     selectedCategory: 'All',
     selectedEquipment: null,
     isEquipmentModalOpen: false,
-    deletingEquipment: null
+    deletingEquipment: null,
+    pendingStatusChange: null
 })
 
 const useInventoryModals = (updatePageState, queryClient) => {
@@ -82,44 +85,8 @@ const useInventoryModals = (updatePageState, queryClient) => {
     }
 }
 
-export const InventoryPage = (props) => {
-    useDocumentTitle('Inventory Management')
-    const { equipment: propEquipment } = props
-
-    const queryClient = useQueryClient()
-    const updateEquipmentMutation = useUpdateEquipment()
-    const { data: hookEquipment = [] } = useEquipment()
-    const equipmentList = propEquipment ?? hookEquipment
-    const { show: showToast } = useToast()
-    const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
-    const { searchText, selectedCategory, selectedEquipment, isEquipmentModalOpen, deletingEquipment } = pageState
-
-    const handleSearchChange = useCallback(
-        (newSearchText) => updatePageState({ searchText: newSearchText }),
-        [updatePageState]
-    )
-
-    const handleCategorySelect = useCallback(
-        (newCategory) => updatePageState({ selectedCategory: newCategory }),
-        [updatePageState]
-    )
-
-    const modals = useInventoryModals(updatePageState, queryClient)
-
-    const filteredEquipment = useMemo(
-        () =>
-            equipmentList.filter((equipment) => {
-                const categoryName =
-                    typeof equipment.category === 'string' ? equipment.category : equipment.category?.name || ''
-                return (
-                    (selectedCategory === 'All' || categoryName === selectedCategory) &&
-                    matchesSearch(equipment, searchText)
-                )
-            }),
-        [equipmentList, selectedCategory, searchText]
-    )
-
-    const handleUpdateStatus = useCallback(
+const useInventoryStatus = (queryClient, updateEquipmentMutation, showToast) =>
+    useCallback(
         async (equipmentId, newStatus) => {
             queryClient.setQueryData(['equipment'], (current) => {
                 if (!Array.isArray(current)) {
@@ -141,6 +108,78 @@ export const InventoryPage = (props) => {
         [queryClient, showToast, updateEquipmentMutation]
     )
 
+const useStatusConfirmation = (pendingStatusChange, updatePageState, handleUpdateStatus) => {
+    const handleSelectStatus = useCallback(
+        (equipmentId, status) => {
+            if (EQUIPMENT_STATUS_CONFIRMATION[status]) {
+                updatePageState({ pendingStatusChange: { equipmentId, status } })
+                return
+            }
+            handleUpdateStatus(equipmentId, status)
+        },
+        [handleUpdateStatus, updatePageState]
+    )
+    const closeStatusConfirmation = useCallback(() => updatePageState({ pendingStatusChange: null }), [updatePageState])
+    const confirmStatus = useCallback(() => {
+        closeStatusConfirmation()
+        handleUpdateStatus(pendingStatusChange.equipmentId, pendingStatusChange.status)
+    }, [closeStatusConfirmation, handleUpdateStatus, pendingStatusChange])
+
+    return { handleSelectStatus, closeStatusConfirmation, confirmStatus }
+}
+
+export const InventoryPage = (props) => {
+    useDocumentTitle('Inventory Management')
+    const { equipment: propEquipment } = props
+
+    const queryClient = useQueryClient()
+    const updateEquipmentMutation = useUpdateEquipment()
+    const { data: hookEquipment = [] } = useEquipment()
+    const equipmentList = propEquipment ?? hookEquipment
+    const { show: showToast } = useToast()
+    const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
+    const {
+        searchText,
+        selectedCategory,
+        selectedEquipment,
+        isEquipmentModalOpen,
+        deletingEquipment,
+        pendingStatusChange
+    } = pageState
+
+    const handleSearchChange = useCallback(
+        (newSearchText) => updatePageState({ searchText: newSearchText }),
+        [updatePageState]
+    )
+
+    const handleCategorySelect = useCallback(
+        (newCategory) => updatePageState({ selectedCategory: newCategory }),
+        [updatePageState]
+    )
+
+    const modals = useInventoryModals(updatePageState, queryClient)
+
+    const filteredEquipment = useMemo(
+        () =>
+            equipmentList
+                .filter((equipment) => {
+                    const categoryName =
+                        typeof equipment.category === 'string' ? equipment.category : equipment.category?.name || ''
+                    return (
+                        (selectedCategory === 'All' || categoryName === selectedCategory) &&
+                        matchesSearch(equipment, searchText)
+                    )
+                })
+                .toSorted(
+                    (first, second) =>
+                        (Date.parse(second.updated_at) || 0) - (Date.parse(first.updated_at) || 0) ||
+                        second.id - first.id
+                ),
+        [equipmentList, selectedCategory, searchText]
+    )
+
+    const handleUpdateStatus = useInventoryStatus(queryClient, updateEquipmentMutation, showToast)
+
     const handleDeleteError = useCallback(
         (message) => {
             showToast(message, 'danger')
@@ -148,9 +187,15 @@ export const InventoryPage = (props) => {
         [showToast]
     )
 
+    const { handleSelectStatus, closeStatusConfirmation, confirmStatus } = useStatusConfirmation(
+        pendingStatusChange,
+        updatePageState,
+        handleUpdateStatus
+    )
+
     return (
         <div className="flex flex-col font-['Poppins']">
-            <div className="mt-[42px] flex flex-col gap-[16px]">
+            <div className="mt-4 sm:mt-6 lg:mt-[42px] flex flex-col gap-[16px]">
                 <SearchInput
                     value={searchText}
                     onChange={handleSearchChange}
@@ -165,7 +210,7 @@ export const InventoryPage = (props) => {
                     <button
                         type="button"
                         onClick={modals.handleOpenAddModal}
-                        className="h-[38px] px-5 bg-sky-800 hover:bg-sky-900 transition-colors rounded-[8px] text-white text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs shrink-0 w-full sm:w-auto">
+                        className="h-[38px] px-5 bg-sky-800 hover:bg-sky-900 transition-colors rounded-[8px] text-white text-sm font-medium inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs shrink-0 self-end sm:self-auto">
                         + Add Equipment
                     </button>
                 </div>
@@ -176,7 +221,7 @@ export const InventoryPage = (props) => {
                     equipment={filteredEquipment}
                     onEdit={modals.handleOpenEditEquipmentModal}
                     onDelete={modals.handleOpenDeleteEquipmentModal}
-                    onUpdateStatus={handleUpdateStatus}
+                    onUpdateStatus={handleSelectStatus}
                 />
             </div>
 
@@ -188,12 +233,23 @@ export const InventoryPage = (props) => {
                 onSuccess={modals.handleRefresh}
             />
 
-            <DeleteEquipmentModal
-                isOpen={Boolean(deletingEquipment)}
-                onClose={modals.handleCloseDeleteModal}
-                equipment={deletingEquipment}
-                onSuccess={modals.handleRefresh}
-                onError={handleDeleteError}
+            {deletingEquipment ? (
+                <DeleteEquipmentModal
+                    isOpen
+                    onClose={modals.handleCloseDeleteModal}
+                    equipment={deletingEquipment}
+                    onSuccess={modals.handleRefresh}
+                    onError={handleDeleteError}
+                />
+            ) : null}
+            <ConfirmModal
+                isOpen={Boolean(pendingStatusChange)}
+                onClose={closeStatusConfirmation}
+                onConfirm={confirmStatus}
+                title={EQUIPMENT_STATUS_CONFIRMATION[pendingStatusChange?.status]?.title}
+                description={EQUIPMENT_STATUS_CONFIRMATION[pendingStatusChange?.status]?.description}
+                confirmLabel="Confirm"
+                variant={STATUS_CONFIRM_VARIANTS[pendingStatusChange?.status]}
             />
         </div>
     )
