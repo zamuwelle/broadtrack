@@ -5,7 +5,6 @@ import { Sidebar } from '@/components/ui/Sidebar'
 import { Banner } from '@/components/ui/Banner'
 import { useEquipment } from '@/features/equipment/api/get-equipment'
 import { useBookings } from '@/features/bookings/api/get-bookings'
-import { useUsers } from '@/features/users/api/get-users'
 import { useBookingNotification } from '@/hooks/queries/useBookingNotification'
 import { setGlobalUnreadCount } from '@/hooks/ui/useDocumentTitle'
 import { useUser } from '@/lib/auth'
@@ -63,9 +62,7 @@ export const Component = ({ onReady, children }) => {
 
     const { isLoading: isEquipmentLoading } = useEquipment()
     const { data: bookings = [], isLoading: isBookingsLoading } = useBookings()
-    const usersOptions = useMemo(() => Object.freeze({ enabled: isSysAdmin }), [isSysAdmin])
-    const { isLoading: isUsersLoading } = useUsers({ queryConfig: usersOptions })
-    const isReady = !isEquipmentLoading && !isBookingsLoading && (!isSysAdmin || !isUsersLoading)
+    const isReady = !isEquipmentLoading && !isBookingsLoading
 
     const pendingCount = useMemo(
         () => bookings.filter((booking) => (booking.status || '').toLowerCase() === 'pending').length,
@@ -106,7 +103,7 @@ export const Component = ({ onReady, children }) => {
     }
 
     return (
-        <div className="h-screen flex flex-col font-['Poppins']">
+        <div className="h-screen h-dvh flex flex-col font-['Poppins']">
             <AdminNavbar sidebarLinks={sidebarLinks} activeTab={activeTab} onSelectTab={handleSelectTab} />
             <div className="flex flex-1 min-h-0">
                 <Sidebar

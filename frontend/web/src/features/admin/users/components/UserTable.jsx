@@ -1,20 +1,25 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { UserTableRow } from '@/features/admin/users/components/UserTableRow'
 import { UserTablePagination } from '@/features/admin/users/components/UserTablePagination'
-import { useSetState } from '@shared/hooks/useSetState'
+import { UserCard } from '@/features/admin/users/components/UserCard'
 
 const defaultUsers = Object.freeze([])
 const noop = () => null
 
 const rowHeight = 56
-const fixedOffset = 500
+const getFooterHeight = (footer) =>
+    footer ? footer.offsetHeight + Number(getComputedStyle(footer).marginTop.replace('px', '')) : 0
 
-const getDynamicPageSize = () => {
-    if (!globalThis.window) {
-        return 5
-    }
-    return Math.max(5, Math.floor((globalThis.window.innerHeight - fixedOffset) / rowHeight))
-}
+const renderCards = (users, displayedUsers, onEdit, onRemove) =>
+    users.length > 0 ? (
+        <div className="grid gap-3">
+            {displayedUsers.map((user) => (
+                <UserCard key={user.id} user={user} onEdit={onEdit} onRemove={onRemove} />
+            ))}
+        </div>
+    ) : (
+        <div className="rounded-lg border border-slate-300 bg-white p-4 text-xs text-slate-400">No users found.</div>
+    )
 
 const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit, onRemove }) => {
     if (isLoading) {
@@ -30,8 +35,8 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
     if (users.length === 0) {
         return (
             <tr>
-                <td colSpan={8} className="px-3 py-6 text-center text-xs text-slate-400">
-                    No users found.
+                <td colSpan={8} className="px-3 py-6 text-center max-sm:text-left text-xs text-slate-400">
+                    <span className="max-sm:sticky max-sm:left-3">No users found.</span>
                 </td>
             </tr>
         )
@@ -42,18 +47,57 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
     ))
 }
 
-export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = noop, onRemove = noop }) => {
-    const [tableState, updateTableState] = useSetState(() => ({
-        pageSize: getDynamicPageSize(),
-        currentPage: 1
-    }))
-    const { pageSize, currentPage } = tableState
+const usePageSize = ({ tableRef, footerRef, isLoading, userCount, pageSize, setPageSize, setIsMobile }) => {
+    useLayoutEffect(() => {
+        const table = tableRef.current
+        const main = table?.closest('main')
+        if (!table || !main) {
+            return
+        }
+        const measure = () => {
+            if (window.innerWidth < 1024) {
+                setIsMobile(true)
+                setPageSize(5)
+                return
+            }
+            setIsMobile(false)
+            const mainTop = main.getBoundingClientRect().top
+            const top = table.getBoundingClientRect().top - mainTop + main.scrollTop
+            const header = table.querySelector('thead')?.getBoundingClientRect().height || 0
+            const measuredRowHeight =
+                (!isLoading && userCount > 0 && table.querySelector('tbody tr')?.getBoundingClientRect().height) ||
+                rowHeight
+            const scrollContainer = table.querySelector('.overflow-x-auto')
+            const scrollbarHeight = scrollContainer ? scrollContainer.offsetHeight - scrollContainer.clientHeight : 0
+            const footerHeight = getFooterHeight(footerRef.current)
+            const bottomPadding = Number(getComputedStyle(main.firstElementChild).paddingBottom.replace('px', '')) || 0
+            const visibleHeight = Math.min(
+                main.clientHeight,
+                (window.visualViewport?.height || window.innerHeight) - mainTop
+            )
+            const available = visibleHeight - top - header - footerHeight - bottomPadding - scrollbarHeight - 2
+            setPageSize(Math.max(1, Math.floor(available / measuredRowHeight)))
+        }
+        const observer = new ResizeObserver(measure)
+        observer.observe(main)
+        observer.observe(main.firstElementChild)
+        window.visualViewport?.addEventListener('resize', measure)
+        measure()
+        return () => {
+            observer.disconnect()
+            window.visualViewport?.removeEventListener('resize', measure)
+        }
+    }, [tableRef, footerRef, isLoading, userCount, pageSize, setPageSize, setIsMobile])
+}
 
-    useEffect(() => {
-        const handleResize = () => updateTableState({ pageSize: getDynamicPageSize() })
-        globalThis.window.addEventListener('resize', handleResize)
-        return () => globalThis.window.removeEventListener('resize', handleResize)
-    }, [updateTableState])
+export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = noop, onRemove = noop }) => {
+    const [pageSize, setPageSize] = useState(5)
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024)
+    const [currentPage, setCurrentPage] = useState(1)
+    const tableRef = useRef(null)
+    const footerRef = useRef(null)
+
+    usePageSize({ tableRef, footerRef, isLoading, userCount: users.length, pageSize, setPageSize, setIsMobile })
 
     const totalPages = Math.max(1, Math.ceil(users.length / pageSize))
     const activePage = Math.min(currentPage, totalPages)
@@ -63,23 +107,18 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
     const showingEnd = Math.min(startIndex + pageSize, users.length)
 
     const handlePrevPage = useCallback(() => {
-        updateTableState({ currentPage: Math.max(1, activePage - 1) })
-    }, [activePage, updateTableState])
+        setCurrentPage(Math.max(1, activePage - 1))
+    }, [activePage])
 
     const handleNextPage = useCallback(() => {
-        updateTableState((prev) => ({ currentPage: Math.min(totalPages, prev.currentPage + 1) }))
-    }, [totalPages, updateTableState])
+        setCurrentPage(Math.min(totalPages, activePage + 1))
+    }, [activePage, totalPages])
 
-    const handleSelectPage = useCallback(
-        (page) => {
-            updateTableState({ currentPage: page })
-        },
-        [updateTableState]
-    )
-
+    const handleSelectPage = useCallback((page) => setCurrentPage(page), [])
     return (
-        <div className="w-full flex flex-col font-['Poppins']">
-            <div className="w-full bg-white rounded-lg border border-slate-300 overflow-hidden shadow-xs">
+        <div ref={tableRef} className="w-full flex flex-col font-['Poppins']">
+            {isMobile && !isLoading && renderCards(users, displayedUsers, onEdit, onRemove)}
+            <div className="hidden lg:block w-full bg-white rounded-lg border border-slate-300 overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
@@ -124,20 +163,24 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
                 </div>
             </div>
 
-            <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 mt-4">
-                <span className="text-xs text-text font-normal text-center sm:text-left">
-                    Showing {showingStart} to {showingEnd} of {users.length} users
-                </span>
-                {users.length > pageSize ? (
-                    <UserTablePagination
-                        activePage={activePage}
-                        totalPages={totalPages}
-                        onPrevPage={handlePrevPage}
-                        onNextPage={handleNextPage}
-                        onSelectPage={handleSelectPage}
-                    />
-                ) : null}
-            </div>
+            {isLoading ? null : (
+                <div
+                    ref={footerRef}
+                    className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 mt-4">
+                    <span className="text-xs text-text font-normal text-center sm:text-left">
+                        Showing {showingStart} to {showingEnd} of {users.length} users
+                    </span>
+                    {users.length > pageSize ? (
+                        <UserTablePagination
+                            activePage={activePage}
+                            totalPages={totalPages}
+                            onPrevPage={handlePrevPage}
+                            onNextPage={handleNextPage}
+                            onSelectPage={handleSelectPage}
+                        />
+                    ) : null}
+                </div>
+            )}
         </div>
     )
 }

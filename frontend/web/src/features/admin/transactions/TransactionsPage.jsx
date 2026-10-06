@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { CategoryButtons } from '@/components/ui/CategoryButtons'
 import { TransactionTable } from '@/features/admin/transactions/components/TransactionTable'
@@ -85,7 +86,11 @@ export const TransactionsPage = (props) => {
     const { data: hookBookings = [] } = useBookings()
     const bookings = propBookings ?? hookBookings
 
-    const [pageState, updatePageState] = useSetState(INITIAL_PAGE_STATE)
+    const [searchParams, setSearchParams] = useSearchParams()
+    const [pageState, updatePageState] = useSetState({
+        ...INITIAL_PAGE_STATE,
+        selectedCategory: searchParams.get('category') === 'overdue' ? 'Overdue' : 'All'
+    })
     const { searchText, selectedCategory, selectedTransaction } = pageState
     const { show: showToast } = useToast()
 
@@ -101,8 +106,16 @@ export const TransactionsPage = (props) => {
     )
 
     const handleCategorySelect = useCallback(
-        (newCategory) => updatePageState({ selectedCategory: newCategory }),
-        [updatePageState]
+        (newCategory) => {
+            updatePageState({ selectedCategory: newCategory })
+            if (searchParams.has('category')) {
+                setSearchParams((params) => {
+                    params.delete('category')
+                    return params
+                }, { replace: true })
+            }
+        },
+        [searchParams, setSearchParams, updatePageState]
     )
 
     const handleViewDetails = useCallback(
@@ -149,13 +162,13 @@ export const TransactionsPage = (props) => {
                         selected={selectedCategory}
                         onSelect={handleCategorySelect}
                     />
-                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
                         <button
                             type="button"
                             onClick={handleExportPdf}
                             disabled={isExporting}
-                            className="w-48 h-9 pl-6 pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
-                            <div className="justify-start text-white text-lg font-semibold font-['Poppins']">
+                            className="flex-1 min-w-0 sm:flex-none sm:w-48 h-9 px-3 sm:pl-6 sm:pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors sm:shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <div className="justify-start text-white text-sm sm:text-lg font-semibold font-['Poppins']">
                                 {exportingType === 'pdf' ? 'Exporting...' : 'Export to PDF'}
                             </div>
                         </button>
@@ -163,8 +176,8 @@ export const TransactionsPage = (props) => {
                             type="button"
                             onClick={handleExportCsv}
                             disabled={isExporting}
-                            className="w-48 h-9 pl-6 pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
-                            <div className="justify-start text-white text-lg font-semibold font-['Poppins']">
+                            className="flex-1 min-w-0 sm:flex-none sm:w-48 h-9 px-3 sm:pl-6 sm:pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors sm:shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <div className="justify-start text-white text-sm sm:text-lg font-semibold font-['Poppins']">
                                 {exportingType === 'csv' ? 'Exporting...' : 'Export to CSV'}
                             </div>
                         </button>
@@ -183,7 +196,12 @@ export const TransactionsPage = (props) => {
                 )}
             </div>
 
-            <TransactionDetailsModal isOpen={isModalOpen} onClose={handleCloseModal} booking={selectedTransaction} />
+            <TransactionDetailsModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                booking={selectedTransaction}
+                bookings={bookings}
+            />
         </div>
     )
 }

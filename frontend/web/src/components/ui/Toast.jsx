@@ -30,7 +30,11 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         color === 'var(--color-border-focus)' ||
         color === '#BBD7EE'
     const backgroundColor = getBackgroundColor(type, color)
-    const contentColor = cn({ 'text-primary': isWelcome, 'text-white': !isWelcome })
+    const contentColor = cn({
+        'text-primary': isWelcome,
+        'text-text': type === 'user-success',
+        'text-white': !isWelcome && type !== 'user-success'
+    })
     const containerStyle = useMemo(() => ({ backgroundColor }), [backgroundColor])
 
     useEffect(() => {
@@ -74,7 +78,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         <div
             onTransitionEnd={handleTransitionEnd}
             className={cn(
-                'fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                'fixed top-[96px] left-1/2 -translate-x-1/2 z-[60] w-max max-w-[calc(100vw-2rem)] transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
                 {
                     'opacity-100 translate-y-0 pointer-events-auto': show && isVisible,
                     'opacity-0 -translate-y-4 pointer-events-none': !(show && isVisible)
@@ -82,8 +86,8 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
             )}>
             <div
                 className={cn('flex items-center gap-2.5 shadow-lg', contentColor, {
-                    'h-10 px-3 py-2 rounded-md': isAlert,
-                    'h-[50px] px-4 rounded-[8px] justify-center': !isAlert
+                    'min-h-10 px-3 py-2 rounded-md': isAlert,
+                    'min-h-[50px] px-4 py-2 rounded-[8px] justify-center': !isAlert
                 })}
                 style={containerStyle}>
                 {isAlert ? (
@@ -104,7 +108,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
                     </svg>
                 )}
                 <p
-                    className={cn("whitespace-nowrap leading-none font-['Poppins']", contentColor, {
+                    className={cn("min-w-0 whitespace-normal [overflow-wrap:anywhere] leading-4 font-['Poppins']", contentColor, {
                         'text-xs font-semibold': isAlert,
                         'text-[12px] font-normal': !isAlert
                     })}>

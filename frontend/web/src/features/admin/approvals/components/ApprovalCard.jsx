@@ -3,6 +3,7 @@ import { cn } from 'cn'
 import { getBookingStatus } from '@shared/util/booking'
 import { getOptimizedImageUrl } from '@shared/util/image'
 import { ApprovalHeader } from '@/features/admin/approvals/components/ApprovalHeader'
+import { ApprovalStatusLine } from '@/features/admin/approvals/components/ApprovalStatusLine'
 import { ApprovalBorrowerDetails } from '@/features/admin/approvals/components/ApprovalBorrowerDetails'
 import { ApprovalNotesDetails } from '@/features/admin/approvals/components/ApprovalNotesDetails'
 
@@ -37,7 +38,7 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
 
     const equipments = booking.equipments || []
     const equipment = equipments[0] || defaultBooking
-    const equipmentModel = equipment.model || null
+    const equipmentModel = equipment.model || ''
 
     const accentColor = getAccentColor(status)
 
@@ -53,7 +54,10 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
             <div className={cn('w-[9px] shrink-0', accentColor)} />
 
             <div className="flex-1 p-4 sm:p-6 lg:p-7 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start min-w-0">
-                <div className="w-full h-44 sm:size-44 lg:size-48 shrink-0 rounded-lg bg-white self-center sm:self-start overflow-hidden flex items-center justify-center">
+                <div
+                    className={cn(
+                        'hidden sm:flex size-44 lg:size-48 shrink-0 rounded-lg bg-slate-100 has-[img]:bg-white self-center sm:self-start overflow-hidden items-center justify-center'
+                    )}>
                     {equipment.image ? (
                         <img
                             src={getOptimizedImageUrl(equipment.image, 300)}
@@ -65,12 +69,35 @@ export const ApprovalCard = ({ booking = defaultBooking, onApprove = noop, onRej
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between min-w-0 w-full">
-                    <ApprovalHeader booking={booking} />
+                    <div className="flex items-start gap-3 sm:hidden">
+                        <div
+                            className={cn(
+                                'size-20 min-[375px]:size-28 shrink-0 rounded-lg bg-slate-100 has-[img]:bg-white overflow-hidden flex items-center justify-center'
+                            )}>
+                            {equipment.image ? (
+                                <img
+                                    src={getOptimizedImageUrl(equipment.image, 300, 0)}
+                                    alt={equipment.name}
+                                    className="w-full h-full object-contain"
+                                    loading="lazy"
+                                />
+                            ) : null}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <ApprovalHeader booking={booking} showStatus={false} />
+                            <p className="text-xs text-slate-500 font-normal mt-1 empty:hidden">{equipmentModel}</p>
+                            <p className="text-[11px] min-[375px]:text-xs text-slate-500 font-normal mt-0.5 whitespace-nowrap">
+                                Ticket ID: {booking.ticket_id}
+                            </p>
+                        </div>
+                    </div>
+                    <ApprovalStatusLine booking={booking} mobile className="mt-3 sm:hidden" />
 
-                    {equipmentModel ? (
-                        <p className="text-xs text-slate-500 font-normal mt-0.5">{equipmentModel}</p>
-                    ) : null}
-                    <p className="text-xs text-slate-500 font-normal mt-0.5">Ticket ID: {booking.ticket_id}</p>
+                    <div className="hidden sm:block">
+                        <ApprovalHeader booking={booking} />
+                        <p className="text-xs text-slate-500 font-normal mt-0.5 empty:hidden">{equipmentModel}</p>
+                        <p className="text-xs text-slate-500 font-normal mt-0.5">Ticket ID: {booking.ticket_id}</p>
+                    </div>
 
                     <div className="w-full h-0 border-t border-slate-200 my-3" />
 

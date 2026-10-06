@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { cn } from 'cn'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { registerSchema } from '@shared/schemas/auth'
@@ -87,7 +88,7 @@ export const RegisterForm = (props) => {
         [departmentError, errors.department?.message]
     )
 
-    const submitButtonClass = `${submitClass} ${isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`
+    const submitButtonClass = cn(submitClass, isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed')
 
     return (
         <>

@@ -11,17 +11,21 @@ export const ModalHeader = ({
     equipmentSerial = '',
     onClose = noop
 }) => (
-    <div className="px-4 pt-5 pb-3.5 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8 lg:pt-7 lg:pb-5 flex items-start justify-between bg-slate-50 shrink-0">
-        <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{equipmentTitle}</h2>
-                <span
-                    className={cn(
-                        'px-2.5 py-0.5 border rounded-2xl text-[10px] font-semibold',
-                        equipmentBadge.className
-                    )}>
-                    {equipmentBadge.label}
-                </span>
+    <div className="px-4 pt-5 pb-3.5 sm:px-6 sm:pt-6 sm:pb-4 lg:px-8 lg:pt-7 lg:pb-5 flex items-start justify-between gap-3 bg-slate-50 shrink-0">
+        <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 [overflow-wrap:anywhere]">
+                    {equipmentTitle}
+                </h2>
+                {equipmentBadge.label ? (
+                    <span
+                        className={cn(
+                            'px-2.5 py-0.5 border rounded-2xl text-[10px] font-semibold',
+                            equipmentBadge.className
+                        )}>
+                        {equipmentBadge.label}
+                    </span>
+                ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-slate-500">
                 {equipmentModel ? (
