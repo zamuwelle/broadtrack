@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { formatDate, getOverdueDuration } from '@shared/util/date'
 import { getBookingStatus } from '@shared/util/booking'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
@@ -7,14 +7,18 @@ import { SendReminderModal } from '@/features/admin/transactions/components/Send
 import { ConfirmReturnModal } from '@/features/admin/approvals/components/ConfirmReturnModal'
 import { ModalHeader } from '@/features/admin/transactions/components/ModalHeader'
 import { ActivityLogSection } from '@/features/admin/transactions/components/ActivityLogSection'
-import { Mail } from 'lucide-react'
+import { useEquipment } from '@/features/equipment/api/get-equipment'
 
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
 const noop = () => null
+const getSelectedEquipmentId = (booking) => booking.equipments?.[0]?.id ?? booking.equipment_id
 
 const getTransactionVariant = (booking) => {
     const status = getBookingStatus(booking)
+    if (status === 'pending') {
+        return 'pending'
+    }
     if (status === 'rejected') {
         return 'rejected'
     }
@@ -27,20 +31,17 @@ const getTransactionVariant = (booking) => {
     return booking.is_overdue ? 'overdue' : 'active'
 }
 
-const getEquipmentBadge = (variant) => {
-    if (variant === 'rejected' || variant === 'completed' || variant === 'cancelled') {
-        return {
-            label: 'Available',
-            className: 'bg-green-100 border-green-500 text-green-500'
-        }
-    }
-    return {
-        label: 'Borrowed',
-        className: 'bg-blue-200 border-sky-800 text-sky-800'
-    }
-}
+const equipmentBadges = Object.freeze({
+    available: { label: 'Available', className: 'bg-green-100 border-green-500 text-green-500' },
+    booked: { label: 'Booked', className: 'bg-rose-100 border-rose-500 text-rose-500' },
+    borrowed: { label: 'Borrowed', className: 'bg-blue-200 border-sky-800 text-sky-800' },
+    maintenance: { label: 'Maintenance', className: 'bg-orange-50 border-amber-500 text-amber-500' }
+})
 
 const getStatusBadge = (variant) => {
+    if (variant === 'pending') {
+        return { label: 'Pending', className: 'bg-amber-50 text-amber-600' }
+    }
     if (variant === 'rejected') {
         return { label: 'Rejected', className: 'bg-rose-50 text-rose-700' }
     }
@@ -69,7 +70,7 @@ const getTimelineColor = (variant) => {
     if (variant === 'completed') {
         return 'bg-sky-600'
     }
-    if (variant === 'overdue') {
+    if (variant === 'overdue' || variant === 'pending') {
         return 'bg-amber-500'
     }
     return 'bg-emerald-500'
@@ -82,7 +83,7 @@ const getEquipmentId = (equipment, booking) => {
     if (booking && booking.equipment_id) {
         return `eq-${booking.equipment_id}`
     }
-    return 'eq-1'
+    return ''
 }
 
 const useTransactionModalState = (onClose, onReturnConfirmed) => {
@@ -156,7 +157,6 @@ const getTransactionModalDetails = (booking) => {
         startDateFormatted: formatDate(booking.start_date),
         endDateFormatted: formatDate(booking.end_date),
         overdueDuration: getOverdueDuration(booking.end_date),
-        equipmentBadge: getEquipmentBadge(variant),
         timelineColor: getTimelineColor(variant),
         statusBadge: getStatusBadge(variant)
     }
@@ -167,6 +167,25 @@ export const TransactionDetailsModal = (props) => {
     const onClose = props.onClose || noop
     const booking = props.booking || defaultBooking
     const onReturnConfirmed = props.onReturnConfirmed || noop
+    const bookings = props.bookings ?? defaultList
+    const { data: equipmentList = defaultList } = useEquipment({ queryConfig: { enabled: isOpen } })
+    const entries = useMemo(() => {
+        const selectedEquipmentId = getSelectedEquipmentId(booking)
+        const history = selectedEquipmentId
+            ? bookings.filter((item) => item.equipments?.some((equipment) => equipment.id === selectedEquipmentId))
+            : [booking]
+        return history
+            .toSorted(
+                (first, second) =>
+                    Number(second.id === booking.id) - Number(first.id === booking.id) ||
+                    new Date(second.start_date || second.created_at) - new Date(first.start_date || first.created_at)
+            )
+            .map((item) => {
+                const details = getTransactionModalDetails(item)
+                details.booking = item
+                return details
+            })
+    }, [booking, bookings])
 
     const {
         isSendReminderOpen,
@@ -182,21 +201,12 @@ export const TransactionDetailsModal = (props) => {
         return null
     }
 
-    const {
-        variant,
-        equipmentTitle,
-        equipmentModel,
-        equipmentSerial,
-        equipmentId,
-        borrowerName,
-        borrowerDepartment,
-        startDateFormatted,
-        endDateFormatted,
-        overdueDuration,
-        equipmentBadge,
-        timelineColor,
-        statusBadge
-    } = getTransactionModalDetails(booking)
+    const { variant, equipmentTitle, equipmentModel, equipmentSerial, equipmentId } =
+        getTransactionModalDetails(booking)
+    const selectedEquipmentId = getSelectedEquipmentId(booking)
+    const currentEquipment = equipmentList.find((item) => item.id === selectedEquipmentId)
+    const equipmentBadge = equipmentBadges[currentEquipment?.status]
+    const fullBooking = bookings.find((item) => item.id === booking.id) || booking
 
     return (
         <>
@@ -219,38 +229,11 @@ export const TransactionDetailsModal = (props) => {
 
                     <ActivityLogSection
                         equipmentId={equipmentId}
-                        timelineColor={timelineColor}
-                        booking={booking}
-                        borrowerName={borrowerName}
-                        borrowerDepartment={borrowerDepartment}
-                        statusBadge={statusBadge}
-                        startDateFormatted={startDateFormatted}
-                        endDateFormatted={endDateFormatted}
-                        variant={variant}
-                        overdueDuration={overdueDuration}
+                        entries={entries}
+                        selectedId={variant === 'overdue' ? booking.id : null}
+                        onReminder={handleOpenSendReminder}
+                        onReturn={handleOpenConfirmReturn}
                     />
-
-                    {variant === 'overdue' && (
-                        <div className="px-4 py-5 sm:px-8 sm:py-6 bg-slate-50 flex flex-col items-center gap-4 shrink-0">
-                            <button
-                                type="button"
-                                onClick={handleOpenSendReminder}
-                                className="w-full sm:w-auto h-12 px-6 bg-sky-800 hover:bg-sky-900 transition-colors rounded-lg text-white text-base font-medium inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-                                <Mail size={18} />
-                                <span>Send Reminder Again</span>
-                            </button>
-
-                            <div className="text-xs sm:text-sm font-medium text-slate-700 flex flex-wrap justify-center items-center gap-1.5">
-                                <span>Has the equipment been returned?</span>
-                                <button
-                                    type="button"
-                                    onClick={handleOpenConfirmReturn}
-                                    className="text-blue-600 hover:underline font-semibold cursor-pointer">
-                                    Confirm here
-                                </button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -260,7 +243,7 @@ export const TransactionDetailsModal = (props) => {
                 key={`return-${isConfirmReturnOpen ? booking?.id : 'closed'}`}
                 isOpen={isConfirmReturnOpen}
                 onClose={handleCloseConfirmReturn}
-                booking={booking}
+                booking={fullBooking}
                 onSuccess={handleReturnSuccess}
             />
         </>
