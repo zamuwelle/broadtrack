@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { UserTableRow } from '@/features/admin/users/components/UserTableRow'
 import { UserTablePagination } from '@/features/admin/users/components/UserTablePagination'
+import { UserCard } from '@/features/admin/users/components/UserCard'
 
 const defaultUsers = Object.freeze([])
 const noop = () => null
@@ -8,6 +9,17 @@ const noop = () => null
 const rowHeight = 56
 const getFooterHeight = (footer) =>
     footer ? footer.offsetHeight + Number(getComputedStyle(footer).marginTop.replace('px', '')) : 0
+
+const renderCards = (users, displayedUsers, onEdit, onRemove) =>
+    users.length > 0 ? (
+        <div className="grid gap-3">
+            {displayedUsers.map((user) => (
+                <UserCard key={user.id} user={user} onEdit={onEdit} onRemove={onRemove} />
+            ))}
+        </div>
+    ) : (
+        <div className="rounded-lg border border-slate-300 bg-white p-4 text-xs text-slate-400">No users found.</div>
+    )
 
 const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit, onRemove }) => {
     if (isLoading) {
@@ -35,12 +47,7 @@ const renderTableBody = ({ isLoading, users, displayedUsers, startIndex, onEdit,
     ))
 }
 
-export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = noop, onRemove = noop }) => {
-    const [pageSize, setPageSize] = useState(5)
-    const [currentPage, setCurrentPage] = useState(1)
-    const tableRef = useRef(null)
-    const footerRef = useRef(null)
-
+const usePageSize = ({ tableRef, footerRef, isLoading, userCount, pageSize, setPageSize, setIsMobile }) => {
     useLayoutEffect(() => {
         const table = tableRef.current
         const main = table?.closest('main')
@@ -48,11 +55,17 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
             return
         }
         const measure = () => {
+            if (window.innerWidth < 1024) {
+                setIsMobile(true)
+                setPageSize(5)
+                return
+            }
+            setIsMobile(false)
             const mainTop = main.getBoundingClientRect().top
             const top = table.getBoundingClientRect().top - mainTop + main.scrollTop
             const header = table.querySelector('thead')?.getBoundingClientRect().height || 0
             const measuredRowHeight =
-                (!isLoading && users.length > 0 && table.querySelector('tbody tr')?.getBoundingClientRect().height) ||
+                (!isLoading && userCount > 0 && table.querySelector('tbody tr')?.getBoundingClientRect().height) ||
                 rowHeight
             const scrollContainer = table.querySelector('.overflow-x-auto')
             const scrollbarHeight = scrollContainer ? scrollContainer.offsetHeight - scrollContainer.clientHeight : 0
@@ -74,7 +87,17 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
             observer.disconnect()
             window.visualViewport?.removeEventListener('resize', measure)
         }
-    }, [isLoading, users.length, pageSize])
+    }, [tableRef, footerRef, isLoading, userCount, pageSize, setPageSize, setIsMobile])
+}
+
+export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = noop, onRemove = noop }) => {
+    const [pageSize, setPageSize] = useState(5)
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024)
+    const [currentPage, setCurrentPage] = useState(1)
+    const tableRef = useRef(null)
+    const footerRef = useRef(null)
+
+    usePageSize({ tableRef, footerRef, isLoading, userCount: users.length, pageSize, setPageSize, setIsMobile })
 
     const totalPages = Math.max(1, Math.ceil(users.length / pageSize))
     const activePage = Math.min(currentPage, totalPages)
@@ -94,7 +117,8 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
     const handleSelectPage = useCallback((page) => setCurrentPage(page), [])
     return (
         <div ref={tableRef} className="w-full flex flex-col font-['Poppins']">
-            <div className="w-full bg-white rounded-lg border border-slate-300 overflow-hidden shadow-xs">
+            {isMobile && !isLoading && renderCards(users, displayedUsers, onEdit, onRemove)}
+            <div className="hidden lg:block w-full bg-white rounded-lg border border-slate-300 overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse whitespace-nowrap">
                         <thead>
