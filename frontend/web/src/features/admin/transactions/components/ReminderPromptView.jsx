@@ -24,13 +24,7 @@ export const ReminderPromptView = ({
     onSend = noop
 }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">
-        <button
-            type="button"
-            aria-label="Close dialog"
-            tabIndex={-1}
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
-            onClick={onClose}
-        />
+        <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
         <div className="bg-slate-50 rounded-[18px] border border-slate-300 w-full max-w-[453px] max-h-[90dvh] overflow-y-auto my-auto shadow-2xl relative z-10">
             <div className="relative px-12 max-[374px]:px-3 pt-10 max-[374px]:pt-12 pb-5 text-center [@media(max-height:500px)]:pt-6 [@media(max-height:500px)]:pb-3">
                 <button
