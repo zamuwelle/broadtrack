@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { cn } from 'cn'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUser } from '@/lib/auth'
 import { useUpdateForm } from '@/hooks/actions/useUpdateForm'
@@ -103,7 +104,10 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, card = false
         <form
             key={formKey}
             onSubmit={handleUpdate}
-            className={`flex flex-col font-['Poppins'] ${card ? 'w-full gap-6' : 'w-full h-full bg-surface items-center'}`}>
+            className={cn(
+                "flex flex-col font-['Poppins']",
+                card ? 'w-full gap-6' : 'w-full h-full bg-surface items-center'
+            )}>
             <div
                 className={
                     card
@@ -123,7 +127,10 @@ export const EditProfileForm = ({ onClose = noop, onUpdated = noop, card = false
                 ))}
             </div>
             <div
-                className={`flex items-end ${card ? 'w-full justify-end flex-col gap-2' : 'mt-[18px] self-end flex-col gap-2 w-[401px]'}`}>
+                className={cn(
+                    'flex items-end',
+                    card ? 'w-full justify-end flex-col gap-2' : 'mt-[18px] self-end flex-col gap-2 w-[401px]'
+                )}>
                 {errors.submit ? <span className="text-[12px] text-red-500">{errors.submit}</span> : null}
                 <ProfileActionButtons card={card} canSubmit={canSubmit} isPending={isPending} onClose={onClose} />
             </div>

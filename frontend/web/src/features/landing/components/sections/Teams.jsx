@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { cn } from 'cn'
 import lightImg from '@/assets/icons/landing/teams/light.png?inline'
 import member1 from '@/assets/teams/member-1.webp'
 import member2 from '@/assets/teams/member-2.webp'
@@ -59,7 +60,7 @@ export const Teams = () => {
                                     src={member.image}
                                     alt=""
                                     loading="lazy"
-                                    className={`w-full h-full object-cover object-top origin-top ${member.scale}`}
+                                    className={cn('w-full h-full object-cover object-top origin-top', member.scale)}
                                 />
                             </div>
                             <p className="relative z-10 text-primary text-[15px] lg:text-[16px] font-bold uppercase leading-snug mt-6 min-h-[44px] flex items-center justify-center">
