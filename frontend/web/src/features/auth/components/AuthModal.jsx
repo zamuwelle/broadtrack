@@ -127,13 +127,7 @@ export const AuthModal = ({
     return (
         <>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-['Poppins']">
-                <button
-                    type="button"
-                    aria-label="Close dialog"
-                    tabIndex={-1}
-                    className="fixed inset-0 dim-screen border-none outline-none cursor-default"
-                    onClick={isVerifyTab ? noop : handleClose}
-                />
+                <div aria-hidden="true" className="fixed inset-0 dim-screen border-none outline-none cursor-default" />
                 <div className="bg-surface p-5 sm:p-6 rounded-[8px] w-full max-w-[420px] max-h-[90dvh] overflow-y-scroll my-auto relative z-10 font-['Poppins']">
                     <button
                         type="button"
