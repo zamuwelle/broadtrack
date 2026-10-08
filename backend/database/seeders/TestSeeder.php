@@ -7,50 +7,21 @@ use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class TestSeeder extends Seeder
 {
     public function run(): void
     {
-        $defaultPassword = Hash::make('password123');
-
-        $teamMembers = [
-            ['prefix' => 'karl', 'firstname' => 'Karl Ashton', 'lastname' => 'Mahusay'],
-            ['prefix' => 'rocelyn', 'firstname' => 'Rocelyn', 'lastname' => 'Lava'],
-            ['prefix' => 'annestephanne', 'firstname' => 'Anne Stephanne', 'lastname' => 'Buenaflor'],
-            ['prefix' => 'luisa', 'firstname' => 'Luisa', 'lastname' => 'Padillon'],
-            ['prefix' => 'ydreyann', 'firstname' => 'Ydrey Ann', 'lastname' => 'Ramirez'],
-        ];
-
-        $roleDefinitions = [
-            ['suffix' => 'borrow', 'role' => UserRole::Borrower, 'domain' => 'student.laverdad.edu.ph'],
-            ['suffix' => 'admin', 'role' => UserRole::Admin, 'domain' => 'laverdad.edu.ph'],
-            ['suffix' => 'sysadmin', 'role' => UserRole::Sysadmin, 'domain' => 'laverdad.edu.ph'],
-        ];
+        $defaultPassword = Hash::make('broadtrack');
 
         $testAccounts = [
-            ['email' => 'sysadmin.test@laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Sysadmin', 'role' => UserRole::Sysadmin],
-            ['email' => 'admin.test@laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Admin', 'role' => UserRole::Admin],
-            ['email' => 'borrower.test@student.laverdad.edu.ph', 'firstname' => 'Test', 'lastname' => 'Borrower', 'role' => UserRole::Borrower],
+            ['email' => 'admin.test@laverdad.edu.ph', 'firstname' => 'Admin', 'lastname' => 'Test', 'role' => UserRole::Admin],
+            ['email' => 'sysadmin.test@laverdad.edu.ph', 'firstname' => 'Sysadmin', 'lastname' => 'Test', 'role' => UserRole::Sysadmin],
+            ['email' => 'borrower.test@student.laverdad.edu.ph', 'firstname' => 'Borrower', 'lastname' => 'Test', 'role' => UserRole::Borrower],
         ];
 
-        User::withoutEvents(function () use ($teamMembers, $roleDefinitions, $testAccounts, $defaultPassword): void {
-            foreach ($teamMembers as $member) {
-                foreach ($roleDefinitions as $roleDefinition) {
-                    User::updateOrCreate(
-                        ['email' => "{$member['prefix']}{$roleDefinition['suffix']}.test@{$roleDefinition['domain']}"],
-                        [
-                            'firstname' => $member['firstname'],
-                            'lastname' => $member['lastname'],
-                            'password' => $defaultPassword,
-                            'role' => $roleDefinition['role'],
-                            'department' => Department::InformationSystems,
-                            'email_verified_at' => now(),
-                        ]
-                    );
-                }
-            }
-
+        User::withoutEvents(function () use ($testAccounts, $defaultPassword): void {
             foreach ($testAccounts as $account) {
                 User::updateOrCreate(
                     ['email' => $account['email']],
@@ -60,6 +31,7 @@ class TestSeeder extends Seeder
                         'password' => $defaultPassword,
                         'role' => $account['role'],
                         'department' => Department::InformationSystems,
+                        'profile_picture' => 'https://api.dicebear.com/10.x/toon-head/svg?seed='.Str::random(16),
                         'email_verified_at' => now(),
                     ]
                 );
