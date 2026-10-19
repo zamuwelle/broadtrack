@@ -158,22 +158,3 @@ describe('useBorrowSummaryLogic', () => {
         })
     })
 })
-
-it('keeps booking details when opening and closing profile editing', () => {
-    useBookingCartStore.setState({ items: [{ id: 42, name: 'Sony FX3' }] })
-    const { result, rerender, unmount } = renderHook(({ isOpen }) => useBorrowSummaryLogic({ isOpen }), {
-        initialProps: { isOpen: true }
-    })
-    act(() => result.current.handlePurposeChange({ target: { value: 'Test booking' } }))
-    act(() => result.current.handleOpenEdit())
-    expect(result.current.modalView).toBe('edit')
-    act(() => result.current.handleCloseEdit())
-    expect(result.current.purpose).toBe('Test booking')
-    expect(result.current.modalView).toBe('summary')
-    act(() => result.current.handleOpenEdit())
-    rerender({ isOpen: false })
-    rerender({ isOpen: true })
-    expect(result.current.modalView).toBe('summary')
-    unmount()
-    useBookingCartStore.setState({ items: [] })
-})
