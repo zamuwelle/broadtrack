@@ -29,7 +29,15 @@ const pendingBooking = {
     id: 7,
     status: 'pending',
     user: { full_name: 'Maria Santos', email: 'maria@student.laverdad.edu.ph' },
-    equipments: [{ id: 1, name: 'Canon Camera', model: 'M50', serial_no: 'CAM-1', brand: 'Canon' }],
+    equipments: [
+        {
+            id: 1,
+            name: 'Canon Camera',
+            model: 'M50',
+            serial_no: 'CAM-1',
+            brand: 'Canon'
+        }
+    ],
     created_at: '2026-10-26T08:00:00+08:00'
 }
 const pendingBookings = [pendingBooking]

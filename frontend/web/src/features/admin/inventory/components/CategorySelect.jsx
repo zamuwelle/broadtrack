@@ -57,7 +57,11 @@ export const CategorySelect = ({
                         'border-border-subtle': !error
                     }
                 )}>
-                <span className={cn({ 'text-text': Boolean(selectedOption), 'text-muted': !selectedOption })}>
+                <span
+                    className={cn({
+                        'text-text': Boolean(selectedOption),
+                        'text-muted': !selectedOption
+                    })}>
                     {selectedOption ? selectedOption.name : placeholder}
                 </span>
                 <Icon name="chevron5" className={cn('text-slate-600 shrink-0', isOpen && 'rotate-180')} />

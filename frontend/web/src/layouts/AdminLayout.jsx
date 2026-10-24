@@ -12,16 +12,37 @@ import { ROLES } from '@shared/constants'
 import { paths } from '@/config/paths'
 
 const baseSidebarLinks = Object.freeze([
-    Object.freeze({ label: 'Dashboard', icon: 'equipment', path: paths.app.adminDashboard }),
-    Object.freeze({ label: 'Approvals', icon: 'approval', path: paths.app.adminApprovals }),
-    Object.freeze({ label: 'Inventory', icon: 'adminInventory', path: paths.app.adminInventory }),
-    Object.freeze({ label: 'Transactions', icon: 'transactions', path: paths.app.adminTransactions })
+    Object.freeze({
+        label: 'Dashboard',
+        icon: 'equipment',
+        path: paths.app.adminDashboard
+    }),
+    Object.freeze({
+        label: 'Approvals',
+        icon: 'approval',
+        path: paths.app.adminApprovals
+    }),
+    Object.freeze({
+        label: 'Inventory',
+        icon: 'adminInventory',
+        path: paths.app.adminInventory
+    }),
+    Object.freeze({
+        label: 'Transactions',
+        icon: 'transactions',
+        path: paths.app.adminTransactions
+    })
 ])
 
 const sysadminLinks = Object.freeze([
     ...baseSidebarLinks,
     Object.freeze({ divider: true }),
-    Object.freeze({ label: 'User Management', icon: 'users', centered: true, path: paths.app.adminUsers })
+    Object.freeze({
+        label: 'User Management',
+        icon: 'users',
+        centered: true,
+        path: paths.app.adminUsers
+    })
 ])
 
 const pathToLabelMap = Object.freeze({

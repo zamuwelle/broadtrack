@@ -11,9 +11,21 @@ import { Sidebar } from '@/components/ui/Sidebar'
 import { paths } from '@/config/paths'
 
 const sidebarLinks = Object.freeze([
-    Object.freeze({ label: 'Equipment', icon: 'equipment', path: paths.app.borrowEquipment }),
-    Object.freeze({ label: 'Calendar', icon: 'calendar', path: paths.app.borrowCalendar }),
-    Object.freeze({ label: 'My Slips', icon: 'slip', path: paths.app.borrowSlips })
+    Object.freeze({
+        label: 'Equipment',
+        icon: 'equipment',
+        path: paths.app.borrowEquipment
+    }),
+    Object.freeze({
+        label: 'Calendar',
+        icon: 'calendar',
+        path: paths.app.borrowCalendar
+    }),
+    Object.freeze({
+        label: 'My Slips',
+        icon: 'slip',
+        path: paths.app.borrowSlips
+    })
 ])
 
 const pathToLabelMap = Object.freeze({

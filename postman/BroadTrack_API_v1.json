@@ -52,9 +52,7 @@
                             "listen": "prerequest",
                             "script": {
                                 "type": "text/javascript",
-                                "exec": [
-                                    "pm.collectionVariables.unset('token');"
-                                ]
+                                "exec": ["pm.collectionVariables.unset('token');"]
                             }
                         },
                         {
@@ -108,9 +106,7 @@
                             "listen": "prerequest",
                             "script": {
                                 "type": "text/javascript",
-                                "exec": [
-                                    "pm.collectionVariables.unset('token');"
-                                ]
+                                "exec": ["pm.collectionVariables.unset('token');"]
                             }
                         },
                         {
@@ -164,9 +160,7 @@
                             "listen": "prerequest",
                             "script": {
                                 "type": "text/javascript",
-                                "exec": [
-                                    "pm.collectionVariables.unset('token');"
-                                ]
+                                "exec": ["pm.collectionVariables.unset('token');"]
                             }
                         },
                         {
@@ -785,12 +779,8 @@
                         ],
                         "url": {
                             "raw": "{{base_url}}/bookings?view=calendar",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "bookings"
-                            ],
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings"],
                             "query": [
                                 {
                                     "key": "view",
@@ -1097,14 +1087,8 @@
                         ],
                         "url": {
                             "raw": "{{base_url}}/bookings/reports/pdf?category=All&search=",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "bookings",
-                                "reports",
-                                "pdf"
-                            ],
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings", "reports", "pdf"],
                             "query": [
                                 {
                                     "key": "category",
@@ -1147,14 +1131,8 @@
                         ],
                         "url": {
                             "raw": "{{base_url}}/bookings/reports/csv?category=All&search=",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "bookings",
-                                "reports",
-                                "csv"
-                            ],
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings", "reports", "csv"],
                             "query": [
                                 {
                                     "key": "category",

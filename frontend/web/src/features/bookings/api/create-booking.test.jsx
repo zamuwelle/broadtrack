@@ -18,7 +18,9 @@ describe('create booking mutation', () => {
     })
 
     it('invalidates booking and equipment queries after success', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
         api.post.mockResolvedValue({ data: { id: 1 } })
         const { result } = renderHook(() => useCreateBooking(), {

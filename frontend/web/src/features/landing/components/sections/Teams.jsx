@@ -8,11 +8,36 @@ import member4 from '@/assets/teams/member-4.webp'
 import member5 from '@/assets/teams/member-5.webp'
 
 const members = Object.freeze([
-    { name: 'Ydrey Ann Ramirez', role: 'UI/UX Designer', image: member1, scale: 'scale-125' },
-    { name: 'Anne Stephanne Buenaflor', role: 'Business Analyst', image: member2, scale: 'scale-125' },
-    { name: 'Rocelyn Lava', role: 'Project Manager', image: member3, scale: 'scale-125' },
-    { name: 'Luisa Padillon', role: 'UI/UX Designer', image: member4, scale: 'scale-150 translate-y-1' },
-    { name: 'Karl Ashton Mahusay', role: 'Quality Assurance', image: member5, scale: 'scale-100' }
+    {
+        name: 'Ydrey Ann Ramirez',
+        role: 'UI/UX Designer',
+        image: member1,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Anne Stephanne Buenaflor',
+        role: 'Business Analyst',
+        image: member2,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Rocelyn Lava',
+        role: 'Project Manager',
+        image: member3,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Luisa Padillon',
+        role: 'UI/UX Designer',
+        image: member4,
+        scale: 'scale-150 translate-y-1'
+    },
+    {
+        name: 'Karl Ashton Mahusay',
+        role: 'Quality Assurance',
+        image: member5,
+        scale: 'scale-100'
+    }
 ])
 
 export const Teams = () => {

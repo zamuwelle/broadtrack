@@ -24,7 +24,11 @@ const CATEGORIES = Object.freeze(
 )
 
 const ALL_CATEGORIES = Object.freeze(['All', ...EQUIPMENT_CATEGORIES])
-const STATUS_CONFIRM_VARIANTS = Object.freeze({ available: 'success', borrowed: 'primary', maintenance: 'danger' })
+const STATUS_CONFIRM_VARIANTS = Object.freeze({
+    available: 'success',
+    borrowed: 'primary',
+    maintenance: 'danger'
+})
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -95,7 +99,10 @@ const useInventoryStatus = (queryClient, updateEquipmentMutation, showToast) =>
                 return current.map((item) => (item.id === equipmentId ? { ...item, status: newStatus } : item))
             })
             try {
-                await updateEquipmentMutation.mutateAsync({ id: equipmentId, data: { status: newStatus } })
+                await updateEquipmentMutation.mutateAsync({
+                    id: equipmentId,
+                    data: { status: newStatus }
+                })
                 await Promise.all([
                     queryClient.invalidateQueries({ queryKey: ['equipment'] }),
                     queryClient.invalidateQueries({ queryKey: ['bookings'] })

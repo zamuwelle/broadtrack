@@ -70,7 +70,6 @@ export const DashboardPage = (props) => {
                 onGoToApprovals={handleGoToApprovals}
             />
             <ActiveTransactionsCard transactions={activeTransactions} />
-
         </div>
     )
 }

@@ -18,7 +18,9 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
     useEffect(() => {
         if (countdown > 0) {
             const timer = setInterval(() => {
-                setState((prev) => ({ countdown: prev.countdown > 0 ? prev.countdown - 1 : 0 }))
+                setState((prev) => ({
+                    countdown: prev.countdown > 0 ? prev.countdown - 1 : 0
+                }))
             }, 1000)
             return () => clearInterval(timer)
         }

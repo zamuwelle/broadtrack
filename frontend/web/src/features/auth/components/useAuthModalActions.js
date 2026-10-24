@@ -126,7 +126,12 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
     const forgotMutation = useMutation({
         mutationFn: forgotPassword,
         onSuccess: useCallback(() => {
-            updateAuthState({ tab: 'login', error: '', isServerError: false, form: { ...initialFormState } })
+            updateAuthState({
+                tab: 'login',
+                error: '',
+                isServerError: false,
+                form: { ...initialFormState }
+            })
             showToast('Reset link sent! Check your inbox.')
         }, [initialFormState, showToast, updateAuthState]),
         onError: useCallback(
@@ -149,7 +154,11 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
         onError: useCallback(
             (resetError = {}) => {
                 if (resetError.status === 422 && resetError.message === 'Invalid or expired reset token.') {
-                    updateAuthState({ tab: 'forgot', error: '', form: { ...initialFormState } })
+                    updateAuthState({
+                        tab: 'forgot',
+                        error: '',
+                        form: { ...initialFormState }
+                    })
                     showToast('Invalid or expired reset link. Please request a new one.', 'warning')
                     return
                 }
@@ -200,7 +209,9 @@ export const useAuthModalActions = ({ onLoginSuccess, onClose, updateAuthState, 
         initialFormState
     })
 
-    const { registerPending, handleRegister } = useAuthRegisterHandlers({ updateAuthState })
+    const { registerPending, handleRegister } = useAuthRegisterHandlers({
+        updateAuthState
+    })
 
     const { forgotPending, resetPending, handleForgot, handleReset } = useAuthRecoveryHandlers({
         updateAuthState,

@@ -21,7 +21,9 @@ describe('equipment queries', () => {
 
     it('exposes fetched equipment through the query hook', async () => {
         api.get.mockResolvedValue({ data: [{ id: 2, name: 'Tripod' }] })
-        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { queries: { retry: false } }
+        })
         const { result } = renderHook(() => useEquipment(), {
             wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         })

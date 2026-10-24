@@ -45,13 +45,10 @@ export const LandingNavbar = ({ onOpenLogin, onOpenRegister }) => {
 
     return (
         <nav
-            className={cn(
-                'fixed top-0 left-0 w-full h-16 md:h-20 z-40 transition-all duration-150 ease-in bg-white',
-                {
-                    '-translate-y-full shadow-none': scrollDirection === 'down' && !isAtTop,
-                    'translate-y-0 shadow-sm': scrollDirection !== 'down' || isAtTop
-                }
-            )}>
+            className={cn('fixed top-0 left-0 w-full h-16 md:h-20 z-40 transition-all duration-150 ease-in bg-white', {
+                '-translate-y-full shadow-none': scrollDirection === 'down' && !isAtTop,
+                'translate-y-0 shadow-sm': scrollDirection !== 'down' || isAtTop
+            })}>
             <div className="w-full px-6 md:px-12 lg:px-[90px] h-full flex items-center justify-between">
                 <div className="flex-1 flex items-center justify-start">
                     <Logo />

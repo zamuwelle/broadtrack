@@ -32,10 +32,22 @@ const getTransactionVariant = (booking) => {
 }
 
 const equipmentBadges = Object.freeze({
-    available: { label: 'Available', className: 'bg-green-100 border-green-500 text-green-500' },
-    booked: { label: 'Booked', className: 'bg-rose-100 border-rose-500 text-rose-500' },
-    borrowed: { label: 'Borrowed', className: 'bg-blue-200 border-sky-800 text-sky-800' },
-    maintenance: { label: 'Maintenance', className: 'bg-orange-50 border-amber-500 text-amber-500' }
+    available: {
+        label: 'Available',
+        className: 'bg-green-100 border-green-500 text-green-500'
+    },
+    booked: {
+        label: 'Booked',
+        className: 'bg-rose-100 border-rose-500 text-rose-500'
+    },
+    borrowed: {
+        label: 'Borrowed',
+        className: 'bg-blue-200 border-sky-800 text-sky-800'
+    },
+    maintenance: {
+        label: 'Maintenance',
+        className: 'bg-orange-50 border-amber-500 text-amber-500'
+    }
 })
 
 const getStatusBadge = (variant) => {
@@ -168,7 +180,9 @@ export const TransactionDetailsModal = (props) => {
     const booking = props.booking || defaultBooking
     const onReturnConfirmed = props.onReturnConfirmed || noop
     const bookings = props.bookings ?? defaultList
-    const { data: equipmentList = defaultList } = useEquipment({ queryConfig: { enabled: isOpen } })
+    const { data: equipmentList = defaultList } = useEquipment({
+        queryConfig: { enabled: isOpen }
+    })
     const entries = useMemo(() => {
         const selectedEquipmentId = getSelectedEquipmentId(booking)
         const history = selectedEquipmentId
@@ -211,7 +225,10 @@ export const TransactionDetailsModal = (props) => {
     return (
         <>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-                <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
+                <div
+                    aria-hidden="true"
+                    className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
+                />
                 <div className="bg-slate-50 rounded-2xl border border-slate-300 w-full max-w-[760px] lg:max-w-[820px] max-h-[88dvh] overflow-y-scroll my-auto shadow-2xl font-['Poppins'] flex flex-col relative z-10">
                     <ModalHeader
                         equipmentTitle={equipmentTitle}

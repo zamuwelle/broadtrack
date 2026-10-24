@@ -20,7 +20,10 @@ vi.mock('@/features/bookings/api/get-bookings', () => ({
                 status: 'pending',
                 start_date: '2026-10-18T00:00:00Z',
                 end_date: '2026-10-18T01:00:00Z',
-                user: { full_name: 'Samuel Binos', department: 'BS Information Systems' },
+                user: {
+                    full_name: 'Samuel Binos',
+                    department: 'BS Information Systems'
+                },
                 equipments: [{ id: 1, brand: 'Canon', name: 'Camera' }]
             }
         ]

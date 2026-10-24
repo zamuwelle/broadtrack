@@ -97,7 +97,15 @@ export const UserTable = ({ users = defaultUsers, isLoading = false, onEdit = no
     const tableRef = useRef(null)
     const footerRef = useRef(null)
 
-    usePageSize({ tableRef, footerRef, isLoading, userCount: users.length, pageSize, setPageSize, setIsMobile })
+    usePageSize({
+        tableRef,
+        footerRef,
+        isLoading,
+        userCount: users.length,
+        pageSize,
+        setPageSize,
+        setIsMobile
+    })
 
     const totalPages = Math.max(1, Math.ceil(users.length / pageSize))
     const activePage = Math.min(currentPage, totalPages)

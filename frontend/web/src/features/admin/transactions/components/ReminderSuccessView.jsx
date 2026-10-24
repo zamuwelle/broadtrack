@@ -4,7 +4,10 @@ const noop = () => null
 
 export const ReminderSuccessView = ({ sentTimestamp = '', onClose = noop }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">
-        <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
+        <div
+            aria-hidden="true"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
+        />
         <div className="bg-slate-50 rounded-[18px] border border-slate-300 w-full max-w-[453px] max-h-[90dvh] overflow-y-auto my-auto shadow-2xl relative z-10">
             <button
                 type="button"

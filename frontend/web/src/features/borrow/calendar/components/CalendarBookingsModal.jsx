@@ -22,7 +22,10 @@ export const CalendarBookingsModal = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-['Poppins']">
-            <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs border-none outline-none cursor-default" />
+            <div
+                aria-hidden="true"
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs border-none outline-none cursor-default"
+            />
             <div className="bg-white rounded-2xl w-full max-w-[760px] lg:max-w-[880px] p-4 sm:p-6 lg:p-7 flex flex-col gap-4 sm:gap-6 shadow-2xl relative z-10 max-h-[88dvh] overflow-y-scroll my-auto">
                 <div className="flex items-center justify-between gap-4">
                     <h3 className="text-base lg:text-lg font-medium text-slate-900 tracking-wide uppercase">

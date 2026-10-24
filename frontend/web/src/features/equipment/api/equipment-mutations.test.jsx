@@ -53,7 +53,9 @@ describe('equipment mutation hooks', () => {
     })
 
     it('useCreateEquipment calls api.post and invalidates queries', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
         const onSuccess = vi.fn()
         api.post.mockResolvedValueOnce({ data: { id: 10 } })
@@ -69,7 +71,9 @@ describe('equipment mutation hooks', () => {
     })
 
     it('useUpdateEquipment calls api.put and invalidates queries', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
         const onSuccess = vi.fn()
         api.put.mockResolvedValueOnce({ data: { id: 10 } })
@@ -85,7 +89,9 @@ describe('equipment mutation hooks', () => {
     })
 
     it('useDeleteEquipment calls api.delete and invalidates queries', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
         const onSuccess = vi.fn()
         api.delete.mockResolvedValueOnce(null)
@@ -101,7 +107,9 @@ describe('equipment mutation hooks', () => {
     })
 
     it('useUploadEquipmentImage calls api.post with formData and invalidates queries', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
         const onSuccess = vi.fn()
         api.post.mockResolvedValueOnce({ data: { id: 10 } })
@@ -126,7 +134,9 @@ describe('EquipmentModalDialog validation and recovery', () => {
     })
 
     it('validates required fields with equipmentSchema and blocks invalid submission', () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const onClose = vi.fn()
         const onSuccess = vi.fn()
 
@@ -151,7 +161,9 @@ describe('EquipmentModalDialog validation and recovery', () => {
     })
 
     it('maps server validation errors onto fields and error banner', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const onClose = vi.fn()
         const onSuccess = vi.fn()
 
@@ -175,10 +187,14 @@ describe('EquipmentModalDialog validation and recovery', () => {
             </TestWrapper>
         )
 
-        fireEvent.change(screen.getByLabelText(/Equipment Name/iu), { target: { value: 'Sony A7' } })
+        fireEvent.change(screen.getByLabelText(/Equipment Name/iu), {
+            target: { value: 'Sony A7' }
+        })
         fireEvent.click(screen.getByRole('button', { name: /Select a category/iu }))
         fireEvent.click(screen.getByRole('button', { name: 'Camera' }))
-        fireEvent.change(screen.getByLabelText(/Short Description/iu), { target: { value: 'Mirrorless camera' } })
+        fireEvent.change(screen.getByLabelText(/Short Description/iu), {
+            target: { value: 'Mirrorless camera' }
+        })
 
         fireEvent.submit(container.querySelector('form'))
 
@@ -192,13 +208,17 @@ describe('EquipmentModalDialog validation and recovery', () => {
     })
 
     it('recovers from partial image upload failure without creating duplicates on retry', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const onClose = vi.fn()
         const onSuccess = vi.fn()
 
         api.post.mockImplementation((url) => {
             if (url === '/equipment') {
-                return Promise.resolve({ data: { id: 77, name: 'Sony FX3', serial_no: 'SN-001' } })
+                return Promise.resolve({
+                    data: { id: 77, name: 'Sony FX3', serial_no: 'SN-001' }
+                })
             }
             if (url === '/equipment/77/upload') {
                 return Promise.reject(new Error('Image upload timed out'))
@@ -217,13 +237,19 @@ describe('EquipmentModalDialog validation and recovery', () => {
             </TestWrapper>
         )
 
-        fireEvent.change(screen.getByLabelText(/Equipment Name/iu), { target: { value: 'Sony FX3' } })
+        fireEvent.change(screen.getByLabelText(/Equipment Name/iu), {
+            target: { value: 'Sony FX3' }
+        })
         fireEvent.click(screen.getByRole('button', { name: /Select a category/iu }))
         fireEvent.click(screen.getByRole('button', { name: 'Camera' }))
-        fireEvent.change(screen.getByLabelText(/Short Description/iu), { target: { value: 'Cinema camera' } })
+        fireEvent.change(screen.getByLabelText(/Short Description/iu), {
+            target: { value: 'Cinema camera' }
+        })
 
         const fileInput = container.querySelector('input[type="file"]')
-        const mockFile = new File(['content'], 'camera.jpg', { type: 'image/jpeg' })
+        const mockFile = new File(['content'], 'camera.jpg', {
+            type: 'image/jpeg'
+        })
         fireEvent.change(fileInput, { target: { files: [mockFile] } })
 
         fireEvent.submit(container.querySelector('form'))
@@ -236,7 +262,9 @@ describe('EquipmentModalDialog validation and recovery', () => {
         })
         expect(onClose).not.toHaveBeenCalled()
 
-        api.put.mockResolvedValueOnce({ data: { id: 77, name: 'Sony FX3', serial_no: 'SN-001' } })
+        api.put.mockResolvedValueOnce({
+            data: { id: 77, name: 'Sony FX3', serial_no: 'SN-001' }
+        })
         api.post.mockImplementation((url) => {
             if (url === '/equipment/77/upload') {
                 return Promise.resolve({ data: { id: 77, image: 'uploaded.jpg' } })
@@ -271,7 +299,9 @@ describe('equipment edit validation', () => {
     })
 
     it('blocks invalid images before saving and sends a cleared serial number', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         api.put.mockResolvedValueOnce({ data: { id: 3 } })
         api.post.mockResolvedValueOnce({ data: { id: 3 } })
         const { container } = render(
@@ -279,7 +309,9 @@ describe('equipment edit validation', () => {
                 <EquipmentModalDialog equipment={equipment} categories={categories} />
             </TestWrapper>
         )
-        fireEvent.change(screen.getByLabelText('Serial Number'), { target: { value: '' } })
+        fireEvent.change(screen.getByLabelText('Serial Number'), {
+            target: { value: '' }
+        })
         const fileInput = container.querySelector('input[type="file"]')
         const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.png', { type: 'image/png' })
         fireEvent.change(fileInput, { target: { files: [oversized] } })
@@ -287,7 +319,9 @@ describe('equipment edit validation', () => {
         expect(screen.getByRole('button', { name: 'Update Equipment' })).toBeDisabled()
         fireEvent.submit(container.querySelector('form'))
         expect(api.put).not.toHaveBeenCalled()
-        fireEvent.change(fileInput, { target: { files: [new File(['image'], 'ok.png', { type: 'image/png' })] } })
+        fireEvent.change(fileInput, {
+            target: { files: [new File(['image'], 'ok.png', { type: 'image/png' })] }
+        })
         fireEvent.submit(container.querySelector('form'))
         await waitFor(() =>
             expect(api.put).toHaveBeenCalledWith('/equipment/3', expect.objectContaining({ serial_no: null }))
