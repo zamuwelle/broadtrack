@@ -1,33 +1,70 @@
-# Backend Architecture and Conventions
+# Backend conventions
 
-The Laravel API, routes, and tests live in [`backend/`](../../backend/). Follow nearby code when adding or changing a feature; current conventions do not mean every existing controller follows one pattern.
+The Laravel backend is in [`backend/`](../../backend/). This page covers development conventions, patterns, and testing.
+
+## Code structure and imports
+
+- **PHP imports**: Declare class imports with `use` at the top of the file. Do not use inline fully qualified class names.
+- **Strict typing**: Add explicit parameter and return types to every method, function, and closure.
+- **Short callbacks**: Use short arrow functions (`fn (...) => ...`) for short callbacks and collection transforms.
 
 ## Requests, controllers, and responses
 
-Use Form Requests for request validation, policies for authorization, and API Resources for response shaping where those patterns fit. Keep controllers focused and inspect the full flow before moving existing transactions or queries. Put PHP imports at the top of the file. Give new or changed methods, functions, and closures explicit parameter and return types.
+1. **Form Requests**: All validation goes in dedicated Form Requests under [`backend/app/Http/Requests/Api/V1/`](../../backend/app/Http/Requests/Api/V1/).
+    - Reuse shared rules from [`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php) (`nameRules`, `passwordRules`, `schoolEmailRule`) across Form Requests; declare email restrictions directly when requests do not share the trait. See [Allowed email domains](../architecture/auth-lifecycle.md#allowed-email-domains).
+    - Ignore the bound route model for unique constraints on update, as in [`UpdateUserRequest`](../../backend/app/Http/Requests/Api/V1/UpdateUserRequest.php).
+    - Validate backed enums with `Rule::enum(...)`.
+2. **Authorization policies**: Enforce permissions using policies under [`backend/app/Policies/`](../../backend/app/Policies/) via `$this->authorize(...)`.
+3. **API Resources**: Format JSON responses with API Resources under [`backend/app/Http/Resources/Api/V1/`](../../backend/app/Http/Resources/Api/V1/).
+    - Wrap optional relationships with `$this->whenLoaded(...)` to avoid N+1 queries.
+    - Do not run database queries inside resource transformation methods.
+4. **Base controller helpers**: Extend [`ApiController`](../../backend/app/Http/Controllers/Api/ApiController.php) for standard response helpers:
+    - `$this->success($data, $message, $status = 200)`
+    - `$this->created($data, $message)`
+    - `$this->noContent()`
+    - `$this->error($message, $status = 400, $errors = null)`
 
-The [`ApiController`](../../backend/app/Http/Controllers/Api/ApiController.php) helpers return success `message` and `status`, with optional `data`; error helpers return `message` and optional `errors`. Framework-generated JSON exceptions, downloads, and 204 responses can use different response shapes. Resources should use `whenLoaded(...)` for optional relationships instead of querying relationships during serialization.
+## Models and enums
 
-## Models and domain values
+Use backed string enums for statuses, roles, and categories:
 
-Inspect [`backend/app/Enums/`](../../backend/app/Enums/) for existing backed enums before adding domain strings. Current booking values are `pending`, `approved`, `rejected`, `returned`, and `cancelled`; equipment values are `available`, `booked`, `borrowed`, and `maintenance`. See [`BookingStatus`](../../backend/app/Enums/BookingStatus.php) and [`EquipmentStatus`](../../backend/app/Enums/EquipmentStatus.php).
+- [`BookingStatus`](../../backend/app/Enums/BookingStatus.php): `pending`, `approved`, `rejected`, `returned`, `cancelled`.
+- [`EquipmentStatus`](../../backend/app/Enums/EquipmentStatus.php): `available`, `booked`, `borrowed`, `maintenance`.
+- [`UserRole`](../../backend/app/Enums/UserRole.php): `borrower`, `admin`, `sysadmin`.
+- [`Department`](../../backend/app/Enums/Department.php): Institutional academic departments.
+- [`EquipmentCategory`](../../backend/app/Enums/EquipmentCategory.php): Equipment classifications.
 
-Models use PHP attributes for configuration and the `casts()` method for casts; see [`User`](../../backend/app/Models/User.php), [`Booking`](../../backend/app/Models/Booking.php), and [`Equipment`](../../backend/app/Models/Equipment.php). Reuse shared request rules such as [`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php) and follow the unique-update pattern in [`UpdateUserRequest`](../../backend/app/Http/Requests/Api/V1/UpdateUserRequest.php). For an unshipped schema change, update its original migration during development.
+### Model conventions
 
-## Booking integrity and dates
+- **PHP attributes**: Use attributes for model metadata (`#[Fillable(...)]`, `#[Appends(...)]`, `#[ObservedBy(...)]`, `#[Table(...)]`), matching [`User`](../../backend/app/Models/User.php), [`Booking`](../../backend/app/Models/Booking.php), and [`Equipment`](../../backend/app/Models/Equipment.php).
+- **Casts method**: Define model attribute casting in `casts(): array`.
+- **Model pruning**: Use `Prunable` trait and implement `prunable(): Builder`.
 
-Booking creation and approval lock the affected equipment and recheck overlaps with approved bookings inside transactions. Other transitions lock the booking row and apply their own status checks. Preserve these checks when changing booking behavior. An approved booking contributes to the computed `booked` equipment status, except when equipment is marked `maintenance` or `borrowed`. The application does not automatically transition equipment to `borrowed` when a booking time arrives.
+## Concurrency and booking integrity
 
-Booking database columns use timezone-naive `DATETIME` values. The frontend treats input without a timezone as Manila local time; Laravel parses that request under its configured timezone (`APP_TIMEZONE`, falling back to UTC). Eloquent date casts serialize as UTC ISO timestamps ending in `Z`. Format returned values with the API/frontend date helpers; do not slice the UTC timestamp to get a Manila calendar day. The booking migration and [`BookingTest`](../../backend/tests/Feature/Api/V1/BookingTest.php) show these storage and serialization details.
+- **Transactions and locks**: Booking creation, approval, and equipment status updates must execute inside database transactions using `lockForUpdate()` row locks.
+- **Conflict checking**: Use half-open interval overlap in `Booking::scopeOverlapping` (`start_date < requested_end AND end_date > requested_start`) against approved bookings.
+- **Status rules**: Enforce inventory status rules and deletion restrictions defined in the [borrowing lifecycle](../workflows/borrowing-lifecycle.md#equipment-inventory-statuses).
 
-## Events and queued work
+## Timezone handling
 
-Inspect event contracts and observers before changing side effects. Booking and equipment observers broadcast updates; they do not invalidate cache. [`BookingUpdated`](../../backend/app/Events/BookingUpdated.php) dispatches after commit, while [`EquipmentUpdated`](../../backend/app/Events/EquipmentUpdated.php) has a different dispatch contract. A queued mail call means the message was accepted for queuing, not delivered. Keep reminder cache locks and write success markers only after enqueue succeeds so failures can retry.
+- **Database columns**: Timestamps in bookings use timezone-naive `dateTime` SQL columns.
+- **Application timezone**: `APP_TIMEZONE` falls back to `UTC`, and `backend/.env.example` sets `Asia/Manila`.
+- **Serialization**: Eloquent serializes date attributes as UTC ISO 8601 strings ending in `Z`.
+- **Display**: Convert dates to `Asia/Manila` in API resources or frontend helpers. Never slice raw UTC strings to extract local calendar days.
 
-Keep [`routes/console.php`](../../backend/routes/console.php) as the schedule map and put command logic in command classes. Use Eloquent `Prunable` on models that define pruning.
+## Observers, events, and background jobs
 
-## Tests and checks
+- **Observers**: Model observers ([`BookingObserver`](../../backend/app/Observers/BookingObserver.php), [`EquipmentObserver`](../../backend/app/Observers/EquipmentObserver.php), [`UserObserver`](../../backend/app/Observers/UserObserver.php)) broadcast state changes over Reverb; they do not invalidate server caches. `BookingObserver` broadcasts both `BookingUpdated` and `EquipmentUpdated`.
+- **After-commit dispatch**: `BookingUpdated` implements `ShouldDispatchAfterCommit` to broadcast only after successful database commits. `EquipmentUpdated` and `UserUpdated` do not implement `ShouldDispatchAfterCommit` and broadcast immediately.
+- **Queued mail**: Enqueue mail via `Mail::to(...)->queue(...)` using configured transport (such as Brevo API transport). Reminder tasks acquire atomic cache locks and set deduplication markers only after successful dispatch.
+- **Console scheduler**: [`backend/routes/console.php`](../../backend/routes/console.php) is a schedule map. Place business logic in command classes under `app/Console/Commands/`.
 
-Pest feature tests use [`tests/Pest.php`](../../backend/tests/Pest.php), which configures `RefreshDatabase` for Feature tests and defines `fakeImage()`. Put API feature tests under `backend/tests/Feature/Api/V1`; console command tests may live elsewhere under Feature.
+## Testing and verification
 
-From `frontend/`, run `bun run test:backend` for backend tests and `bun run lint:backend` for Pint checks. These commands do not establish production behavior or mail delivery.
+- **Feature tests**: Write Pest PHP tests in `backend/tests/Feature/Api/V1/`.
+- **Setup**: [`backend/tests/Pest.php`](../../backend/tests/Pest.php) configures `RefreshDatabase` and test helpers like `fakeImage()`.
+- **Commands** (run from `frontend/`):
+    - Run backend tests: `bun run test:backend`
+    - Check code style: `bun run lint:backend`
+    - Format code: `bun run format:backend`

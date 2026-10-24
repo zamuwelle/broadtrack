@@ -1,37 +1,64 @@
-# Authentication and User Lifecycle
+# Authentication and user lifecycle
 
-Authentication and account routes are defined in [`backend/routes/api.php`](../../backend/routes/api.php). Protected API routes use Sanctum bearer tokens. The registered user roles are defined in [`UserRole`](../../backend/app/Enums/UserRole.php).
+Broadtrack uses role-based access control and email verification. Authentication routes are configured in [`backend/routes/api.php`](../../backend/routes/api.php) and [`backend/routes/web.php`](../../backend/routes/web.php). API requests use Laravel Sanctum bearer tokens.
 
-Registration, login, forgot-password, and resend-verification requests accept only `@student.laverdad.edu.ph` and `@laverdad.edu.ph` addresses. Registration shares its domain rule through [`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php); the other requests declare the same suffix rule in their Form Requests. Email or code validation failures return 422, and a resend inside the 60-second cooldown returns 429. See [`RegisterRequest`](../../backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php), [`LoginRequest`](../../backend/app/Http/Requests/Api/V1/Auth/LoginRequest.php), [`ForgotPasswordRequest`](../../backend/app/Http/Requests/Api/V1/Auth/ForgotPasswordRequest.php), and [`ResendVerificationRequest`](../../backend/app/Http/Requests/Api/V1/Auth/ResendVerificationRequest.php).
+User roles are defined by [`UserRole`](../../backend/app/Enums/UserRole.php): `borrower`, `admin`, and `sysadmin`.
 
-## Registration and verification
+## Allowed email domains
 
-Registration creates an unverified account and queues a six-digit verification email. Verification codes expire after 15 minutes. An unverified account can register again with the same email; the existing record is updated and its creation time is refreshed. A verification resend has a 60-second cooldown. These rules are implemented in [`AuthController`](../../backend/app/Http/Controllers/Api/V1/Auth/AuthController.php) and [`VerificationController`](../../backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php).
+Accounts are restricted to these email domains:
+
+- Student: `@student.laverdad.edu.ph`
+- Faculty and staff: `@laverdad.edu.ph`
+
+[`HasUserRules`](../../backend/app/Http/Requests/Concerns/HasUserRules.php) supplies the shared `schoolEmailRule()` used by [`RegisterRequest`](../../backend/app/Http/Requests/Api/V1/Auth/RegisterRequest.php) and user management requests ([`StoreUserRequest`](../../backend/app/Http/Requests/Api/V1/StoreUserRequest.php), [`UpdateUserRequest`](../../backend/app/Http/Requests/Api/V1/UpdateUserRequest.php)). [`UpdateProfileRequest`](../../backend/app/Http/Requests/Api/V1/UpdateProfileRequest.php) uses `HasUserRules` for name rules and does not validate email.
+
+The [login](../../backend/app/Http/Requests/Api/V1/Auth/LoginRequest.php), [forgot-password](../../backend/app/Http/Requests/Api/V1/Auth/ForgotPasswordRequest.php), [resend-verification](../../backend/app/Http/Requests/Api/V1/Auth/ResendVerificationRequest.php), and [verify-email](../../backend/app/Http/Requests/Api/V1/Auth/VerifyEmailRequest.php) requests declare the `ends_with:...` domain rule directly rather than sharing it through the trait. Unauthorized domains fail validation with HTTP 422.
+
+## Registration and email verification
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Unverified: Register
-    Unverified --> Unverified: Re-register or resend code
-    Unverified --> Verified: Submit valid code within 15 minutes
-    Unverified --> Pruned: Unverified for 24 hours
-    Verified --> [*]
+    [*] --> Unverified: Submit registration form
+    Unverified --> Unverified: Re-register with same email or request new code
+    Unverified --> Verified: Submit valid 6-digit code within 15 minutes
+    Unverified --> Pruned: Remains unverified after 24 hours
+    Verified --> ActiveSession: Log in with credentials
+    ActiveSession --> LoggedOut: Explicit logout or token pruned
+    LoggedOut --> [*]
     Pruned --> [*]
 ```
 
-[`User::prunable`](../../backend/app/Models/User.php) selects unverified users at least 24 hours old. The daily `model:prune` task runs this model's query. The scheduler is configured in [`routes/console.php`](../../backend/routes/console.php).
+### Verification rules
 
-## Login and tokens
+1. **Registration**: [`AuthController::register`](../../backend/app/Http/Controllers/Api/V1/Auth/AuthController.php) creates an unverified user record (`email_verified_at = null`) and calls [`VerificationController::sendVerification`](../../backend/app/Http/Controllers/Api/V1/Auth/VerificationController.php), which generates a 6-digit numeric code, stores it on the user record, and enqueues the verification email.
+2. **Re-registration**: Submitting an existing unverified email updates account fields, resets `created_at` to `now()`, and issues a new code.
+3. **Expiration**: Codes expire after 15 minutes (HTTP 422).
+4. **Resend cooldown**: `POST /api/v1/resend-verification` enforces a 60-second cooldown based on `verification_sent_at` (HTTP 429).
+5. **Pruning**: Unverified accounts older than 24 hours are removed daily by `model:prune --model=App\Models\User` via [`User::prunable`](../../backend/app/Models/User.php). See [Scheduled tasks](./scheduled-tasks.md).
 
-Login rejects an unverified user and sends another verification code. On successful login, the application deletes the user's existing Sanctum tokens and creates a new `auth-token`. Logout deletes the current token. The configured Sanctum expiration is 24 hours, and the daily `sanctum:prune-expired --hours=24` task removes expired token records according to Sanctum's command behavior.
+## Login and token management
 
-## Password reset
+- **Unverified accounts**: Unverified login attempts return HTTP 403, generate a fresh code, and enqueue a verification email.
+- **One token per user**: Successful login deletes prior Sanctum tokens before creating a new `auth-token`.
+- **Token expiration**: Sanctum tokens expire after 24 hours; daily `sanctum:prune-expired --hours=24` deletes tokens that have been expired for over 24 hours.
+- **Logout**: `POST /api/v1/logout` deletes the current access token.
 
-For a valid email address, forgot-password requests return the same success message whether or not an account exists. For a known email, the controller creates a reset token that expires after 15 minutes and queues a reset email. If queuing throws, the failure is logged and the same success message is returned. Resetting a password deletes all of that user's Sanctum tokens and removes the reset-token record. See [`PasswordResetController`](../../backend/app/Http/Controllers/Api/V1/Auth/PasswordResetController.php).
+## Password reset workflow
 
-When a reset link opens, the frontend checks its email and token with the API. An invalid, expired, or used link opens the existing forgot-password form with a warning; a valid link opens the reset form. The reset request checks the token again before changing the password. If it expires while the form is open, the user returns to the forgot-password form with the same warning.
+1. **Same response for all emails**: `POST /api/v1/forgot-password` returns "Reset link sent to your email." (HTTP 200) whether the email exists or not, preventing enumeration.
+2. **Reset token**: Registered accounts receive a 64-character token in `password_reset_tokens` valid for 15 minutes.
+3. **Token check**: `POST /api/v1/check-reset-token` validates parameters without consuming the token and returns `{ valid: boolean }` inside `data` in the success response. The frontend switches to the forgot-password form if the token is invalid or expired.
+4. **Reset**: `POST /api/v1/reset-password` validates the token, hashes the new password, revokes active Sanctum tokens, and removes the reset token.
 
-## Google OAuth
+## Google OAuth flow
 
-Google sign-in is available through GET routes `/api/v1/auth/google/redirect` and `/api/v1/auth/google/callback`, defined in [`web.php`](../../backend/routes/web.php), rather than in [`api.php`](../../backend/routes/api.php). The login form opens the redirect route in a popup when possible; the frontend reads the callback's redirect parameters and sends the result to the opener. If a popup cannot be opened, the flow continues in the current window. See [`LoginForm.jsx`](../../frontend/web/src/features/auth/components/LoginForm.jsx) and [`auth.js`](../../frontend/web/src/lib/auth.js).
+Google sign-in provides authentication for school accounts:
 
-Socialite uses the backend session to validate OAuth state across the redirect and callback. The callback accepts only the two La Verdad email domains. A new Google account is redirected to the registration form with profile details prefilled; an existing unverified account receives a verification email and is redirected with an error. An existing verified account has its old Sanctum tokens deleted, receives a new token in the redirect URL, and is redirected to the dashboard or equipment page according to role. The frontend stores the token in `localStorage` and removes it from the visible URL. These behaviors are implemented in [`OAuthController`](../../backend/app/Http/Controllers/Api/V1/Auth/OAuthController.php) and [`auth.js`](../../frontend/web/src/lib/auth.js).
+- **Route config**: Defined in [`backend/routes/web.php`](../../backend/routes/web.php) under `/api/v1/auth/google/redirect` and `/api/v1/auth/google/callback` using web session middleware to validate state.
+- **Client flow**: Opens redirect endpoint in popup window, falling back to full-window redirect if blocked.
+- **Domain check**: Verifies Google email ends with `@student.laverdad.edu.ph` or `@laverdad.edu.ph`.
+- **New account**: Redirects to registration form with prefilled query parameters (`firstname`, `lastname`, `email`, `profile_picture`).
+- **Unverified account**: Generates and enqueues a verification code, redirecting with a notice to verify.
+- **Verified account**: Revokes prior tokens, creates new `auth-token`, and redirects to `/dashboard` (admin/sysadmin) or `/equipment` (borrower).
+- **Client token storage**: [`frontend/web/src/lib/auth.js`](../../frontend/web/src/lib/auth.js) saves the token to `localStorage` and removes the token parameter from the address bar.
