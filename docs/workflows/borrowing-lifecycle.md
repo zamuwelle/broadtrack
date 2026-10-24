@@ -1,58 +1,85 @@
-# Borrowing and Equipment Lifecycle
+# Borrowing and equipment lifecycle
 
-Booking states and equipment inventory states are separate. Their current values are defined in [`BookingStatus`](../../backend/app/Enums/BookingStatus.php) and [`EquipmentStatus`](../../backend/app/Enums/EquipmentStatus.php).
+Booking requests and equipment items each have their own lifecycle. They interact during availability checks, approvals, maintenance transitions, and returns.
 
-## Booking states
+Statuses are defined by enums [`BookingStatus`](../../backend/app/Enums/BookingStatus.php) and [`EquipmentStatus`](../../backend/app/Enums/EquipmentStatus.php).
+
+## Booking status lifecycle
 
 ```mermaid
 stateDiagram-v2
     [*] --> Pending: Borrower submits request
-    Pending --> Approved: Admin approves
-    Pending --> Rejected: Admin rejects or equipment enters maintenance
-    Pending --> Cancelled: Borrower/admin cancels or expiry task cancels
-    Approved --> Returned: Admin records return
-    Approved --> Cancelled: Borrower/admin cancels
+    Pending --> Approved: Administrator approves
+    Pending --> Rejected: Administrator rejects or item enters maintenance
+    Pending --> Cancelled: Borrower or administrator cancels, or expiry task cancels
+    Approved --> Returned: Administrator records return
+    Approved --> Cancelled: Borrower or administrator cancels
+    Approved --> Rejected: Item enters maintenance
     Rejected --> [*]
     Cancelled --> [*]
     Returned --> [*]
 ```
 
-The persisted booking statuses are `pending`, `approved`, `rejected`, `returned`, and `cancelled`. There is no persisted `released` state or barcode release transition. `is_overdue` is computed for an approved booking whose end date has passed; it is not a stored booking status. See [`Booking`](../../backend/app/Models/Booking.php) and [`BookingController`](../../backend/app/Http/Controllers/Api/V1/BookingController.php).
+### Booking statuses
 
-| Status      | Meaning                                         |
-| ----------- | ----------------------------------------------- |
-| `pending`   | Waiting for an administrator's decision.        |
-| `approved`  | Approved and included in active booking checks. |
-| `rejected`  | Rejected by an administrator.                   |
-| `returned`  | Return recorded by an administrator.            |
-| `cancelled` | Cancelled by a user or by the expiry task.      |
+| Status        | Value       | Behavior                                                                                                                                                        |
+| :------------ | :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pending**   | `pending`   | Newly submitted request awaiting administrative review. Does not block other borrowers from requesting the same item during overlapping periods.                |
+| **Approved**  | `approved`  | Confirmed reservation. Actively reserves the equipment item for the scheduled interval and blocks overlapping requests.                                         |
+| **Rejected**  | `rejected`  | Declined by an administrator or automatically rejected when an equipment item transitions into maintenance.                                                     |
+| **Returned**  | `returned`  | Recorded by an administrator upon physical return of the equipment. Records `return_date` and the administrator identity.                                       |
+| **Cancelled** | `cancelled` | Revoked by the borrower, cancelled by an administrator, or automatically cancelled by the per-minute expiration task when the end date passes without approval. |
 
-## Equipment states
+> [!IMPORTANT]
+> The database schema does not define a `released` booking status or barcode release transition. Equipment remains in the `approved` state throughout the reservation period until marked as `returned`, `rejected`, or `cancelled`.
+>
+> The `is_overdue` indicator is computed at runtime on approved bookings past their `end_date`. It is not a database column.
 
-Equipment status values are `available`, `booked`, `borrowed`, and `maintenance`. [`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) preserves items marked as `maintenance` or `borrowed`; for other items, it reports `booked` when at least one approved booking is attached. This resolved status is returned by the equipment API and does not itself update the stored equipment status. Returning a booking changes its booking status and return fields; it does not directly overwrite equipment status.
+## Equipment inventory statuses
 
-The live inventory status dropdown and [`EquipmentController::update`](../../backend/app/Http/Controllers/Api/V1/EquipmentController.php) enforce the following transition rules:
+| Status          | Value         | Rules                                                                                                                                                                                                       |
+| :-------------- | :------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Available**   | `available`   | Ready for reservations. Setting status directly to available while active approved bookings exist returns HTTP 422.                                                                                         |
+| **Booked**      | `booked`      | Computed status shown when an item has one or more approved reservations. Setting an item to booked manually without an approved booking returns HTTP 422.                                                  |
+| **Borrowed**    | `borrowed`    | Equipment checked out for long-term departmental use or special events. Setting status to borrowed while booked returns HTTP 422. New bookings and approvals are blocked while borrowed.                    |
+| **Maintenance** | `maintenance` | Equipment under inspection or repair. Switching an item to maintenance automatically transitions attached `pending` and `approved` bookings to `rejected` with the reason "Equipment is under maintenance." |
 
-- **Available**: Indicates the equipment is free for reservations. An item that is currently booked cannot be set directly to available; the backend returns a 422 error (`Cannot change status while equipment is currently booked.`).
-- **Booked**: Resolved by the equipment API when an item has an approved booking. Manually setting status to booked without an approved booking is rejected with a 422 error (`Equipment can only be marked as booked through an approved booking.`). The booking form can still offer booked equipment when the requested interval does not overlap the approved reservation; the server checks availability for the requested dates.
-- **Borrowed**: Marks equipment in physical possession outside the normal reservation cycle. Setting status to borrowed while an item is currently booked is rejected with a 422 error. While marked borrowed, new booking submissions and approvals for this item are blocked.
-- **Maintenance**: Marks equipment undergoing inspection, repair, or servicing. When switched to maintenance, the backend automatically transitions all attached `pending` and `approved` bookings to `rejected` with the rejection reason `Equipment is under maintenance.` Booking updates are broadcast to connected clients.
+### How status is resolved
 
-Maintenance and borrowed equipment are excluded from availability. Availability checks are repeated while booking transitions run in a transaction with equipment locks; preserve these checks when changing booking logic.
+[`Equipment::resolveStatuses`](../../backend/app/Models/Equipment.php) calculates availability for API responses:
 
-## Request validation and dates
+1. Items explicitly set to `maintenance` or `borrowed` retain their stored status.
+2. If at least one active approved booking exists, the item is reported as `booked`.
+3. If no approved bookings exist, the stored status (typically `available`) is returned.
 
-[`StoreBookingRequest`](../../backend/app/Http/Requests/Api/V1/StoreBookingRequest.php) validates the requested equipment and dates. The start must be at or after the current minute; earlier minutes are rejected. The server checks conflicts against approved bookings. The request stores timezone-naive `DATETIME` values, so the database values are not inherently UTC. Eloquent serializes date casts as UTC ISO timestamps; do not derive a Manila calendar date by slicing that timestamp. The API resource formats date labels in `Asia/Manila`, and the frontend uses [`frontend/shared/util/date.js`](../../frontend/shared/util/date.js) to parse and display booking dates consistently.
+Marking a booking returned (`status = returned`, `return_date = now()`) lets the item show as available without changing the stored equipment status column.
 
-The request summary uses [`useBookingDateDefaults`](../../frontend/web/src/features/borrow/request/useBookingDateDefaults.js). While open, an automatic start follows the current minute and an automatic end is set to the next full hour (for example, 3:08 becomes 4:00). Manually selected dates are preserved while editing; closing and reopening resets the automatic defaults. There is no fixed school-hours restriction.
+## Request validation and time handling
 
-## Booking integrity
+[`StoreBookingRequest`](../../backend/app/Http/Requests/Api/V1/StoreBookingRequest.php) validates booking requests:
 
-- A booking request needs at least one equipment item.
-- A request with multiple equipment IDs creates one booking per item in the same database transaction, so each item has its own ticket and lifecycle.
-- Equipment conflict checks use approved bookings and half-open intervals: an existing booking conflicts when its start is before the requested end and its end is after the requested start. Pending requests do not reserve equipment.
-- Borrowers can cancel their own pending or approved bookings; admins can cancel any pending or approved booking. Other statuses cannot be cancelled through this route.
-- Approval rechecks availability under transaction locks. Do not remove the lock or conflict recheck when changing transitions.
-- Equipment with booking history cannot be deleted, preserving transaction records.
+- **Start time**: Must be greater than or equal to the current minute (`after_or_equal:now()->startOfMinute()`).
+- **End time**: Must occur after `start_date`.
+- **Timezone handling**: User-facing labels and calendar values are formatted in `Asia/Manila` by [`BookingResource`](../../backend/app/Http/Resources/Api/V1/BookingResource.php) and frontend date helpers. See [Timezone handling](../reference/backend-conventions.md#timezone-handling) for storage format and serialization conventions.
+- **Client defaults**: [`useBookingDateDefaults`](../../frontend/web/src/features/borrow/request/useBookingDateDefaults.js) sets dynamic defaults: start time tracks the current minute, while end time defaults to the next full hour.
 
-The model observers broadcast booking and equipment updates. [`BookingUpdated`](../../backend/app/Events/BookingUpdated.php) dispatches after commit; [`EquipmentUpdated`](../../backend/app/Events/EquipmentUpdated.php) broadcasts immediately. These observers do not invalidate frontend query caches; the web client handles its own query invalidation and WebSocket refresh behavior.
+## Concurrency and booking integrity
+
+1. **Multi-item requests**: Submitting multiple equipment IDs creates one distinct booking row per item inside a database transaction. Each item receives its own ticket ID.
+2. **Conflict detection**: Half-open interval query against approved bookings:
+    ```text
+    existing.start_date < requested_end AND existing.end_date > requested_start
+    ```
+    Pending requests do not reserve equipment or block overlapping requests.
+3. **Row locks**:
+    - Booking creation locks equipment rows with `lockForUpdate()` while verifying status and overlapping approved bookings.
+    - Administrative approval locks equipment and booking rows inside a database transaction, re-checking conflicts before approving.
+4. **Cancellation permissions**: Borrowers can cancel their own `pending` or `approved` bookings. Administrators can cancel any `pending` or `approved` booking. `rejected`, `returned`, and `cancelled` bookings cannot be cancelled.
+5. **Rejection permissions**: Administrators can reject `pending` or `approved` bookings. Transitioning equipment to maintenance automatically rejects attached `pending` and `approved` bookings.
+6. **Deletion protection**: Equipment with booking history cannot be deleted (`EquipmentController::destroy` returns HTTP 422).
+
+## Real-time synchronization
+
+- [`BookingObserver`](../../backend/app/Observers/BookingObserver.php) dispatches [`BookingUpdated`](../../backend/app/Events/BookingUpdated.php) on public channel `bookings` (`booking.changed`) after transaction commit. It also dispatches [`EquipmentUpdated`](../../backend/app/Events/EquipmentUpdated.php). [`BookingUpdated`](../../backend/app/Events/BookingUpdated.php) implements `ShouldDispatchAfterCommit`.
+- [`EquipmentObserver`](../../backend/app/Observers/EquipmentObserver.php) dispatches [`EquipmentUpdated`](../../backend/app/Events/EquipmentUpdated.php) on public channel `equipment` (`equipment.changed`) immediately (does not implement `ShouldDispatchAfterCommit`).
+- The web hook [`useEvents`](../../frontend/web/src/hooks/queries/useEvents.js) listens on `bookings`, `equipment`, and `users` public channels and invalidates TanStack Query keys. See [Event subscriptions](../reference/frontend-conventions.md#real-time-synchronization) and [Observers, events, and background jobs](../reference/backend-conventions.md#observers-events-and-background-jobs).

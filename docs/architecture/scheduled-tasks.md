@@ -1,36 +1,65 @@
-# Scheduled Tasks and Console Commands
+# Scheduled tasks
 
-[`backend/routes/console.php`](../../backend/routes/console.php) maps scheduled commands. The application scheduler must be run by the deployment environment; this repository does not establish that production is running it.
+Laravel console commands in [`backend/routes/console.php`](../../backend/routes/console.php) automate request expiration, return reminder emails, token pruning, and unverified account cleanup.
 
-| Command                               | Schedule                    | Effect                                                                                             |
-| ------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
-| `bookings:cancel-expired`             | Every minute, `Asia/Manila` | Cancels pending bookings whose `end_date` is before the current time and records an expiry reason. |
-| `reminders:send-return-due-emails`    | Daily, `Asia/Manila`        | Enqueues due-soon and overdue return reminders for approved, unreturned bookings.                  |
-| `sanctum:prune-expired --hours=24`    | Daily, `Asia/Manila`        | Prunes expired Sanctum tokens using Laravel's command.                                             |
-| `model:prune --model=App\Models\User` | Daily, `Asia/Manila`        | Runs the user model's pruning query for unverified accounts.                                       |
+Scheduled commands run in the `Asia/Manila` timezone.
 
-## Pending booking expiry
+## Schedule map
 
-[`CancelExpiredPendingBookingsCommand`](../../backend/app/Console/Commands/CancelExpiredPendingBookingsCommand.php) selects `pending` bookings with `end_date < now()`. It changes the status to `cancelled`, records `Auto-cancelled: Request expired without approval` in `rejection_reason`, and clears the read flag. It runs every minute, rather than once a day.
+| Command                               | Schedule     | Timezone      | Description                                                                                           | Source                                                                                                              |
+| :------------------------------------ | :----------- | :------------ | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| `bookings:cancel-expired`             | Every minute | `Asia/Manila` | Cancels pending requests whose requested end time has passed.                                         | [`CancelExpiredPendingBookingsCommand`](../../backend/app/Console/Commands/CancelExpiredPendingBookingsCommand.php) |
+| `reminders:send-return-due-emails`    | Daily        | `Asia/Manila` | Sends reminder emails for approved bookings not yet returned that are due within 24 hours or overdue. | [`SendReturnDueEmailRemindersCommand`](../../backend/app/Console/Commands/SendReturnDueEmailRemindersCommand.php)   |
+| `sanctum:prune-expired --hours=24`    | Daily        | `Asia/Manila` | Deletes personal access tokens expired for over 24 hours.                                             | Laravel Sanctum                                                                                                     |
+| `model:prune --model=App\Models\User` | Daily        | `Asia/Manila` | Deletes unverified user accounts created at least 24 hours ago.                                       | [`User::prunable`](../../backend/app/Models/User.php)                                                               |
 
-Run it manually with:
+## Pending booking expiration
+
+[`CancelExpiredPendingBookingsCommand`](../../backend/app/Console/Commands/CancelExpiredPendingBookingsCommand.php) runs every minute:
+
+1. Queries bookings where `status = BookingStatus::Pending` and `end_date < now()`.
+2. Sets `status = BookingStatus::Cancelled`.
+3. Sets `rejection_reason = 'Auto-cancelled: Request expired without approval'`.
+4. Sets `isRead = false` so the borrower receives an unread status alert.
+
+Run manually:
 
 ```bash
-cd backend
 php artisan bookings:cancel-expired
 ```
 
-## Return reminders
+## Return reminders and overdue alerts
 
-[`SendReturnDueEmailRemindersCommand`](../../backend/app/Console/Commands/SendReturnDueEmailRemindersCommand.php) handles approved bookings with no `return_date`. A due-soon reminder applies when `end_date` is from now through the next 24 hours. An overdue reminder applies when `end_date` is before now. The command uses cache locks and markers to avoid duplicate enqueues; the marker is written only after the queue call succeeds, so a failed enqueue can be retried. The daily schedule does not guarantee delivery exactly once per calendar day. A queued message has been accepted by the queue, not necessarily delivered to the borrower.
+[`SendReturnDueEmailRemindersCommand`](../../backend/app/Console/Commands/SendReturnDueEmailRemindersCommand.php) inspects approved bookings where `return_date` is null:
 
-Run it manually with:
+1. **Due-soon reminders**: Matches bookings ending within the next 24 hours (`now()` to `now()->addHours(24)`).
+    - Acquires a 30-second atomic cache lock (`booking_reminder_{$id}_near_deadline_lock`).
+    - Checks for a 14-day deduplication marker (`booking_reminder_{$id}_near_deadline`).
+    - Enqueues [`EquipmentReturnReminderMail`](../../backend/app/Mail/EquipmentReturnReminderMail.php) with reminder type `near_deadline`.
+    - Stores the 14-day marker on successful enqueue.
+2. **Overdue alerts**: Matches bookings past their `end_date` (`end_date < now()`).
+    - Acquires a 30-second atomic cache lock (`booking_reminder_{$id}_overdue_{date}_lock`).
+    - Checks for a date-specific daily marker (`booking_reminder_{$id}_overdue_{YYYY-MM-DD}`).
+    - Calculates overdue days and enqueues [`EquipmentReturnReminderMail`](../../backend/app/Mail/EquipmentReturnReminderMail.php) with reminder type `overdue`.
+    - Stores the daily marker on successful enqueue to limit alerts to one per calendar day.
+
+> [!IMPORTANT]
+> Queuing sends the job to the configured queue connection (`QUEUE_CONNECTION`, defaulting to `database`). It means the background job was dispatched, not that the email was delivered.
+
+Run manually:
 
 ```bash
-cd backend
 php artisan reminders:send-return-due-emails
 ```
 
-## Pruning
+## Database pruning tasks
 
-Unverified-user pruning is defined by [`User::prunable`](../../backend/app/Models/User.php). It selects users with no `email_verified_at` whose `created_at` is at least 24 hours old. Laravel's `model:prune` command runs daily for this model. Sanctum token pruning also runs daily with a 24-hour grace argument; refer to Laravel Sanctum behavior for the exact deletion cutoff.
+1. **Unverified accounts**: [`User::prunable`](../../backend/app/Models/User.php) matches records where `email_verified_at` is null and `created_at <= now()->subHours(24)`. Daily `model:prune --model=App\Models\User` deletes them.
+2. **Sanctum tokens**: Daily `sanctum:prune-expired --hours=24` removes expired tokens from `personal_access_tokens`.
+
+## Deployment requirements
+
+Tasks in [`backend/routes/console.php`](../../backend/routes/console.php) require an active scheduler runner:
+
+- Local development: `bun run dev` starts `php artisan schedule:work`.
+- Container configuration: The container entrypoint in [`backend/entrypoint.sh`](../../backend/entrypoint.sh) runs `php artisan schedule:work` in the background. External environments can alternatively invoke `php artisan schedule:run` every minute via cron.
