@@ -3,7 +3,10 @@ import { Icon as IconComponent } from '@/components/ui/Icon'
 import { useToggle } from '@/hooks/ui/useToggle'
 import { cn } from 'cn'
 
-const openStyle = Object.freeze({ borderTopLeftRadius: 0, borderTopRightRadius: 0 })
+const openStyle = Object.freeze({
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0
+})
 const emptyStyle = Object.freeze({})
 const defaultOptions = Object.freeze([])
 

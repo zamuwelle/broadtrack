@@ -15,11 +15,15 @@ describe('approve booking mutation', () => {
         await expect(approveBooking({ bookingId: 7, data: { starts_at: '2026-10-26T09:00' } })).resolves.toEqual({
             data: { id: 7, status: 'approved' }
         })
-        expect(api.put).toHaveBeenCalledWith('/bookings/7/approve', { starts_at: '2026-10-26T09:00' })
+        expect(api.put).toHaveBeenCalledWith('/bookings/7/approve', {
+            starts_at: '2026-10-26T09:00'
+        })
     })
 
     it('invalidates booking and equipment queries after approval', async () => {
-        const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { mutations: { retry: false } }
+        })
         const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
         api.put.mockResolvedValue({ data: { id: 7 } })
         const { result } = renderHook(() => useApproveBooking(), {

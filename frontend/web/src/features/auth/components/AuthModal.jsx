@@ -92,7 +92,11 @@ export const AuthModal = ({
             return
         }
         if (resetLink.isError || (resetLink.isSuccess && !resetLink.data)) {
-            updateAuthState({ tab: 'forgot', error: '', form: { ...initialFormState } })
+            updateAuthState({
+                tab: 'forgot',
+                error: '',
+                form: { ...initialFormState }
+            })
             showToast(
                 resetLink.isError
                     ? 'Could not check the reset link. Please try again.'

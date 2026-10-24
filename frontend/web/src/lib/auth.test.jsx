@@ -57,7 +57,10 @@ describe('auth session and user fetching', () => {
     it('clears auth token and query cache with clearAuthSession', () => {
         globalThis.localStorage.setItem('auth_token', 'active-token')
         const queryClient = new QueryClient()
-        queryClient.setQueryData(['me'], { id: 42, email: 'user@student.laverdad.edu.ph' })
+        queryClient.setQueryData(['me'], {
+            id: 42,
+            email: 'user@student.laverdad.edu.ph'
+        })
         queryClient.setQueryData(['equipment'], [{ id: 1 }])
 
         clearAuthSession(queryClient)

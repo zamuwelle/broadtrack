@@ -9,12 +9,42 @@ import member5 from '@/assets/teams/member-5.webp'
 import member6 from '@/assets/teams/member-6.webp'
 
 const members = Object.freeze([
-    { name: 'Ydrey Ann Ramirez', role: 'UI/UX Designer', image: member1, scale: 'scale-125' },
-    { name: 'Anne Stephanne Buenaflor', role: 'Business Analyst', image: member2, scale: 'scale-125' },
-    { name: 'Rocelyn Lava', role: 'Project Manager', image: member3, scale: 'scale-125' },
-    { name: 'Luisa Padillon', role: 'UI/UX Designer', image: member4, scale: 'scale-150 translate-y-1' },
-    { name: 'Karl Ashton Mahusay', role: 'Quality Assurance', image: member5, scale: 'scale-100' },
-    { name: 'Samuel Binos', role: 'Full-Stack Developer', image: member6, scale: 'scale-125' }
+    {
+        name: 'Ydrey Ann Ramirez',
+        role: 'UI/UX Designer',
+        image: member1,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Anne Stephanne Buenaflor',
+        role: 'Business Analyst',
+        image: member2,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Rocelyn Lava',
+        role: 'Project Manager',
+        image: member3,
+        scale: 'scale-125'
+    },
+    {
+        name: 'Luisa Padillon',
+        role: 'UI/UX Designer',
+        image: member4,
+        scale: 'scale-150 translate-y-1'
+    },
+    {
+        name: 'Karl Ashton Mahusay',
+        role: 'Quality Assurance',
+        image: member5,
+        scale: 'scale-100'
+    },
+    {
+        name: 'Samuel Binos',
+        role: 'Full-Stack Developer',
+        image: member6,
+        scale: 'scale-125'
+    }
 ])
 
 export const Teams = () => {
@@ -63,7 +93,10 @@ export const Teams = () => {
                                     alt=""
                                     loading="lazy"
                                     draggable={false}
-                                    className={cn('w-full h-full select-none object-cover object-top origin-top', member.scale)}
+                                    className={cn(
+                                        'w-full h-full select-none object-cover object-top origin-top',
+                                        member.scale
+                                    )}
                                 />
                             </div>
                             <p className="relative z-10 text-primary text-[15px] lg:text-[16px] font-bold uppercase leading-snug mt-6 min-h-[44px] flex items-start justify-center">

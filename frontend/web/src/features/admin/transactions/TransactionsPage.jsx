@@ -109,10 +109,13 @@ export const TransactionsPage = (props) => {
         (newCategory) => {
             updatePageState({ selectedCategory: newCategory })
             if (searchParams.has('category')) {
-                setSearchParams((params) => {
-                    params.delete('category')
-                    return params
-                }, { replace: true })
+                setSearchParams(
+                    (params) => {
+                        params.delete('category')
+                        return params
+                    },
+                    { replace: true }
+                )
             }
         },
         [searchParams, setSearchParams, updatePageState]

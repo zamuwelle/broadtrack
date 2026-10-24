@@ -45,7 +45,7 @@ export const BookingCardItem = ({ booking = defaultBooking }) => {
                     </div>
                     <div
                         className={cn(
-                            "h-6 px-1.5 py-1 rounded-xl inline-flex justify-center items-center gap-2.5 shrink-0",
+                            'h-6 px-1.5 py-1 rounded-xl inline-flex justify-center items-center gap-2.5 shrink-0',
                             {
                                 'bg-green-500': isActive,
                                 'bg-amber-500': !isActive

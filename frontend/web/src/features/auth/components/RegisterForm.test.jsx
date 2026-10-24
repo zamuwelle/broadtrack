@@ -2,7 +2,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vite-plus/test'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
 
-const initialForm = { firstname: '', lastname: '', email: '', department: '', password: '' }
+const initialForm = {
+    firstname: '',
+    lastname: '',
+    email: '',
+    department: '',
+    password: ''
+}
 
 describe('RegisterForm', () => {
     it('blocks submission while required fields are invalid', () => {

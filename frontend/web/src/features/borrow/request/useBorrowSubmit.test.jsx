@@ -5,15 +5,21 @@ import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStor
 
 const { submitBooking } = vi.hoisted(() => ({ submitBooking: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ useUser: () => ({ data: { id: 1 } }) }))
-vi.mock('@/features/bookings/api/get-bookings', () => ({ useBookings: () => ({ data: [] }) }))
-vi.mock('@/features/bookings/api/create-booking', () => ({ useCreateBooking: () => ({ mutateAsync: submitBooking }) }))
+vi.mock('@/features/bookings/api/get-bookings', () => ({
+    useBookings: () => ({ data: [] })
+}))
+vi.mock('@/features/bookings/api/create-booking', () => ({
+    useCreateBooking: () => ({ mutateAsync: submitBooking })
+}))
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ show: vi.fn() }) }))
 
 beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-10-26T10:00:00+08:00'))
     submitBooking.mockReset()
-    useBookingCartStore.setState({ items: [{ id: 42, name: 'Camera', status: 'available' }] })
+    useBookingCartStore.setState({
+        items: [{ id: 42, name: 'Camera', status: 'available' }]
+    })
 })
 
 afterEach(() => {

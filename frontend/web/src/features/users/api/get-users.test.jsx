@@ -18,7 +18,9 @@ describe('user queries', () => {
 
     it('exposes fetched users through the query hook', async () => {
         api.get.mockResolvedValue({ data: [{ id: 2, full_name: 'Juan Cruz' }] })
-        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        const queryClient = new QueryClient({
+            defaultOptions: { queries: { retry: false } }
+        })
         const { result } = renderHook(() => useUsers(), {
             wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         })

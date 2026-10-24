@@ -36,7 +36,10 @@ const computeMinStartDate = (remoteBookings, selectedItems, minimumDateTime) => 
         }
     }
     const latestActiveEndDate = activeItemEndDates
-        .map((dateValue) => ({ dateValue, timestamp: parseBookingDate(dateValue)?.getTime() }))
+        .map((dateValue) => ({
+            dateValue,
+            timestamp: parseBookingDate(dateValue)?.getTime()
+        }))
         .filter(({ timestamp }) => Number.isFinite(timestamp))
         .toSorted((first, second) => second.timestamp - first.timestamp)[0]?.dateValue
     const latestTime = latestActiveEndDate ? getBookingDateTimeValue(latestActiveEndDate) : ''
@@ -52,7 +55,10 @@ const computeExcludeDateIntervals = (remoteBookings, selectedItems) =>
                 item.start_date &&
                 item.end_date
         )
-        .map((item) => ({ start: new Date(item.start_date), end: new Date(item.end_date) }))
+        .map((item) => ({
+            start: new Date(item.start_date),
+            end: new Date(item.end_date)
+        }))
 
 const isSameDayBooking = (booking, targetDateKey) => {
     const startKey = getBookingDateKey(booking.start_date)
@@ -217,7 +223,12 @@ const useBorrowFieldHandlers = ({
         [updateSummaryState]
     )
 
-    return { handleStartDateChange, handleEndDateChange, handleRemoveItem, handlePurposeChange }
+    return {
+        handleStartDateChange,
+        handleEndDateChange,
+        handleRemoveItem,
+        handlePurposeChange
+    }
 }
 
 export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
@@ -269,7 +280,14 @@ export const useBorrowSummaryLogic = ({ isOpen, propUser }) => {
     )
 
     const { hasStartConflict, hasEndConflict, hasScheduleConflict, conflictMessage, conflictMessages } = useMemo(
-        () => checkDateConflictBreakdown({ startDate, endDate, remoteBookings, selectedItems, minStartDate }),
+        () =>
+            checkDateConflictBreakdown({
+                startDate,
+                endDate,
+                remoteBookings,
+                selectedItems,
+                minStartDate
+            }),
         [startDate, endDate, remoteBookings, selectedItems, minStartDate]
     )
 

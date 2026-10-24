@@ -95,7 +95,10 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
                 })
                 reset(getDefaultValues(user))
                 setError('')
-                onSuccess({ firstname: values.firstname.trim(), lastname: values.lastname.trim() })
+                onSuccess({
+                    firstname: values.firstname.trim(),
+                    lastname: values.lastname.trim()
+                })
                 onClose()
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}

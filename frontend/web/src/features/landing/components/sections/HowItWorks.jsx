@@ -70,7 +70,10 @@ export const HowItWorks = () => (
                 {procedures.map((step) => (
                     <div
                         key={step.number}
-                        className={cn('flex flex-col items-center gap-2 w-full max-w-[340px]', gridPositions[step.number])}>
+                        className={cn(
+                            'flex flex-col items-center gap-2 w-full max-w-[340px]',
+                            gridPositions[step.number]
+                        )}>
                         <div className="w-[80px] h-[80px] flex items-center justify-center rounded-full bg-primary shadow-procedure">
                             <span className="text-surface text-[24px] font-semibold">{step.number}</span>
                         </div>

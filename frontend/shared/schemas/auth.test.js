@@ -9,7 +9,9 @@ describe('auth schemas', () => {
     })
 
     it('rejects non-La Verdad email addresses', () => {
-        const result = forgotPasswordSchema.safeParse({ email: 'person@example.com' })
+        const result = forgotPasswordSchema.safeParse({
+            email: 'person@example.com'
+        })
 
         expect(result.success).toBe(false)
         expect(result.error.issues[0].message).toBe('Only La Verdad emails allowed')

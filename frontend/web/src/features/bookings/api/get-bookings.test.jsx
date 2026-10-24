@@ -9,7 +9,9 @@ vi.mock('@/lib/api-client', () => ({
 }))
 
 const QueryWrapper = ({ children }) => {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    })
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 
@@ -18,7 +20,9 @@ describe('booking queries', () => {
         api.get.mockResolvedValue({ data: [{ id: 1 }] })
 
         await expect(getBookings({ status: 'pending' })).resolves.toEqual([{ id: 1 }])
-        expect(api.get).toHaveBeenCalledWith('/bookings', { params: { status: 'pending' } })
+        expect(api.get).toHaveBeenCalledWith('/bookings', {
+            params: { status: 'pending' }
+        })
     })
 
     it('keeps the base query key when no params are supplied', () => {
@@ -29,7 +33,9 @@ describe('booking queries', () => {
     it('exposes fetched bookings through the query hook', async () => {
         api.get.mockResolvedValue({ data: [{ id: 2 }] })
 
-        const { result } = renderHook(() => useBookings(), { wrapper: QueryWrapper })
+        const { result } = renderHook(() => useBookings(), {
+            wrapper: QueryWrapper
+        })
 
         await waitFor(() => expect(result.current.data).toEqual([{ id: 2 }]))
     })

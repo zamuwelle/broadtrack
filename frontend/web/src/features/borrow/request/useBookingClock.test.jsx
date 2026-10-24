@@ -4,8 +4,12 @@ import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummar
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 
 vi.mock('@/lib/auth', () => ({ useUser: () => ({}) }))
-vi.mock('@/features/bookings/api/get-bookings', () => ({ useBookings: () => ({ data: [] }) }))
-vi.mock('@/features/bookings/api/create-booking', () => ({ useCreateBooking: () => ({ isPending: false }) }))
+vi.mock('@/features/bookings/api/get-bookings', () => ({
+    useBookings: () => ({ data: [] })
+}))
+vi.mock('@/features/bookings/api/create-booking', () => ({
+    useCreateBooking: () => ({ isPending: false })
+}))
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ show: vi.fn() }) }))
 
 afterEach(() => {
@@ -16,7 +20,9 @@ afterEach(() => {
 it('does not show a conflict while automatic dates update at the next minute', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-10-26T10:00:59+08:00'))
-    useBookingCartStore.setState({ items: [{ id: 42, name: 'Camera', status: 'available' }] })
+    useBookingCartStore.setState({
+        items: [{ id: 42, name: 'Camera', status: 'available' }]
+    })
     const renders = []
     const { result } = renderHook(() => {
         const state = useBorrowSummaryLogic({ isOpen: true })
@@ -32,7 +38,9 @@ it('does not show a conflict while automatic dates update at the next minute', (
 it('still marks a manually chosen start time when it becomes past', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-10-26T10:00:59+08:00'))
-    useBookingCartStore.setState({ items: [{ id: 42, name: 'Camera', status: 'available' }] })
+    useBookingCartStore.setState({
+        items: [{ id: 42, name: 'Camera', status: 'available' }]
+    })
     const { result } = renderHook(() => useBorrowSummaryLogic({ isOpen: true }))
     act(() => result.current.handleStartDateChange('2026-10-26T10:00'))
     act(() => vi.advanceTimersByTime(1000))

@@ -4,7 +4,9 @@ import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummar
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 
 vi.mock('@/lib/auth', () => ({ useUser: () => ({}) }))
-vi.mock('@/features/bookings/api/create-booking', () => ({ useCreateBooking: () => ({ isPending: false }) }))
+vi.mock('@/features/bookings/api/create-booking', () => ({
+    useCreateBooking: () => ({ isPending: false })
+}))
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ show: vi.fn() }) }))
 vi.mock('@/features/bookings/api/get-bookings', () => ({
     useBookings: () => ({

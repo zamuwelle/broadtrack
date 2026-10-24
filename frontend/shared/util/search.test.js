@@ -12,7 +12,10 @@ describe('search helpers', () => {
             id: 42,
             ticket_id: 'BT-42',
             purpose: 'Student documentary',
-            user: { full_name: 'Maria Santos', email: 'maria@student.laverdad.edu.ph' },
+            user: {
+                full_name: 'Maria Santos',
+                email: 'maria@student.laverdad.edu.ph'
+            },
             equipments: [{ name: 'Camera', model: 'M50', serial_no: 'CAM-1', brand: 'Canon' }]
         }
 

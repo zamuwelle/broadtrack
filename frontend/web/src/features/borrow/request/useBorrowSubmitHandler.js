@@ -40,7 +40,12 @@ export const useBorrowSubmitHandler = ({
                 end_date: endDate
             })
             if (session === summarySession.current) {
-                updateSummaryState({ modalView: 'submitted', startDate: '', endDate: '', purpose: '' })
+                updateSummaryState({
+                    modalView: 'submitted',
+                    startDate: '',
+                    endDate: '',
+                    purpose: ''
+                })
             }
             removeSubmittedItems(selectedItems)
         } catch (submitError) {

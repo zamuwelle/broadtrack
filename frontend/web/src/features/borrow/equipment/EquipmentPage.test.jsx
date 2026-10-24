@@ -5,8 +5,20 @@ import { EquipmentPage } from '@/features/borrow/equipment/EquipmentPage'
 vi.mock('@/features/equipment/api/get-equipment', () => ({
     useEquipment: () => ({
         data: [
-            { id: 1, name: 'Canon Camera', brand: 'Canon', model: 'M50', category: 'Camera' },
-            { id: 2, name: 'Studio Tripod', brand: 'Manfrotto', model: 'Tripod', category: 'Support' }
+            {
+                id: 1,
+                name: 'Canon Camera',
+                brand: 'Canon',
+                model: 'M50',
+                category: 'Camera'
+            },
+            {
+                id: 2,
+                name: 'Studio Tripod',
+                brand: 'Manfrotto',
+                model: 'Tripod',
+                category: 'Support'
+            }
         ],
         isLoading: false,
         isError: false

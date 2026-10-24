@@ -100,7 +100,9 @@ const useCalendarPageLogic = () => {
     const { currentMonthDate, selectedDate, selectedEquipmentName } = calendarState
 
     const { data: equipmentList = defaultEmptyArray } = useEquipment()
-    const { data: remoteBookings = defaultEmptyArray } = useBookings({ params: filterParams })
+    const { data: remoteBookings = defaultEmptyArray } = useBookings({
+        params: filterParams
+    })
 
     const normalizedBookings = useMemo(() => normalizeBookings(remoteBookings), [remoteBookings])
 

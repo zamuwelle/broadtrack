@@ -35,7 +35,8 @@ export const EQUIPMENT_STATUS_CONFIRMATION = Object.freeze({
     },
     borrowed: {
         title: 'Mark as borrowed?',
-        description: 'This item will be used for an event or another purpose, so new requests and approvals are blocked.'
+        description:
+            'This item will be used for an event or another purpose, so new requests and approvals are blocked.'
     },
     maintenance: {
         title: 'Mark for maintenance?',

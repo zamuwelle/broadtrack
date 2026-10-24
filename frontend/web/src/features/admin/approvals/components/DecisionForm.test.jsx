@@ -17,7 +17,9 @@ const props = {
 describe('DecisionForm', () => {
     it('requires pickup notes before approval', () => {
         const { rerender } = render(<DecisionForm {...props} isApprove />)
-        const note = screen.getByRole('textbox', { name: /Pickup Location \/ Cabinet Notes/u })
+        const note = screen.getByRole('textbox', {
+            name: /Pickup Location \/ Cabinet Notes/u
+        })
 
         expect(note).toBeRequired()
         expect(screen.getByText(/October 30, 2026, 2:00 PM/u)).toBeInTheDocument()

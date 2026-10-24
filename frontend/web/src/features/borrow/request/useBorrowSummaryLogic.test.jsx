@@ -27,7 +27,15 @@ describe('useBorrowSummaryLogic', () => {
         vi.setSystemTime(new Date('2026-10-26T10:00:00+08:00'))
         currentMockBookings = []
         useBookingCartStore.setState({
-            items: [{ id: 42, name: 'Sony FX3', brand: 'Sony', model: 'FX3', status: 'available' }]
+            items: [
+                {
+                    id: 42,
+                    name: 'Sony FX3',
+                    brand: 'Sony',
+                    model: 'FX3',
+                    status: 'available'
+                }
+            ]
         })
     })
 

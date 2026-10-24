@@ -63,7 +63,8 @@ export const DecisionForm = (props) => {
                 <label htmlFor="decision-note" className="text-xs font-semibold text-slate-700">
                     {isApprove ? (
                         <>
-                            Pickup Location / Cabinet Notes<span className="ml-1 text-danger">*</span>
+                            Pickup Location / Cabinet Notes
+                            <span className="ml-1 text-danger">*</span>
                         </>
                     ) : (
                         <>

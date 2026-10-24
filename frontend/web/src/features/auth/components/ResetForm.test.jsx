@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vite-plus/test'
 import { ResetForm } from '@/features/auth/components/ResetForm'
 
-const initialForm = { token: 'reset-token', email: 'student@student.laverdad.edu.ph' }
+const initialForm = {
+    token: 'reset-token',
+    email: 'student@student.laverdad.edu.ph'
+}
 
 describe('ResetForm', () => {
     it('shows a mismatch error and does not submit different passwords', async () => {

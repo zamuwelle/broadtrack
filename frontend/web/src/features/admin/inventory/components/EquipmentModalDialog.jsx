@@ -29,7 +29,11 @@ const useImageChange = (equipment, updateFormState) =>
             if (selectedFile) {
                 const imageError = getImageError(selectedFile)
                 if (imageError) {
-                    updateFormState({ imageFile: null, previewUrl: equipment?.image || '', imageError })
+                    updateFormState({
+                        imageFile: null,
+                        previewUrl: equipment?.image || '',
+                        imageError
+                    })
                     event.target.value = ''
                     return
                 }
@@ -121,7 +125,10 @@ const resolveFieldError = (isTouched, clientError, serverError) => {
 
 const executeSave = async ({ isEditMode, currentEquipment, payload, createMutation, updateMutation }) => {
     const response = isEditMode
-        ? await updateMutation.mutateAsync({ id: currentEquipment.id, data: payload })
+        ? await updateMutation.mutateAsync({
+              id: currentEquipment.id,
+              data: payload
+          })
         : await createMutation.mutateAsync(payload)
     if (response?.data?.id) {
         return response.data
@@ -233,7 +240,12 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
             }
 
             isSubmittingReference.current = true
-            updateFormState({ isSubmitting: true, errorMessage: '', uploadError: '', serverErrors: {} })
+            updateFormState({
+                isSubmitting: true,
+                errorMessage: '',
+                uploadError: '',
+                serverErrors: {}
+            })
             const currentEquipment = savedEquipmentReference.current
             const isEditMode = Boolean(currentEquipment?.id)
             const payload = createEquipmentPayload(formState, currentEquipment, isEditMode)
@@ -365,7 +377,10 @@ export const EquipmentModalDialog = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-['Poppins']">
-            <div aria-hidden="true" className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none" />
+            <div
+                aria-hidden="true"
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-default border-none outline-none"
+            />
             <div className="bg-slate-50 rounded-2xl border border-slate-300 w-full max-w-[538px] max-h-[88dvh] overflow-y-scroll my-auto shadow-2xl flex flex-col relative z-10">
                 <EquipmentImageBanner
                     previewUrl={previewUrl}
@@ -412,7 +427,9 @@ export const EquipmentModalDialog = ({
                     />
 
                     {errorMessage && (
-                        <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{errorMessage}</p>
+                        <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">
+                            {errorMessage}
+                        </p>
                     )}
                     {uploadError ? <ErrorText message={uploadError} className="min-h-4 mt-1" /> : null}
 

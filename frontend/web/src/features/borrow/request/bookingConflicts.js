@@ -82,7 +82,13 @@ const scanOverlappingBookings = ({
             wraps ||= conflict.wraps
         }
     }
-    return { startIn, endIn, wraps, conflictingBooking, conflictMessages: [...conflictMessages] }
+    return {
+        startIn,
+        endIn,
+        wraps,
+        conflictingBooking,
+        conflictMessages: [...conflictMessages]
+    }
 }
 
 export const checkDateConflictBreakdown = ({ startDate, endDate, remoteBookings, selectedItems, minStartDate }) => {
@@ -111,5 +117,11 @@ export const checkDateConflictBreakdown = ({ startDate, endDate, remoteBookings,
     const hasScheduleConflict = Boolean(hasStartConflict || hasEndConflict)
     const conflictMessage = getConflictMessage(hasScheduleConflict, conflictingBooking)
 
-    return { hasStartConflict, hasEndConflict, hasScheduleConflict, conflictMessage, conflictMessages }
+    return {
+        hasStartConflict,
+        hasEndConflict,
+        hasScheduleConflict,
+        conflictMessage,
+        conflictMessages
+    }
 }

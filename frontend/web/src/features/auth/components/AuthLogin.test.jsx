@@ -52,18 +52,29 @@ it('shows a danger toast when Google returns an invalid email error', async () =
 
 it('shows a toast when an email is outside the La Verdad domains', async () => {
     const { container } = renderLogin()
-    fireEvent.change(container.querySelector('input[type="email"]'), { target: { value: 'person@example.com' } })
-    fireEvent.change(container.querySelector('input[type="password"]'), { target: { value: 'password123' } })
+    fireEvent.change(container.querySelector('input[type="email"]'), {
+        target: { value: 'person@example.com' }
+    })
+    fireEvent.change(container.querySelector('input[type="password"]'), {
+        target: { value: 'password123' }
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
     expect(await screen.findByText('Please use a valid La Verdad email address.')).toBeInTheDocument()
     expect(loginUser).not.toHaveBeenCalled()
 })
 
 it('shows field errors when credentials are rejected', async () => {
-    loginUser.mockRejectedValueOnce({ status: 401, message: 'Email or password is incorrect' })
+    loginUser.mockRejectedValueOnce({
+        status: 401,
+        message: 'Email or password is incorrect'
+    })
     const { container } = renderLogin()
-    fireEvent.change(container.querySelector('input[type="email"]'), { target: { value: 'person@laverdad.edu.ph' } })
-    fireEvent.change(container.querySelector('input[type="password"]'), { target: { value: 'password123' } })
+    fireEvent.change(container.querySelector('input[type="email"]'), {
+        target: { value: 'person@laverdad.edu.ph' }
+    })
+    fireEvent.change(container.querySelector('input[type="password"]'), {
+        target: { value: 'password123' }
+    })
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sign In' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
     await waitFor(() => expect(screen.getAllByText('Email or password is incorrect')).toHaveLength(2))
@@ -74,7 +85,9 @@ it('shows network errors above the sign-in fields', async () => {
     const { container } = renderLogin()
     const email = container.querySelector('input[type="email"]')
     fireEvent.change(email, { target: { value: 'person@laverdad.edu.ph' } })
-    fireEvent.change(container.querySelector('input[type="password"]'), { target: { value: 'password123' } })
+    fireEvent.change(container.querySelector('input[type="password"]'), {
+        target: { value: 'password123' }
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
     await waitFor(() => expect(container.querySelector('form').firstElementChild).toHaveTextContent('Network Error'))
 })

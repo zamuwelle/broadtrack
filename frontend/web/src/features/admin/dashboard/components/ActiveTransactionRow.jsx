@@ -48,8 +48,12 @@ export const ActiveTransactionRow = ({ booking = defaultBooking }) => {
         <div className="rounded-md border border-gray-200 p-3.5 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
             <div className="flex items-start justify-between gap-3 md:hidden">
                 <div className="min-w-0">
-                    <div className="text-sm font-semibold text-gray-900 whitespace-normal break-words">{equipmentTitle}</div>
-                    <div className="text-xs font-normal text-gray-600 mt-0.5 whitespace-normal break-words">{borrowerInfo}</div>
+                    <div className="text-sm font-semibold text-gray-900 whitespace-normal break-words">
+                        {equipmentTitle}
+                    </div>
+                    <div className="text-xs font-normal text-gray-600 mt-0.5 whitespace-normal break-words">
+                        {borrowerInfo}
+                    </div>
                 </div>
                 <span className={cn('px-2.5 py-1 text-[11px] font-semibold shrink-0', statusBadge.className)}>
                     {statusBadge.label}

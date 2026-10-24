@@ -36,8 +36,18 @@ describe('booking helpers', () => {
         }
 
         expect(flattenBookingsByEquipment([booking])).toEqual([
-            { ...booking, itemKey: '8-2', equipment: booking.equipments[0], equipments: [booking.equipments[0]] },
-            { ...booking, itemKey: '8-3', equipment: booking.equipments[1], equipments: [booking.equipments[1]] }
+            {
+                ...booking,
+                itemKey: '8-2',
+                equipment: booking.equipments[0],
+                equipments: [booking.equipments[0]]
+            },
+            {
+                ...booking,
+                itemKey: '8-3',
+                equipment: booking.equipments[1],
+                equipments: [booking.equipments[1]]
+            }
         ])
     })
 })

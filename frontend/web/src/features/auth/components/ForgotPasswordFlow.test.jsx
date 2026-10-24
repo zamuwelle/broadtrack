@@ -16,7 +16,9 @@ it('returns to sign in and shows a toast after sending the reset link', async ()
             </MemoryRouter>
         </QueryClientProvider>
     )
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'student@student.laverdad.edu.ph' } })
+    fireEvent.change(screen.getByRole('textbox'), {
+        target: { value: 'student@student.laverdad.edu.ph' }
+    })
     await waitFor(() => expect(screen.getByRole('button', { name: 'Send Reset Link' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: 'Send Reset Link' }))
     expect(await screen.findByRole('heading', { name: 'Sign In' })).toBeInTheDocument()
@@ -25,7 +27,10 @@ it('returns to sign in and shows a toast after sending the reset link', async ()
 })
 
 it('keeps the forgot password form open on a server error', async () => {
-    api.post.mockRejectedValueOnce({ status: 500, message: 'Could not send reset link.' })
+    api.post.mockRejectedValueOnce({
+        status: 500,
+        message: 'Could not send reset link.'
+    })
     render(
         <QueryClientProvider client={new QueryClient()}>
             <MemoryRouter>
@@ -33,7 +38,9 @@ it('keeps the forgot password form open on a server error', async () => {
             </MemoryRouter>
         </QueryClientProvider>
     )
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'student@student.laverdad.edu.ph' } })
+    fireEvent.change(screen.getByRole('textbox'), {
+        target: { value: 'student@student.laverdad.edu.ph' }
+    })
     await waitFor(() => expect(screen.getByRole('button', { name: 'Send Reset Link' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: 'Send Reset Link' }))
     expect(await screen.findByText('Could not send reset link.')).toBeInTheDocument()

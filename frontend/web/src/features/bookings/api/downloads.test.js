@@ -67,7 +67,10 @@ describe('booking downloads', () => {
     })
 
     it('uses the fallback when an error blob contains malformed JSON', async () => {
-        api.get.mockRejectedValueOnce({ response: { data: jsonBlob('{') }, message: 'Request failed' })
+        api.get.mockRejectedValueOnce({
+            response: { data: jsonBlob('{') },
+            message: 'Request failed'
+        })
         await expect(exportTransactionsCsv()).rejects.toThrow('Request failed')
     })
 })

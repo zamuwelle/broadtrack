@@ -24,7 +24,9 @@ it('opens the reset form for a valid link', async () => {
     api.post.mockResolvedValueOnce({ data: { valid: true } })
     renderReset()
     expect(await screen.findByRole('heading', { name: 'Reset Password' })).toBeInTheDocument()
-    expect(api.post).toHaveBeenCalledWith('/check-reset-token', data, { timeout: 10_000 })
+    expect(api.post).toHaveBeenCalledWith('/check-reset-token', data, {
+        timeout: 10_000
+    })
 })
 
 it('opens forgot password with a warning for an invalid link', async () => {
@@ -44,7 +46,10 @@ it('reports a connection failure without calling the link invalid', async () => 
 
 it('returns to forgot password if the link expires before submission', async () => {
     api.post.mockResolvedValueOnce({ data: { valid: true } })
-    api.post.mockRejectedValueOnce({ status: 422, message: 'Invalid or expired reset token.' })
+    api.post.mockRejectedValueOnce({
+        status: 422,
+        message: 'Invalid or expired reset token.'
+    })
     const { container } = renderReset()
     await screen.findByRole('heading', { name: 'Reset Password' })
     const inputs = container.querySelectorAll('input[type="password"]')

@@ -108,10 +108,14 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
                     </svg>
                 )}
                 <p
-                    className={cn("min-w-0 whitespace-normal [overflow-wrap:anywhere] leading-4 font-['Poppins']", contentColor, {
-                        'text-xs font-semibold': isAlert,
-                        'text-[12px] font-normal': !isAlert
-                    })}>
+                    className={cn(
+                        "min-w-0 whitespace-normal [overflow-wrap:anywhere] leading-4 font-['Poppins']",
+                        contentColor,
+                        {
+                            'text-xs font-semibold': isAlert,
+                            'text-[12px] font-normal': !isAlert
+                        }
+                    )}>
                     {message}
                 </p>
             </div>

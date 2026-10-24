@@ -10,7 +10,9 @@ export const useBookingCartStore = create(
                 set((state) => {
                     const exists = state.items.some((item) => item.id === equipment.id)
                     if (exists) {
-                        return { items: state.items.filter((item) => item.id !== equipment.id) }
+                        return {
+                            items: state.items.filter((item) => item.id !== equipment.id)
+                        }
                     }
                     if (equipment.status !== 'maintenance') {
                         return { items: [...state.items, { ...equipment }] }
@@ -24,7 +26,9 @@ export const useBookingCartStore = create(
                 })),
 
             removeSubmittedItems: (submittedItems) =>
-                set((state) => ({ items: state.items.filter((item) => !submittedItems.includes(item)) })),
+                set((state) => ({
+                    items: state.items.filter((item) => !submittedItems.includes(item))
+                })),
 
             clearCart: () => set({ items: [] }),
 

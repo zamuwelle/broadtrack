@@ -28,7 +28,9 @@ export const useBookingDateDefaults = ({
                 return {
                     ...(startDateIsAutomaticRef.current ? { startDate } : {}),
                     ...(endDateIsAutomaticRef.current
-                        ? { endDate: getNextBookingHourValue(startDate || defaultStartDate) }
+                        ? {
+                              endDate: getNextBookingHourValue(startDate || defaultStartDate)
+                          }
                         : {})
                 }
             })
@@ -88,7 +90,9 @@ export const useBookingDateDefaults = ({
                 if (prev.modalView === 'submitted' || prev.modalView === 'edit') {
                     return {}
                 }
-                const newState = { modalView: selectedItemCount > 0 ? 'summary' : 'empty' }
+                const newState = {
+                    modalView: selectedItemCount > 0 ? 'summary' : 'empty'
+                }
                 if (!prev.startDate) {
                     newState.startDate = defaultStartDate
                     newState.endDate = getNextBookingHourValue(defaultStartDate)
