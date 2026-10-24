@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1-php8.5-bookworm
+FROM dunglas/frankenphp:1.13.4-php8.5-bookworm
 
 RUN install-php-extensions \
 	pcntl \
