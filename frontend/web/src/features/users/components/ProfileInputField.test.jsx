@@ -11,7 +11,7 @@ it('reserves the shared error spacing whether an error is shown or not', () => {
         onErrorChange: vi.fn()
     }
     const { container, rerender } = render(<ProfileInputField {...props} />)
-    const errorRow = container.querySelector('.h-4.mt-1')
+    const errorRow = container.querySelector('.min-h-4.mt-1')
     expect(errorRow).not.toBeNull()
     expect(errorRow.textContent).toBe('')
     rerender(<ProfileInputField {...props} error="This field is required" />)

@@ -11,12 +11,13 @@ const initialForm = {
 }
 
 describe('RegisterForm', () => {
-    it('blocks submission while required fields are invalid', () => {
+    it('blocks submission while required fields are invalid', async () => {
         const onSubmit = vi.fn()
         const { container } = render(<RegisterForm form={initialForm} onSubmit={onSubmit} />)
 
         fireEvent.submit(container.querySelector('form'))
 
+        await waitFor(() => expect(screen.getAllByText('This field is required').length).toBeGreaterThan(0))
         expect(onSubmit).not.toHaveBeenCalled()
     })
 

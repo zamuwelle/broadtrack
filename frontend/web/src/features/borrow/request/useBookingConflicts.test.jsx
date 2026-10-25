@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, cleanup, renderHook } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vite-plus/test'
 import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummaryLogic'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
@@ -30,6 +30,7 @@ vi.mock('@/features/bookings/api/get-bookings', () => ({
 }))
 
 afterEach(() => {
+    cleanup()
     useBookingCartStore.setState({ items: [] })
     vi.useRealTimers()
 })
