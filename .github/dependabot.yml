@@ -4,17 +4,7 @@ updates:
       directory: backend
       schedule:
           interval: daily
-    - package-ecosystem: composer
-      directory: backend
-      target-branch: dev
-      schedule:
-          interval: daily
     - package-ecosystem: bun
       directory: frontend
-      schedule:
-          interval: daily
-    - package-ecosystem: bun
-      directory: frontend
-      target-branch: dev
       schedule:
           interval: daily
