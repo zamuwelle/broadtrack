@@ -13,6 +13,12 @@
 <a href="#"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" alt="Firebase"></a>
 <a href="#"><img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions"></a>
 
+<br>
+
+<a href="https://github.com/zamuwelle/broadtrack/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zamuwelle/broadtrack/ci.yml?label=Tests" alt="Tests"></a>
+<a href="https://github.com/zamuwelle/broadtrack/actions/workflows/dependabot/dependabot-updates"><img src="https://img.shields.io/github/actions/workflow/status/zamuwelle/broadtrack/dependabot%2Fdependabot-updates?label=Dependabot" alt="Dependabot"></a>
+<a href="https://github.com/zamuwelle/broadtrack/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/zamuwelle/broadtrack/deploy.yml?label=Firebase%20Deployment" alt="Firebase Deployment"></a>
+
 Equipment booking and inventory tracking system built with Laravel and React.
 
 </div>
