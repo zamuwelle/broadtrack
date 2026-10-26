@@ -9,8 +9,23 @@ import {
     formatSimpleDate,
     getBookingDateKey,
     getBookingDateTimeValue,
-    getNextBookingHourValue
+    getTodayDateString,
+    getNextBookingHourValue,
+    parseBookingDate
 } from '@shared/util/date'
+
+describe('shared dayjs resolution', () => {
+    it('resolves dayjs and its plugins from shared code', () => {
+        const today = getTodayDateString()
+        expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    })
+
+    it('resolves dayjs timezone plugin for parseBookingDate', () => {
+        const result = parseBookingDate('2026-10-26T15:00:00')
+        expect(result).toBeInstanceOf(Date)
+        expect(result.getTime()).not.toBeNaN()
+    })
+})
 
 describe('booking date helpers', () => {
     it('formats UTC timestamps using the Manila calendar date', () => {

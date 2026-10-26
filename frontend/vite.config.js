@@ -1,5 +1,6 @@
 import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite-plus'
+import { sharedDepsPlugin } from './web/plugins/vite-shared-deps.js'
 
 export default defineConfig({
     lint: {
@@ -549,6 +550,7 @@ export default defineConfig({
             }
         ]
     },
+    plugins: [sharedDepsPlugin()],
     test: {
         environment: 'jsdom',
         globals: true,
@@ -556,11 +558,7 @@ export default defineConfig({
         include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
         alias: {
             '@': fileURLToPath(new URL('web/src', import.meta.url)),
-            '@shared': fileURLToPath(new URL('shared', import.meta.url)),
-            react: fileURLToPath(new URL('web/node_modules/react', import.meta.url)),
-            'react-dom': fileURLToPath(new URL('web/node_modules/react-dom', import.meta.url)),
-            axios: fileURLToPath(new URL('web/node_modules/axios', import.meta.url)),
-            zod: fileURLToPath(new URL('web/node_modules/zod', import.meta.url))
+            '@shared': fileURLToPath(new URL('shared', import.meta.url))
         }
     },
     fmt: {
