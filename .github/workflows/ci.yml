@@ -25,9 +25,11 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: oven-sh/setup-bun@v2
-            - run: bun install
+            - run: bun install --frozen-lockfile
               working-directory: frontend
             - run: bun run lint:frontend
+              working-directory: frontend
+            - run: bun run test:frontend
               working-directory: frontend
             - run: bun run build
               working-directory: frontend/web
