@@ -1,18 +1,40 @@
 name: Auto-merge Dependabot
 
-on: pull_request
+on:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
 
 permissions:
+    actions: write
     contents: write
     pull-requests: write
 
 jobs:
     auto-merge:
-        if: github.actor == 'dependabot[bot]'
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
         runs-on: ubuntu-latest
         steps:
-            - uses: dependabot/fetch-metadata@v2
-            - run: gh pr merge --auto --squash "$PR_URL"
+            - name: Merge the tested update and deploy
               env:
-                  PR_URL: ${{ github.event.pull_request.html_url }}
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: |
+                  pr=$(gh pr list --state open --head "$HEAD_BRANCH" --json number,author,headRefOid,baseRefName --jq '.[] | select(.author.login == "app/dependabot" and (.baseRefName == "main" or .baseRefName == "dev"))')
+                  if [ -z "$pr" ]; then
+                      echo 'No matching Dependabot pull request is open.'
+                      exit 0
+                  fi
+                  number=$(echo "$pr" | jq -r .number)
+                  branch=$(echo "$pr" | jq -r .baseRefName)
+                  if [ "$(echo "$pr" | jq -r .headRefOid)" != "$HEAD_SHA" ]; then
+                      echo 'The pull request changed since CI ran.'
+                      exit 0
+                  fi
+                  deploy=$(gh pr view "$number" --json files --jq '[.files[].path | select(. == "frontend/package.json" or . == "frontend/bun.lock" or startswith("frontend/web/") or startswith("frontend/shared/"))] | length')
+                  gh pr merge "$number" --squash --match-head-commit "$HEAD_SHA"
+                  if [ "$deploy" -gt 0 ]; then
+                      gh workflow run deploy.yml --ref "$branch"
+                  fi
