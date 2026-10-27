@@ -164,8 +164,9 @@ docs/
 │   ├── frontend-conventions.md # Frontend patterns, query conventions, and styling
 │   ├── project-structure.md    # Repository directory layout and file annotations
 │   └── testing.md              # Testing frameworks, test setup, and runner commands
-├── workflows/                  # Core business workflows
-│   └── borrowing-lifecycle.md  # Equipment status transitions, conflicts, and rules
+├── workflows/                  # Business and development workflows
+│   ├── borrowing-lifecycle.md  # Equipment status transitions, conflicts, and rules
+│   └── github-actions.md       # Tests, dependency updates, and deployment
 └── README.md                   # Documentation index and table of contents
 ```
 
@@ -176,7 +177,7 @@ GitHub Actions workflows for continuous integration, dependency checks, and fron
 ```text
 .github/
 ├── dependabot.yml              # Automated package dependency update rules
-├── scripts/                    # Shared test, build, and deployment commands
+├── scripts/                    # Commands grouped by workflow and shared use
 └── workflows/
     ├── dependencies.yml        # Dependabot repair and auto-merge
     ├── deploy.yml              # Firebase Hosting deployment

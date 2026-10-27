@@ -10,6 +10,7 @@ Index of technical documentation for Broadtrack. For local setup and development
     - [Scheduled tasks](./architecture/scheduled-tasks.md)
 - [Workflows](#workflows)
     - [Borrowing and equipment lifecycle](./workflows/borrowing-lifecycle.md)
+    - [GitHub Actions](./workflows/github-actions.md)
 - [Reference](#reference)
     - [API endpoints reference](./reference/api-endpoints.md)
     - [Backend conventions](./reference/backend-conventions.md)
@@ -27,6 +28,7 @@ Index of technical documentation for Broadtrack. For local setup and development
 ## Workflows
 
 - [Borrowing and equipment lifecycle](./workflows/borrowing-lifecycle.md): Booking statuses, dynamic equipment availability, conflict checking, time interval handling, and cancellation rules.
+- [GitHub Actions](./workflows/github-actions.md): Tests, dependency updates, and frontend deployment.
 
 ## Reference
 
