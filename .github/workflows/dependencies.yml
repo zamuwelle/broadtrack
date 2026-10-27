@@ -9,37 +9,76 @@ permissions:
     actions: write
     contents: write
     pull-requests: write
+    statuses: write
 
 jobs:
     auto-merge:
         if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
             - name: Merge the tested update and deploy
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   GH_REPO: ${{ github.repository }}
                   HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
                   HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+                  TEST_RUN_ID: ${{ github.event.workflow_run.id }}
+              run: bash .github/scripts/dependencies/merge-dependencies.sh
+
+    align:
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - name: Check the Dependabot pull request
+              id: pr
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: bash .github/scripts/dependencies/check-dependabot-pr.sh
+
+            - uses: actions/create-github-app-token@v2
+              if: steps.pr.outputs.valid == 'true'
+              id: app-token
+              with:
+                  app-id: ${{ vars.VITE_SYNC_APP_ID }}
+                  private-key: ${{ secrets.VITE_SYNC_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.event.repository.name }}
+                  permission-contents: write
+
+            - uses: actions/checkout@v4
+              if: steps.pr.outputs.valid == 'true'
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha }}
+                  token: ${{ steps.app-token.outputs.token }}
+                  fetch-depth: 0
+
+            - uses: oven-sh/setup-bun@v2
+              if: steps.pr.outputs.valid == 'true'
+
+            - name: Align the Vite alias and update the lockfile
+              if: steps.pr.outputs.valid == 'true'
+              id: align
+              working-directory: frontend
               run: |
-                  pr=$(gh pr list --state open --head "$HEAD_BRANCH" --json number,author,headRefOid,baseRefName --jq '.[] | select(.author.login == "app/dependabot" and (.baseRefName == "main" or .baseRefName == "dev"))')
-                  if [ -z "$pr" ]; then
-                      echo 'No matching Dependabot pull request is open.'
-                      exit 0
-                  fi
-                  number=$(echo "$pr" | jq -r .number)
-                  branch=$(echo "$pr" | jq -r .baseRefName)
-                  if [ "$(echo "$pr" | jq -r .headRefOid)" != "$HEAD_SHA" ]; then
-                      echo 'The pull request changed since CI ran.'
-                      exit 0
-                  fi
-                  deploy=$(gh pr view "$number" --json files --jq '[.files[].path | select(. == "frontend/package.json" or . == "frontend/bun.lock" or startswith("frontend/web/") or startswith("frontend/shared/"))] | length')
-                  if ! gh pr merge "$number" --squash --match-head-commit "$HEAD_SHA" --delete-branch; then
-                      if [ "$(gh pr view "$number" --json state --jq .state)" != 'MERGED' ]; then
-                          exit 1
-                      fi
-                      echo 'Merged, but branch deletion failed.'
-                  fi
-                  if [ "$deploy" -gt 0 ]; then
-                      gh workflow run deploy.yml --ref "$branch"
-                  fi
+                  git show "$GITHUB_SHA:.github/scripts/dependencies/align-vite-plus.sh" > "$RUNNER_TEMP/align-vite-plus.sh"
+                  bash "$RUNNER_TEMP/align-vite-plus.sh"
+
+            - name: Push the alignment
+              if: steps.align.outputs.changed == 'true'
+              env:
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+              run: |
+                  git show "$GITHUB_SHA:.github/scripts/dependencies/push-vite-alignment.sh" > "$RUNNER_TEMP/push-vite-alignment.sh"
+                  bash "$RUNNER_TEMP/push-vite-alignment.sh"
