@@ -175,11 +175,13 @@ GitHub Actions workflows for continuous integration, dependency checks, and fron
 
 ```text
 .github/
-├── dependabot.yml        # Automated package dependency update rules
+├── dependabot.yml              # Automated package dependency update rules
+├── scripts/                    # Shared test, build, and deployment commands
 └── workflows/
-    ├── ci.yml            # CI pipeline for backend tests, linting, and web builds
-    ├── dependencies.yml  # Weekly dependency checks and validation
-    └── deploy.yml        # Deployment automation for frontend to Firebase Hosting
+    ├── dependencies.yml        # Dependabot repair and auto-merge
+    ├── deploy.yml              # Firebase Hosting deployment
+    ├── sync-dependencies.yml   # Dependency updates from main to dev
+    └── tests.yml               # Backend and frontend checks
 ```
 
 ## Postman (`postman/`)

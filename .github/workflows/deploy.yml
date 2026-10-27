@@ -11,6 +11,8 @@ on:
             - 'frontend/bun.lock'
             - 'frontend/web/**'
             - 'frontend/shared/**'
+            - '.github/scripts/shared/build-frontend.sh'
+            - '.github/scripts/deploy/deploy-firebase.sh'
             - '.github/workflows/deploy.yml'
 
 concurrency:
@@ -18,13 +20,31 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    tests:
+    verify:
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-        uses: ./.github/workflows/ci.yml
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            statuses: read
+        outputs:
+            verified: ${{ steps.verify.outputs.verified }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: Check for tests on this commit
+              id: verify
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: bash .github/scripts/deploy/find-verified-tests.sh
+
+    tests:
+        needs: verify
+        if: needs.verify.outputs.verified != 'true'
+        uses: ./.github/workflows/tests.yml
 
     deploy:
-        needs: tests
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        needs: [verify, tests]
+        if: always() && needs.verify.result == 'success' && (needs.tests.result == 'success' || (needs.tests.result == 'skipped' && needs.verify.outputs.verified == 'true'))
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -56,30 +76,21 @@ jobs:
 
             - name: Install Firebase CLI
               if: steps.cache-firebase.outputs.cache-hit != 'true'
-              run: |
-                  mkdir -p ~/.cache/firebase-bin
-                  curl -sL --fail https://firebase.tools/bin/linux/v15.33.0 -o ~/.cache/firebase-bin/firebase
-                  chmod +x ~/.cache/firebase-bin/firebase
+              run: bash .github/scripts/deploy/install-firebase-cli.sh
 
             - name: Add Firebase CLI to PATH
               run: echo "$HOME/.cache/firebase-bin" >> $GITHUB_PATH
 
             - name: Create .env
-              working-directory: frontend/web
               env:
                   ENV_CONTENT: ${{ github.ref == 'refs/heads/main' && secrets.ENV_PROD || secrets.ENV_DEV }}
-              run: echo "$ENV_CONTENT" > .env
+              run: bash .github/scripts/deploy/write-frontend-env.sh
 
             - name: Build frontend bundle
-              working-directory: frontend/web
-              run: bun run build
+              run: bash .github/scripts/shared/build-frontend.sh
 
             - name: Deploy to Firebase Hosting
-              working-directory: frontend/web
               env:
                   FIREBASE_SERVICE_ACCOUNT: ${{ github.ref == 'refs/heads/main' && secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK || secrets.FIREBASE_SERVICE_ACCOUNT_BROADTRACK_DEV }}
                   PROJECT_ID: ${{ github.ref == 'refs/heads/main' && 'broadtrack' || 'broadtrack-dev' }}
-              run: |
-                  echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/sa.json
-                  GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json firebase deploy --only hosting --project "$PROJECT_ID"
-                  rm -f /tmp/sa.json
+              run: bash .github/scripts/deploy/deploy-firebase.sh

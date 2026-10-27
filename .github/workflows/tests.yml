@@ -1,0 +1,52 @@
+name: Tests
+
+on:
+    pull_request:
+    workflow_call:
+
+jobs:
+    backend:
+        runs-on: ubuntu-latest
+        outputs:
+            tree: ${{ steps.tree.outputs.tree }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: Get PHP version
+              id: php
+              run: bash .github/scripts/shared/get-php-version.sh
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ steps.php.outputs.version }}
+            - run: bash .github/scripts/shared/test-backend.sh
+            - name: Record tested files
+              id: tree
+              run: bash .github/scripts/tests/record-tested-tree.sh
+
+    frontend:
+        runs-on: ubuntu-latest
+        outputs:
+            tree: ${{ steps.tree.outputs.tree }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+            - run: bash .github/scripts/shared/test-frontend.sh
+            - run: bash .github/scripts/shared/build-frontend.sh
+            - name: Record tested files
+              id: tree
+              run: bash .github/scripts/tests/record-tested-tree.sh
+
+    evidence:
+        if: github.event_name == 'pull_request' && needs.backend.outputs.tree != '' && needs.backend.outputs.tree == needs.frontend.outputs.tree
+        needs: [backend, frontend]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Save tested file fingerprint
+              env:
+                  TESTED_TREE: ${{ needs.backend.outputs.tree }}
+              run: printf '%s\n' "$TESTED_TREE" > "$RUNNER_TEMP/tested-tree"
+            - uses: actions/upload-artifact@v4
+              continue-on-error: true
+              with:
+                  name: tested-tree
+                  path: ${{ runner.temp }}/tested-tree
+                  retention-days: 7
