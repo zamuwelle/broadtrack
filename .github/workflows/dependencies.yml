@@ -34,7 +34,12 @@ jobs:
                       exit 0
                   fi
                   deploy=$(gh pr view "$number" --json files --jq '[.files[].path | select(. == "frontend/package.json" or . == "frontend/bun.lock" or startswith("frontend/web/") or startswith("frontend/shared/"))] | length')
-                  gh pr merge "$number" --squash --match-head-commit "$HEAD_SHA"
+                  if ! gh pr merge "$number" --squash --match-head-commit "$HEAD_SHA" --delete-branch; then
+                      if [ "$(gh pr view "$number" --json state --jq .state)" != 'MERGED' ]; then
+                          exit 1
+                      fi
+                      echo 'Merged, but branch deletion failed.'
+                  fi
                   if [ "$deploy" -gt 0 ]; then
                       gh workflow run deploy.yml --ref "$branch"
                   fi

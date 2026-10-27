@@ -63,7 +63,7 @@ describe('booking downloads', () => {
 
     it('reports a JSON error returned as a successful blob', async () => {
         api.get.mockResolvedValueOnce(jsonBlob('{"message":"Not allowed"}'))
-        await expect(downloadBookingSlip({ bookingId: 7 })).rejects.toThrow('Not allowed')
+        await expect(downloadBookingSlip({ bookingId: 7 })).rejects.toMatchObject({ message: 'Not allowed' })
     })
 
     it('uses the fallback when an error blob contains malformed JSON', async () => {
@@ -71,6 +71,6 @@ describe('booking downloads', () => {
             response: { data: jsonBlob('{') },
             message: 'Request failed'
         })
-        await expect(exportTransactionsCsv()).rejects.toThrow('Request failed')
+        await expect(exportTransactionsCsv()).rejects.toMatchObject({ message: 'Request failed' })
     })
 })

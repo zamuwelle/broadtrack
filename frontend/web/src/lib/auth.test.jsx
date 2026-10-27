@@ -117,7 +117,7 @@ describe('auth session and user fetching', () => {
         serverError.status = 500
         api.get.mockRejectedValueOnce(serverError)
 
-        await expect(fetchCurrentUser()).rejects.toThrow('Database connection failed')
+        await expect(fetchCurrentUser()).rejects.toMatchObject({ message: 'Database connection failed' })
     })
 
     it('fetchCurrentUser rethrows network error without status', async () => {
@@ -125,7 +125,7 @@ describe('auth session and user fetching', () => {
         const networkError = new Error('Network Error')
         api.get.mockRejectedValueOnce(networkError)
 
-        await expect(fetchCurrentUser()).rejects.toThrow('Network Error')
+        await expect(fetchCurrentUser()).rejects.toMatchObject({ message: 'Network Error' })
     })
 
     it('useLogout clears auth session, calls logout endpoint, and navigates home', async () => {
