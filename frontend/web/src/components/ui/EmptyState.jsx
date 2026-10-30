@@ -16,8 +16,8 @@ export const EmptyState = ({ icon: Icon, title, description, className = '' }) =
                 className
             )}>
             {iconElement}
-            <h3 className="text-slate-600 font-medium text-base font-['Poppins']">{title}</h3>
-            {description ? <p className="text-slate-400 text-sm font-normal font-['Poppins']">{description}</p> : null}
+            <h2 className="text-slate-600 font-medium text-base font-['Poppins']">{title}</h2>
+            {description ? <p className="text-slate-600 text-sm font-normal font-['Poppins']">{description}</p> : null}
         </div>
     )
 }

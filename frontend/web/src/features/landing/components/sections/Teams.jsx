@@ -1,3 +1,4 @@
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The team carousel must be keyboard-scrollable. */
 import { useEffect, useRef } from 'react'
 import { cn } from 'cn'
 import lightImg from '@/assets/icons/landing/teams/light.png?inline'
@@ -81,6 +82,8 @@ export const Teams = () => {
                 </div>
                 <div
                     ref={containerRef}
+                    tabIndex={0}
+                    aria-label="Team members"
                     className="relative flex items-start gap-6 sm:gap-8 lg:gap-10 xl:gap-8 mt-12 sm:mt-16 w-full overflow-x-auto px-6 sm:px-8 lg:px-0 xl:justify-center snap-x snap-mandatory [scrollbar-width:none]! [&::-webkit-scrollbar]:hidden!">
                     {members.map((member) => (
                         <div

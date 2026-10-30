@@ -62,7 +62,7 @@ export const OverdueAlert = ({
                         <div className="text-amber-800 text-base sm:text-lg font-semibold">
                             All Equipment on Schedule
                         </div>
-                        <div className="text-amber-500 text-xs sm:text-sm font-normal">
+                        <div className="text-amber-800 text-xs sm:text-sm font-normal">
                             There is currently no equipment past its return deadline.
                         </div>
                     </div>
@@ -87,7 +87,7 @@ export const OverdueAlert = ({
                     </div>
                     <div className="flex flex-col gap-1">
                         <div className="text-amber-800 text-base sm:text-lg font-semibold">{currentAlert.title}</div>
-                        <div className="text-amber-500 text-xs sm:text-sm font-normal">{currentAlert.description}</div>
+                        <div className="text-amber-800 text-xs sm:text-sm font-normal">{currentAlert.description}</div>
                     </div>
                 </div>
                 <div className="shrink-0 w-full sm:w-auto">

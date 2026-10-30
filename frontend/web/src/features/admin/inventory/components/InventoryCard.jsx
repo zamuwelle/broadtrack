@@ -54,7 +54,7 @@ export const InventoryCard = ({
                             src={optimizedImage}
                             alt={equipmentTitle}
                             className="h-full w-full object-contain"
-                            loading="eager"
+                            loading="lazy"
                             fetchPriority="high"
                             decoding="async"
                         />
@@ -93,13 +93,13 @@ export const InventoryCard = ({
                 <div className="flex flex-col gap-3.5 mt-auto pt-2">
                     <div className="bg-slate-50 rounded-xl border border-slate-300 px-4 py-3 flex items-center justify-between">
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="text-[9px] font-semibold text-slate-600 uppercase tracking-wider">
                                 SERIAL NO
                             </span>
                             <span className="text-xs font-bold text-slate-900">{serialNumber}</span>
                         </div>
                         <div className="flex flex-col items-end">
-                            <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="text-[9px] font-semibold text-slate-600 uppercase tracking-wider">
                                 CATEGORY
                             </span>
                             <span className="text-xs font-bold text-slate-900 uppercase">{categoryName}</span>

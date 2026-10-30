@@ -38,7 +38,7 @@ export const SelectButton = ({ selected = null, onSelect = noop, disabled = fals
             onClick={handleToggle}
             className={cn(
                 {
-                    'h-8 px-3 py-2 bg-green-500 rounded-lg outline outline-[0.50px] outline-offset-[-0.50px] outline-green-500 inline-flex justify-center items-center gap-0.5 text-white text-base font-medium':
+                    'h-8 px-3 py-2 bg-green-700 rounded-lg outline outline-[0.50px] outline-offset-[-0.50px] outline-green-500 inline-flex justify-center items-center gap-0.5 text-white text-base font-medium':
                         isSelected,
                     'relative inline-flex h-[28px] items-center justify-center rounded-[8px] border-[0.5px] border-border-subtle bg-background px-[12px] text-[16px] font-medium':
                         !isSelected

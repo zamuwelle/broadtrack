@@ -9,7 +9,7 @@ export const UserModalShell = ({ title, subtitle, onClose, children, onSubmit, s
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="text-lg font-medium text-text">{title}</h2>
-                        <p className="text-sm text-text/60">{subtitle}</p>
+                        <p className="text-sm text-text/70">{subtitle}</p>
                     </div>
                     <button
                         type="button"

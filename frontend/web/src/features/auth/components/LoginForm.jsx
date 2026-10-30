@@ -203,7 +203,7 @@ export const LoginForm = ({
             </button>
             <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-[1px] bg-gray-200" />
-                <span className="text-gray-400 text-[13px]">or</span>
+                <span className="text-gray-600 text-[13px]">or</span>
                 <div className="flex-1 h-[1px] bg-gray-200" />
             </div>
             <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
@@ -239,7 +239,7 @@ export const LoginForm = ({
                     disabled={isPending}
                     className={cn(submitClass, {
                         'hover:opacity-90': isValid,
-                        'opacity-50 cursor-not-allowed': !isValid
+                        'opacity-90 cursor-not-allowed': !isValid
                     })}>
                     {isPending ? 'Signing in...' : 'Sign In'}
                 </button>

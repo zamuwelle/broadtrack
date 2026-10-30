@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/2ccee4c9-5f31-4c5a-bc81-416714a765df" width="120" alt="Broadtrack Logo">
+<img src="frontend/web/src/assets/logo.webp" width="120" alt="Broadtrack Logo">
 
 # Broadtrack
 

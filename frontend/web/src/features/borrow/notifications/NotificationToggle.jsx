@@ -64,6 +64,7 @@ export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotific
         <div className="relative font-['Poppins']" ref={boxRef}>
             <button
                 type="button"
+                aria-label="Notifications"
                 onClick={handleToggleBell}
                 className="relative flex h-6 w-[22px] shrink-0 items-center justify-center cursor-pointer">
                 {open ? <span className="absolute -inset-1 rounded-2xl bg-blue-200 pointer-events-none" /> : null}

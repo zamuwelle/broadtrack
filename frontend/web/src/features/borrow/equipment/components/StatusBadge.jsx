@@ -2,7 +2,7 @@ import { cn } from 'cn'
 
 const badgeConfigurations = Object.freeze({
     available: {
-        style: 'bg-green-100 outline-green-500 text-green-500',
+        style: 'bg-green-100 outline-green-500 text-green-800',
         label: 'AVAILABLE'
     },
     booked: {
@@ -14,7 +14,7 @@ const badgeConfigurations = Object.freeze({
         label: 'BORROWED'
     },
     maintenance: {
-        style: 'bg-orange-50 outline-amber-500 text-amber-500',
+        style: 'bg-orange-50 outline-amber-500 text-amber-800',
         label: 'MAINTENANCE'
     }
 })

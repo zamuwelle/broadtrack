@@ -73,7 +73,7 @@ export const BorrowNavbar = ({
                 <div className="flex items-center gap-2 sm:gap-3 lg:gap-6">
                     <button
                         type="button"
-                        aria-label="Open Booking Summary"
+                        aria-label={count > 0 ? `Open Booking Summary, ${count} selected` : 'Open Booking Summary'}
                         onClick={handleOpenSummary}
                         className="relative flex h-[25px] w-[30px] shrink-0 items-center justify-center cursor-pointer">
                         <Icon name="summary" className="h-[25px] w-[30px] shrink-0" />

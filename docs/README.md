@@ -16,6 +16,7 @@ Index of technical documentation for Broadtrack. For local setup and development
     - [Backend conventions](./reference/backend-conventions.md)
     - [Database schema and models](./reference/database.md)
     - [Frontend conventions](./reference/frontend-conventions.md)
+    - [Performance and SEO](./reference/performance-and-seo.md)
     - [Project structure](./reference/project-structure.md)
     - [Testing reference](./reference/testing.md)
 
@@ -36,5 +37,6 @@ Index of technical documentation for Broadtrack. For local setup and development
 - [Backend conventions](./reference/backend-conventions.md): Laravel conventions, Form Requests, policies, models, enums, locking, and Pest tests.
 - [Database schema and models](./reference/database.md): Core tables, foreign key constraints, pivot schema, and Eloquent relationships.
 - [Frontend conventions](./reference/frontend-conventions.md): React features, route guards, TanStack Query, shared utilities, UI components, and test commands.
+- [Performance and SEO](./reference/performance-and-seo.md): Loading, accessibility, search visibility, and Lighthouse checks.
 - [Project structure](./reference/project-structure.md): Directory layout, backend, frontend, docs, and config files.
 - [Testing reference](./reference/testing.md): Test setup, Vite Plus frontend tests, Pest backend tests, and commands.

@@ -60,7 +60,7 @@ export const CategorySelect = ({
                 <span
                     className={cn({
                         'text-text': Boolean(selectedOption),
-                        'text-muted': !selectedOption
+                        'text-slate-600': !selectedOption
                     })}>
                     {selectedOption ? selectedOption.name : placeholder}
                 </span>

@@ -24,6 +24,7 @@ export const PasswordInput = ({
         <FormField label={label} required={required} actionText={actionText} onAction={onAction}>
             <div className="relative">
                 <input
+                    aria-label={label}
                     type={isVisible ? 'text' : 'password'}
                     className={cn(className || 'w-full border h-10 pl-3 pr-10 rounded-lg text-[14px] outline-none', {
                         'border-red-500': Boolean(error),

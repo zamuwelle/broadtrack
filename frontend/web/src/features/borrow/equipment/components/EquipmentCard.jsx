@@ -62,7 +62,7 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                             src={getOptimizedImageUrl(equipment.image, 600, 300)}
                             alt={equipment.name}
                             className="h-full w-full object-contain"
-                            loading="eager"
+                            loading="lazy"
                             fetchPriority="high"
                             decoding="async"
                         />
@@ -78,11 +78,11 @@ export const EquipmentCard = ({ equipment = defaultEquipment }) => {
                     <p className="line-clamp-1 text-[18.17px] font-semibold" title={equipment.name}>
                         {equipment.name}
                     </p>
-                    <p className="line-clamp-1 min-h-[18px] text-[12px] text-icon-gray" title={modelName}>
+                    <p className="line-clamp-1 min-h-[18px] text-[12px] text-slate-600" title={modelName}>
                         {modelName}
                     </p>
                     <p
-                        className="line-clamp-2 min-h-[33px] text-[12px] leading-snug text-icon-gray"
+                        className="line-clamp-2 min-h-[33px] text-[12px] leading-snug text-slate-600"
                         title={equipment.description}>
                         {equipment.description}
                     </p>

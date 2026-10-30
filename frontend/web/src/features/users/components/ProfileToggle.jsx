@@ -35,6 +35,8 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
         <div className="relative font-['Poppins']" ref={boxRef}>
             <button
                 type="button"
+                aria-label={firstName ? `${firstName} profile menu` : 'Profile menu'}
+                aria-expanded={open}
                 onClick={handleToggle}
                 className={cn('h-9 p-1.5 rounded-[8px] flex items-center gap-2 transition-colors', {
                     'bg-sky-200': open,

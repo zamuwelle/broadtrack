@@ -46,7 +46,7 @@ export const SummaryFormView = (props) => {
 
             <div className="flex w-full flex-col items-end justify-start gap-3 rounded-lg bg-zinc-100/40 p-4 outline outline-1 outline-offset-[-1px] outline-slate-300">
                 <div className="inline-flex w-full items-start justify-between">
-                    <span className="text-xs font-normal text-neutral-400">BORROWER DETAILS</span>
+                    <span className="text-xs font-normal text-neutral-600">BORROWER DETAILS</span>
                 </div>
                 <div className="flex w-full flex-col items-start justify-start gap-1 text-xs font-normal text-text">
                     <div>Name: {user?.full_name || user?.name || 'User Name'}</div>
@@ -94,7 +94,7 @@ export const SummaryFormView = (props) => {
                         placeholder="Type your purpose or notes here... e.g., Thesis Project"
                         maxLength={MAX_BOOKING_PURPOSE_LENGTH}
                         rows={3}
-                        className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-400 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
+                        className="h-20 w-full resize-none rounded-lg bg-slate-50 p-3 text-xs text-black placeholder:text-neutral-600 outline outline-1 outline-offset-[-1px] outline-slate-300 focus:outline-2 focus:outline-sky-600 font-['Poppins']"
                     />
                 </div>
             </div>

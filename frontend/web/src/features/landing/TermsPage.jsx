@@ -25,7 +25,7 @@ export const TermsPage = () => {
         <section className="min-h-screen pt-32 pb-20">
             <div className="max-w-7xl mx-auto px-8">
                 <h1 className="text-[40px] font-bold text-text mb-2">Terms of Service</h1>
-                <p className="text-[14px] text-text/60 mb-10">Last updated: August 28, 2026</p>
+                <p className="text-[14px] text-text/70 mb-10">Last updated: August 28, 2026</p>
                 <div className="flex flex-col gap-8 text-text/80 text-[15px] max-w-[840px]">
                     {sections.map(({ heading, body }) => (
                         <div key={heading}>

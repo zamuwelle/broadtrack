@@ -9,9 +9,9 @@ export const UserCard = ({ user, onEdit, onRemove }) => {
     return (
         <article className="rounded-lg border border-slate-300 bg-white p-4 text-sm text-slate-700 shadow-xs">
             <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold text-slate-900 capitalize">
+                <h2 className="font-semibold text-slate-900 capitalize">
                     {user.firstname} {user.lastname}
-                </h3>
+                </h2>
                 <div className="flex shrink-0 gap-2">
                     <button
                         type="button"

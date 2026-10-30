@@ -9,16 +9,16 @@ const STATUS_CONFIGURATIONS = Object.freeze({
     available: {
         label: 'Available',
         icon: '🟢',
-        pillClass: 'bg-green-100 outline outline-1 outline-offset-[-0.90px] outline-green-500 text-green-500',
+        pillClass: 'bg-green-100 outline outline-1 outline-offset-[-0.90px] outline-green-500 text-green-800',
         menuClass: 'bg-green-100 outline outline-1 outline-offset-[-1px] outline-green-500',
-        itemTextClass: 'text-green-500'
+        itemTextClass: 'text-green-800'
     },
     booked: {
         label: 'Booked',
         icon: '🔴',
-        pillClass: 'bg-rose-100 outline outline-1 outline-offset-[-0.90px] outline-rose-500 text-rose-500',
+        pillClass: 'bg-rose-100 outline outline-1 outline-offset-[-0.90px] outline-rose-500 text-rose-800',
         menuClass: 'bg-rose-100 outline outline-1 outline-offset-[-1px] outline-rose-500',
-        itemTextClass: 'text-rose-500'
+        itemTextClass: 'text-rose-800'
     },
     borrowed: {
         label: 'Borrowed',
@@ -30,9 +30,9 @@ const STATUS_CONFIGURATIONS = Object.freeze({
     maintenance: {
         label: 'Maintenance',
         icon: '🛠',
-        pillClass: 'bg-orange-50 outline outline-1 outline-offset-[-0.90px] outline-amber-500 text-amber-500',
+        pillClass: 'bg-orange-50 outline outline-1 outline-offset-[-0.90px] outline-amber-500 text-amber-800',
         menuClass: 'bg-orange-50 outline outline-1 outline-offset-[-1px] outline-amber-500',
-        itemTextClass: 'text-amber-500'
+        itemTextClass: 'text-amber-800'
     }
 })
 

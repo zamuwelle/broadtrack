@@ -7,9 +7,6 @@ import { getEquipment, getEquipmentQueryOptions, useEquipment } from '@/features
 vi.mock('@/lib/api-client', () => ({
     api: { get: vi.fn() }
 }))
-vi.mock('@shared/util/image', () => ({
-    preloadEquipmentImages: vi.fn()
-}))
 
 describe('equipment queries', () => {
     it('returns equipment data and uses the equipment query key', async () => {

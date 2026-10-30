@@ -162,6 +162,7 @@ docs/
 │   ├── backend-conventions.md  # Backend standards, form requests, and Pest tests
 │   ├── database.md             # Core tables, foreign keys, and Eloquent models
 │   ├── frontend-conventions.md # Frontend patterns, query conventions, and styling
+│   ├── performance-and-seo.md  # Loading, accessibility, and Lighthouse checks
 │   ├── project-structure.md    # Repository directory layout and file annotations
 │   └── testing.md              # Testing frameworks, test setup, and runner commands
 ├── workflows/                  # Business and development workflows

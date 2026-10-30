@@ -85,7 +85,7 @@ export const Select = ({
                         <span className="w-px h-6 bg-border-subtle" />
                     </>
                 ) : null}
-                <span className={cn('flex-1 truncate', !value && 'text-muted')}>{value || placeholder}</span>
+                <span className={cn('flex-1 truncate', !value && 'text-slate-600')}>{value || placeholder}</span>
                 <IconComponent
                     name="chevron2"
                     className={cn('transition-transform duration-200', open && 'rotate-180')}
