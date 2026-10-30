@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
-import logo from '@/assets/logo.webp?inline'
+import logo from '@/assets/logo.webp'
 
 export const Logo = ({ link = true }) => {
     const content = (
         <>
             <img
                 src={logo}
-                alt="BroadTrack"
+                alt=""
+                width={256}
+                height={256}
                 className="w-9 h-9 md:w-16 md:h-16 shrink-0 object-contain"
                 decoding="sync"
             />

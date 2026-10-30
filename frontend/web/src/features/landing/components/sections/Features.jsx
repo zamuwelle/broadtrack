@@ -31,7 +31,7 @@ export const Features = () => (
                         key={title}
                         className="w-full max-w-[392px] min-h-[220px] lg:h-[248px] flex flex-col items-center justify-center gap-2 p-6 lg:p-[32px] rounded-[8px] bg-surface-muted border border-placeholder hover:bg-primary-tint hover:border-border-sky transition-colors">
                         <Icon name={icon} className="w-6 h-6 shrink-0" />
-                        <h3 className="text-text text-xl lg:text-[24px] font-semibold text-center">{title}</h3>
+                        <h2 className="text-text text-xl lg:text-[24px] font-semibold text-center">{title}</h2>
                         <p className="text-text text-[15px] lg:text-[18px] text-center leading-relaxed">
                             {description}
                         </p>

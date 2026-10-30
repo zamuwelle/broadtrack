@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logoFooter from '@/assets/logo_footer.webp?inline'
+import logoFooter from '@/assets/logo_footer.webp'
 import { Icon } from '@/components/ui/Icon'
 
 const sections = Object.freeze([
@@ -22,9 +22,11 @@ export const LandingFooter = () => (
                 <Link to="/" className="inline-flex items-center gap-3 sm:gap-[18px] max-w-full">
                     <img
                         src={logoFooter}
-                        alt="BroadTrack"
+                        alt=""
                         width={128}
-                        decoding="sync"
+                        height={128}
+                        loading="lazy"
+                        decoding="async"
                         className="w-[72px] sm:w-[128px] h-auto shrink-0"
                     />
                     <div className="flex flex-col text-left min-w-0">

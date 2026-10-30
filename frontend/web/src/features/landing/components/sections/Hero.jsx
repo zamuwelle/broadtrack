@@ -1,5 +1,5 @@
-import hero1 from '@/assets/hero1.webp?inline'
-import hero2 from '@/assets/hero2.webp?inline'
+import hero1 from '@/assets/hero1.webp'
+import hero2 from '@/assets/hero2.webp'
 
 export const Hero = () => (
     <section
