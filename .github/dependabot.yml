@@ -1,0 +1,29 @@
+version: 2
+updates:
+    - package-ecosystem: composer
+      directory: backend
+      schedule:
+          interval: daily
+    - package-ecosystem: composer
+      directory: backend
+      target-branch: dev
+      schedule:
+          interval: daily
+    - package-ecosystem: npm
+      directory: frontend
+      schedule:
+          interval: daily
+    - package-ecosystem: npm
+      directory: frontend
+      target-branch: dev
+      schedule:
+          interval: daily
+    - package-ecosystem: npm
+      directory: frontend/web
+      schedule:
+          interval: daily
+    - package-ecosystem: npm
+      directory: frontend/web
+      target-branch: dev
+      schedule:
+          interval: daily
