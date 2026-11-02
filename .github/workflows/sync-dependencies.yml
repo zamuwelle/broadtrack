@@ -1,0 +1,82 @@
+name: Sync dependency updates to dev
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    statuses: write
+
+concurrency:
+    group: sync-dependencies-to-dev
+    cancel-in-progress: false
+
+jobs:
+    sync:
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/create-github-app-token@v2
+              id: app-token
+              with:
+                  app-id: ${{ vars.VITE_SYNC_APP_ID }}
+                  private-key: ${{ secrets.VITE_SYNC_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.event.repository.name }}
+                  permission-contents: write
+
+            - uses: actions/checkout@v4
+              with:
+                  ref: dev
+                  token: ${{ steps.app-token.outputs.token }}
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Copy missing Dependabot commits
+              id: copy
+              env:
+                  APP_TOKEN: ${{ steps.app-token.outputs.token }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: |
+                  git show "$GITHUB_SHA:.github/scripts/sync-dependencies/copy-dependency-updates.sh" > "$RUNNER_TEMP/copy-dependency-updates.sh"
+                  git show "$GITHUB_SHA:.github/scripts/shared/verified-tests.sh" > "$RUNNER_TEMP/verified-tests.sh"
+                  for script in get-php-version.sh test-backend.sh test-frontend.sh build-frontend.sh; do
+                      git show "$GITHUB_SHA:.github/scripts/shared/$script" > "$RUNNER_TEMP/$script"
+                  done
+                  bash "$RUNNER_TEMP/copy-dependency-updates.sh"
+
+            - name: Get PHP version
+              if: steps.copy.outputs.changed == 'true' && steps.copy.outputs.verified != 'true'
+              id: php
+              run: bash "$RUNNER_TEMP/get-php-version.sh"
+
+            - uses: shivammathur/setup-php@v2
+              if: steps.copy.outputs.changed == 'true' && steps.copy.outputs.verified != 'true'
+              with:
+                  php-version: ${{ steps.php.outputs.version }}
+
+            - uses: oven-sh/setup-bun@v2
+              if: steps.copy.outputs.changed == 'true' && steps.copy.outputs.verified != 'true'
+
+            - name: Check backend
+              if: steps.copy.outputs.changed == 'true' && steps.copy.outputs.verified != 'true'
+              run: bash "$RUNNER_TEMP/test-backend.sh"
+
+            - name: Check frontend
+              if: steps.copy.outputs.changed == 'true' && steps.copy.outputs.verified != 'true'
+              run: |
+                  bash "$RUNNER_TEMP/test-frontend.sh"
+                  bash "$RUNNER_TEMP/build-frontend.sh"
+
+            - name: Update dev
+              if: steps.copy.outputs.changed == 'true'
+              env:
+                  APP_TOKEN: ${{ steps.app-token.outputs.token }}
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: |
+                  git show "$GITHUB_SHA:.github/scripts/sync-dependencies/push-dependency-updates.sh" > "$RUNNER_TEMP/push-dependency-updates.sh"
+                  bash "$RUNNER_TEMP/push-dependency-updates.sh"

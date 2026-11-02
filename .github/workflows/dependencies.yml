@@ -1,0 +1,84 @@
+name: Auto-merge Dependencies
+
+on:
+    workflow_run:
+        workflows: [Tests]
+        types: [completed]
+
+permissions:
+    actions: write
+    contents: write
+    pull-requests: write
+    statuses: write
+
+jobs:
+    auto-merge:
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - name: Merge the tested update and deploy
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+                  TEST_RUN_ID: ${{ github.event.workflow_run.id }}
+              run: bash .github/scripts/dependencies/merge-dependencies.sh
+
+    align:
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - name: Check the Dependabot pull request
+              id: pr
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: bash .github/scripts/dependencies/check-dependabot-pr.sh
+
+            - uses: actions/create-github-app-token@v2
+              if: steps.pr.outputs.valid == 'true'
+              id: app-token
+              with:
+                  app-id: ${{ vars.VITE_SYNC_APP_ID }}
+                  private-key: ${{ secrets.VITE_SYNC_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.event.repository.name }}
+                  permission-contents: write
+
+            - uses: actions/checkout@v4
+              if: steps.pr.outputs.valid == 'true'
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha }}
+                  token: ${{ steps.app-token.outputs.token }}
+                  fetch-depth: 0
+
+            - uses: oven-sh/setup-bun@v2
+              if: steps.pr.outputs.valid == 'true'
+
+            - name: Align the Vite alias and update the lockfile
+              if: steps.pr.outputs.valid == 'true'
+              id: align
+              working-directory: frontend
+              run: |
+                  git show "$GITHUB_SHA:.github/scripts/dependencies/align-vite-plus.sh" > "$RUNNER_TEMP/align-vite-plus.sh"
+                  bash "$RUNNER_TEMP/align-vite-plus.sh"
+
+            - name: Push the alignment
+              if: steps.align.outputs.changed == 'true'
+              env:
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+              run: |
+                  git show "$GITHUB_SHA:.github/scripts/dependencies/push-vite-alignment.sh" > "$RUNNER_TEMP/push-vite-alignment.sh"
+                  bash "$RUNNER_TEMP/push-vite-alignment.sh"
