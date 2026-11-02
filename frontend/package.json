@@ -1,0 +1,17 @@
+{
+	"name": "frontend",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"web"
+	],
+	"scripts": {
+		"dev": "bun run --filter web dev",
+		"lint": "oxlint web/src shared",
+		"dev:all": "cd web && php ../../backend/artisan optimize && concurrently --kill-others \"bun run dev\" \"PHP_CLI_SERVER_WORKERS=8 php ../../backend/artisan serve --no-reload\" \"php ../../backend/artisan queue:work\""
+	},
+	"devDependencies": {
+		"concurrently": "^10.0.5",
+		"oxlint": "^1.79.0"
+	}
+}

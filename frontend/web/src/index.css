@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+
+@theme {
+	--font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+	--color-primary: #0F4C81;
+	--color-secondary: #2563EB;
+	--color-background: #F8FAFC;
+	--color-surface: #FFFFFF;
+	--color-text: #1F2937;
+	--shadow-sm: 0 4px 2px rgba(0, 0, 0, 0.25);
+}
+
+.hero-gradient {
+	background: linear-gradient(to bottom, #C7E5FF 37%, #FFFFFF 100%);
+}
+
+.features-gradient {
+	background: linear-gradient(to bottom, #FFFFFF 0%, #C7E5FF 50%, #FFFFFF 100%);
+}
+
+.teams-gradient {
+	background: linear-gradient(to bottom, #FFFFFF 0%, #C7E5FF 100%);
+}
+
+.shadow-procedure {
+	box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.dim-screen {
+	background: rgba(0, 0, 0, 0.25);
+}
