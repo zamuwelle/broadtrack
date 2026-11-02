@@ -1,0 +1,21 @@
+@import './root.css';
+
+.hero-gradient {
+    background: linear-gradient(to bottom, #c7e5ff 37%, #ffffff 100%);
+}
+
+.features-gradient {
+    background: linear-gradient(to bottom, #ffffff 0%, #c7e5ff 50%, #ffffff 100%);
+}
+
+.teams-gradient {
+    background: linear-gradient(to bottom, #ffffff 0%, #c7e5ff 100%);
+}
+
+.shadow-procedure {
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.dim-screen {
+    background: rgba(0, 0, 0, 0.25);
+}
