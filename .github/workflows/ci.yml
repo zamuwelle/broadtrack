@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+    pull_request:
+    workflow_call:
+    workflow_dispatch:
+
+jobs:
+    backend:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Get PHP version
+              id: php
+              run: echo "version=$(jq -r '.require.php' backend/composer.json | grep -oP '\\d+\\.\\d+')" >> "$GITHUB_OUTPUT"
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ steps.php.outputs.version }}
+            - run: composer install --no-interaction --prefer-dist --no-scripts
+              working-directory: backend
+            - run: vendor/bin/pint --test --config pint.json
+              working-directory: backend
+            - run: php artisan test
+              working-directory: backend
+
+    frontend:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+            - run: bun install --frozen-lockfile
+              working-directory: frontend
+            - run: bun run lint:frontend
+              working-directory: frontend
+            - run: bun run test:frontend
+              working-directory: frontend
+            - run: bun run build
+              working-directory: frontend/web

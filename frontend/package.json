@@ -1,0 +1,43 @@
+{
+    "name": "frontend",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "web"
+    ],
+    "scripts": {
+        "test": "bun run test:frontend && bun run test:backend",
+        "test:backend": "(cd ../backend && php artisan test)",
+        "test:frontend": "vp test run",
+        "lint": "bun run lint:frontend && bun run lint:backend",
+        "lint:frontend": "vp lint",
+        "lint:backend": "php ../backend/vendor/bin/pint --test --config ../backend/pint.json ../backend",
+        "format": "bun run format:backend && bun run format:frontend",
+        "format:frontend": "vp fmt \"$(cd .. && pwd)\"",
+        "format:backend": "php ../backend/vendor/bin/pint --config ../backend/pint.json ../backend",
+        "build": "bun run --filter web build",
+        "check": "rm -f web/.vite-errors.log && bun run format && bun run lint && bun run build && bun scripts/assert-no-browser-errors.js",
+        "dev": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others --hide \"laravel queue,laravel scheduler,laravel reverb\" -p \"[{index}] [{name}]\" -n \"laravel,laravel queue,laravel reverb,vite+,laravel scheduler\" \"bun run serve\" \"php ../../backend/artisan queue:work --silent\" \"php ../../backend/artisan reverb:start --silent\" \"bun run dev\" \"php ../../backend/artisan schedule:work --silent\"",
+        "dev:backend": "cd web && php ../../backend/artisan optimize:clear && php ../../backend/artisan package:discover && concurrently --kill-others --hide \"laravel queue,laravel scheduler,laravel reverb\" -p \"[{index}] [{name}]\" -n \"laravel,laravel queue,laravel reverb,laravel scheduler\" \"bun run serve\" \"php ../../backend/artisan queue:work --silent\" \"php ../../backend/artisan reverb:start --silent\" \"php ../../backend/artisan schedule:work --silent\"",
+        "dev:frontend": "bun run --filter web dev"
+    },
+    "devDependencies": {
+        "concurrently": "^10.0.6",
+        "vite": "catalog:",
+        "vite-plus": "catalog:"
+    },
+    "catalog": {
+        "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+        "vite-plus": "1.1.0"
+    },
+    "overrides": {
+        "vite": "catalog:"
+    },
+    "devEngines": {
+        "packageManager": {
+            "name": "bun",
+            "version": "1.4.4",
+            "onFail": "download"
+        }
+    }
+}
