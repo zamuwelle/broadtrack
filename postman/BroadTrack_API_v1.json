@@ -1,0 +1,1567 @@
+{
+    "info": {
+        "_postman_id": "broadtrack-api-v1",
+        "name": "BroadTrack API (v1)",
+        "description": "BroadTrack API v1 collection with reusable Sanctum authentication.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "equipment_id",
+            "value": "",
+            "type": "string",
+            "description": "Set this to the ID of the intended existing equipment; do not assume an ID."
+        },
+        {
+            "key": "booking_id",
+            "value": "",
+            "type": "string",
+            "description": "Set this to the ID of the intended existing booking; do not assume an ID."
+        },
+        {
+            "key": "user_id",
+            "value": "",
+            "type": "string",
+            "description": "Set this to the ID of the intended existing user; do not assume an ID."
+        },
+        {
+            "key": "temp_user_id",
+            "value": "",
+            "type": "string",
+            "description": "Auto-set by Create user for safe deletion testing without deleting seeded Karl accounts."
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login (Borrower)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": ["pm.collectionVariables.unset('token');"]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Login as Borrower returns token\", () => {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.token).to.be.a(\"string\").and.not.empty;",
+                                    "    pm.collectionVariables.set(\"token\", res.data.token);",
+                                    "    console.log(\"Logged in as Borrower (karlborrow)\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/login",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Logs in as Karl Borrower. Returns 200 and saves bearer token. Use this role to create bookings and read equipment catalog."
+                    }
+                },
+                {
+                    "name": "Login (Admin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": ["pm.collectionVariables.unset('token');"]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Login as Admin returns token\", () => {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.token).to.be.a(\"string\").and.not.empty;",
+                                    "    pm.collectionVariables.set(\"token\", res.data.token);",
+                                    "    console.log(\"Logged in as Admin (karladmin)\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"karladmin.test@laverdad.edu.ph\",\n  \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/login",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Logs in as Karl Admin. Returns 200 and saves bearer token. Use this role to approve bookings, manage equipment inventory, and export reports."
+                    }
+                },
+                {
+                    "name": "Login (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": ["pm.collectionVariables.unset('token');"]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Login as Sysadmin returns token\", () => {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.token).to.be.a(\"string\").and.not.empty;",
+                                    "    pm.collectionVariables.set(\"token\", res.data.token);",
+                                    "    console.log(\"Logged in as Sysadmin (karlsysadmin)\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"karlsysadmin.test@laverdad.edu.ph\",\n  \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/login",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Logs in as Karl Sysadmin. Returns 200 and saves bearer token. Use this role for user management (listing, creating, updating, deleting users)."
+                    }
+                },
+                {
+                    "name": "Register (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Duplicate verified email is rejected\", () => {",
+                                    "    pm.response.to.have.status(422);",
+                                    "    pm.expect(pm.response.json().errors.email).to.be.an(\"array\").that.is.not.empty;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // firstname and lastname: name for the new account.\n  // email: school email; this verified seeded address demonstrates duplicate-email 422.\n  // password: must meet the registration password rules.\n  // department: use an allowed department value.\n  // A new registration requires an unused student.laverdad.edu.ph email and queues verification.\n  \"firstname\": \"Karl Ashton\",\n  \"lastname\": \"Mahusay\",\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"department\": \"BS Information Systems\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/register",
+                        "description": "Public. This seeded verified email already exists, so the default body returns 422 with errors.email. A successful registration requires an unused school email and returns 201 while queueing verification.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Verify email (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Verify email responds (200 OK or 422 if already verified)\", () => {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 422]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"code\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/verify-email",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Public. Validates a 6-digit email verification code. Seeded users are already verified, returning 422."
+                    }
+                },
+                {
+                    "name": "Resend verification (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Already verified account returns validation error\", () => {",
+                                    "    pm.response.to.have.status(422);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // email: school account email; verified account returns 422.\n  // An unverified account can return 200; a repeat within one minute returns 429.\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/resend-verification",
+                        "description": "Public. The seeded Karlborrow account is verified, so the default body returns 422 for an already verified email. An unverified account returns 200; a repeat within one minute returns 429.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot password (Public)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // email: existing school account; unknown valid email returns 404.\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/forgot-password",
+                        "description": "Public. Returns 200 when a reset email is queued, or 404 when no account matches. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Reset password (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Reset password responds (200 OK or 422 Invalid Token)\", () => {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 422]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"sample-reset-token-abc123xyz\",\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/reset-password",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Public. Resets account password using a reset token received via email."
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Logout successful\", () => {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.collectionVariables.unset(\"token\");",
+                                    "    console.log(\"Session ended and token cleared.\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/logout",
+                        "description": "Requires a valid token. Revokes the current Sanctum token on the backend and unsets the token collection variable."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "item": [
+                {
+                    "name": "Get profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Profile retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.id).to.be.a(\"number\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/me",
+                        "description": "Requires a valid token. Returns the current user profile with 200. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Update profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstname\": \"Alice\",\n  \"lastname\": \"Walker\",\n  \"department\": \"BS Information Systems\"\n}"
+                        },
+                        "url": "{{base_url}}/profile",
+                        "description": "Requires authentication. Updates the current user's name or department. Returns 422 for invalid fields."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Equipment",
+            "item": [
+                {
+                    "name": "List equipment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Equipment catalog retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    if (Array.isArray(res.data) && res.data.length > 0) {",
+                                    "        pm.collectionVariables.set('equipment_id', String(res.data[0].id));",
+                                    "        console.log('Auto-selected equipment_id:', res.data[0].id);",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/equipment",
+                        "description": "Requires a valid token. Returns equipment for any signed-in role with 200. Automatically sets the equipment_id collection variable from the first item. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Get equipment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Equipment details retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.id).to.be.a(\"number\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/equipment/{{equipment_id}}",
+                        "description": "Requires a valid token. Returns details for a single equipment record with 200. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Create equipment (Admin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Generate unique serial number to prevent 422 duplicate serial errors on repeat runs",
+                                    "pm.variables.set('unique_serial', 'SN-A7IV-' + Date.now().toString().slice(-6));"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Equipment created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "    const res = pm.response.json();",
+                                    "    if (res.data && res.data.id) {",
+                                    "        pm.collectionVariables.set('equipment_id', String(res.data.id));",
+                                    "        console.log('Created equipment ID saved:', res.data.id);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"category\": \"Camera\",\n  \"name\": \"Sony Alpha A7 IV\",\n  \"brand\": \"Sony\",\n  \"model\": \"ILCE-7M4\",\n  \"serial_no\": \"{{unique_serial}}\",\n  \"description\": \"Full-frame 33MP hybrid mirrorless camera with 4K60p video\",\n  \"specs\": \"33MP Exmor R CMOS, 4K 60p 10-bit 4:2:2, 5-axis IBIS\",\n  \"status\": \"available\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/equipment",
+                        "description": "Admin or sysadmin only. Creates equipment and returns 201; invalid input returns 422. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Upload equipment image (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Upload responds (200 OK or 422 Validation)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 422]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "image",
+                                    "type": "file",
+                                    "src": [],
+                                    "description": "Select an image file (jpeg, jpg, png, webp, max 5MB)."
+                                }
+                            ]
+                        },
+                        "url": "{{base_url}}/equipment/{{equipment_id}}/upload",
+                        "description": "Admin or sysadmin only. Uploads an image file to Cloudinary and saves the URL on the equipment record. Select a file in the Body tab to run."
+                    }
+                },
+                {
+                    "name": "Update equipment (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Equipment updated\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // name: optional replacement display name.\n  // status: equipment status enum.\n  // Bad example: status \"reserved\" returns 422.\n  \"name\": \"Sony Alpha A7 IV (Studio Kit)\",\n  \"status\": \"available\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/equipment/{{equipment_id}}",
+                        "description": "Admin or sysadmin only. Updates equipment and returns 200; invalid input returns 422. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status. Set equipment_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Delete equipment (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Equipment deleted (204 No Content)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/equipment/{{equipment_id}}",
+                        "description": "Admin or sysadmin only. Returns 204 when deleted; returns 422 when the equipment has booking records or is booked or borrowed. Set equipment_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Bookings",
+            "item": [
+                {
+                    "name": "List bookings",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Bookings retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    if (Array.isArray(res.data) && res.data.length > 0) {",
+                                    "        pm.collectionVariables.set('booking_id', String(res.data[0].id));",
+                                    "        console.log('Auto-selected booking_id:', res.data[0].id);",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings",
+                        "description": "Requires a valid token. Borrowers receive their own bookings in every status; admins and sysadmins receive all bookings. Returns 200. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Calendar bookings",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Calendar bookings return an array\", () => {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data).to.be.an(\"array\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/bookings?view=calendar",
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings"],
+                            "query": [
+                                {
+                                    "key": "view",
+                                    "value": "calendar",
+                                    "description": "View mode: 'calendar' masks borrower personal details (name, email, purpose, internal user ID) while returning approved reservations."
+                                }
+                            ]
+                        },
+                        "description": "Requires a valid token. Borrowers receive approved bookings for the shared calendar; other borrowers’ identity, purpose, approval and rejection notes, and read state are hidden. Admins and sysadmins receive all bookings, including pending ones. Returns 200. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Create booking (Borrower)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Dynamically generate future dates so booking requests never expire",
+                                    "const now = new Date();",
+                                    "const start = new Date(now.getTime() + 24 * 60 * 60 * 1000);",
+                                    "const end = new Date(now.getTime() + 48 * 60 * 60 * 1000);",
+                                    "const pad = (n) => String(n).padStart(2, '0');",
+                                    "const format = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} 09:00:00`;",
+                                    "pm.variables.set('booking_start', format(start));",
+                                    "pm.variables.set('booking_end', format(end));",
+                                    "// Fallback if equipment_id is not yet set",
+                                    "if (!pm.collectionVariables.get('equipment_id')) {",
+                                    "    pm.collectionVariables.set('equipment_id', '1');",
+                                    "}"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Booking created successfully (201 Created)\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "    const res = pm.response.json();",
+                                    "    if (res.data && res.data.id) {",
+                                    "        pm.collectionVariables.set('booking_id', String(res.data.id));",
+                                    "        console.log('Chained Booking ID:', res.data.id);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"purpose\": \"Documentary Production - Finals Project\",\n  \"start_date\": \"{{booking_start}}\",\n  \"end_date\": \"{{booking_end}}\",\n  \"equipment_ids\": [\n    \"{{equipment_id}}\"\n  ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/bookings",
+                        "description": "Borrower only. Creates a booking request and returns 201. Set start_date and end_date to future Manila local times and equipment_id to the ID of an existing available item; invalid dates, unavailable equipment, or overlap with an approved booking return 422. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Get booking",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Booking slip retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}",
+                        "description": "Requires a valid token. The booking owner, admins, and sysadmins receive it with 200; other users receive 403. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401."
+                    }
+                },
+                {
+                    "name": "Download booking slip (PDF) (Borrower)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Booking slip PDF generated\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/pdf"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}/slip/pdf",
+                        "description": "Borrower or admin. Downloads the official borrowing slip PDF containing ticket ID and equipment details."
+                    }
+                },
+                {
+                    "name": "Approve booking (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Booking approved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // approval_note: optional note for the pending booking.\n  // Bad example: an invalid booking state returns 422.\n  \"approval_note\": \"Approved. Please bring student ID upon equipment pickup.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/bookings/{{booking_id}}/approve",
+                        "description": "Admin or sysadmin only. Approves a pending booking and returns 200; invalid state, expired dates, maintenance, or overlapping bookings return 422. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Send return reminder (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Reminder queued successfully\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}/remind",
+                        "description": "Admin or sysadmin only. Queues a reminder for an approved booking and returns 200; inactive bookings return 422. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Return booking (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Booking marked as returned\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}/return",
+                        "description": "Admin or sysadmin only. Marks an approved booking as returned and returns 200; inactive bookings return 422. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Reject booking (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // rejection_reason: required text; empty value returns 422.\n  // Bad example: empty rejection_reason fails validation with 422.\n  \"rejection_reason\": \"Equipment is reserved for an official school event.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/bookings/{{booking_id}}/reject",
+                        "description": "Admin or sysadmin only. Rejects a pending or approved booking and returns 200; other statuses return 422. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Cancel booking (Borrower / Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}/cancel",
+                        "description": "The booking owner, admins, and sysadmins can cancel a pending or approved booking; returns 200 on success. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a user without permission returns 403."
+                    }
+                },
+                {
+                    "name": "Mark notification read (Borrower)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/bookings/{{booking_id}}/read",
+                        "description": "Borrower only, and only for their own booking. Marks it read and returns 200. Set booking_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; non-borrowers or other users receive 403."
+                    }
+                },
+                {
+                    "name": "Export reports (PDF) (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Reports PDF generated\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/pdf"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/bookings/reports/pdf?category=All&search=",
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings", "reports", "pdf"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "All",
+                                    "description": "Filter by status: All | Active | Completed | Overdue | Cancelled"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "",
+                                    "description": "Optional keyword search on ticket ID, purpose, borrower name/email, or equipment name/serial"
+                                }
+                            ]
+                        },
+                        "description": "Admin or sysadmin only. Exports filtered bookings report as an official PDF document."
+                    }
+                },
+                {
+                    "name": "Export reports (CSV) (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Reports CSV generated\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "text/csv"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/bookings/reports/csv?category=All&search=",
+                            "host": ["{{base_url}}"],
+                            "path": ["bookings", "reports", "csv"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "All",
+                                    "description": "Filter by status: All | Active | Completed | Overdue | Cancelled"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "",
+                                    "description": "Optional keyword search on ticket ID, purpose, borrower name/email, or equipment name/serial"
+                                }
+                            ]
+                        },
+                        "description": "Admin or sysadmin only. Exports bookings report as a spreadsheet-compatible CSV file."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "List users (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Users retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    if (Array.isArray(res.data) && res.data.length > 0) {",
+                                    "        pm.collectionVariables.set('user_id', String(res.data[0].id));",
+                                    "        console.log('Auto-selected user_id:', res.data[0].id);",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/users",
+                        "description": "Sysadmin only. Lists users except sysadmin accounts and returns 200. Automatically sets the user_id collection variable from the first item. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Get user (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"User retrieved\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.data && res.data.id).to.be.a(\"number\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/users/{{user_id}}",
+                        "description": "Sysadmin only. Returns user details for the specified user_id with 200. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Create user (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Generate unique timestamped email so creation succeeds and creates a disposable test user",
+                                    "pm.variables.set('unique_admin_email', 'admin.' + Date.now().toString().slice(-6) + '@laverdad.edu.ph');"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"User created successfully (201 Created)\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "    const res = pm.response.json();",
+                                    "    if (res.data && res.data.id) {",
+                                    "        pm.collectionVariables.set('temp_user_id', String(res.data.id));",
+                                    "        console.log('Saved disposable temp_user_id for deletion test:', res.data.id);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstname\": \"Disposable\",\n  \"lastname\": \"Admin\",\n  \"email\": \"{{unique_admin_email}}\",\n  \"password\": \"password123\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/users",
+                        "description": "Sysadmin only. Creates a disposable admin user with a dynamic unique email. Saves temp_user_id so subsequent update/delete tests do not touch seeded accounts."
+                    }
+                },
+                {
+                    "name": "Update user (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (!pm.collectionVariables.get('temp_user_id')) {",
+                                    "    pm.collectionVariables.set('temp_user_id', pm.collectionVariables.get('user_id'));",
+                                    "}"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"User updated\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // firstname: optional replacement name.\n  // role: borrower, admin, or sysadmin; invalid role returns 422.\n  // department: required when changing role to borrower.\n  // Bad example: role \"manager\" returns 422.\n  \"firstname\": \"Karl Ashton\",\n  \"role\": \"admin\",\n  \"department\": \"BS Information Systems\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/users/{{temp_user_id}}",
+                        "description": "Sysadmin only. Updates a user and returns 200; invalid input returns 422. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status. Set user_id to the intended existing record; never assume an ID. Missing or invalid bearer token returns 401; a signed-in role without access returns 403."
+                    }
+                },
+                {
+                    "name": "Delete user (Sysadmin)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (!pm.collectionVariables.get('temp_user_id')) {",
+                                    "    pm.collectionVariables.set('temp_user_id', pm.collectionVariables.get('user_id'));",
+                                    "}"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"User deleted (204 No Content)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/users/{{temp_user_id}}",
+                        "description": "Sysadmin only. Deletes the disposable user created in the step above without risking deletion of Karl Borrow."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Contact",
+            "item": [
+                {
+                    "name": "Send contact message (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Contact message sent\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  // firstname and lastname: sender name.\n  // email: valid sender email; malformed value returns 422.\n  // message: required message text.\n  // Bad example: an invalid email address returns 422.\n  \"firstname\": \"Karl Ashton\",\n  \"lastname\": \"Mahusay\",\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"message\": \"Inquiring about equipment availability for an upcoming school project.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/contact",
+                        "description": "Public. Queues the contact message and returns 200; mail queue failure returns 500. The saved assertion expects the documented success status; if you choose a commented error example, update the expected status.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Rate Limiting",
+            "item": [
+                {
+                    "name": "Verify rate limit headers (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK (or 429 if already throttled)\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 429]);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Rate limit headers are present on throttled endpoint\", function () {",
+                                    "    pm.expect(pm.response.headers.has(\"X-RateLimit-Limit\")).to.be.true;",
+                                    "    pm.expect(pm.response.headers.get(\"X-RateLimit-Limit\")).to.eql(\"5\");",
+                                    "    pm.expect(pm.response.headers.has(\"X-RateLimit-Remaining\")).to.be.true;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstname\": \"Karl Ashton\",\n  \"lastname\": \"Mahusay\",\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"message\": \"Checking rate limit headers.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/contact",
+                        "description": "Public. Sends a single request to verify that the throttle:5,1 middleware returns X-RateLimit-Limit (5) and X-RateLimit-Remaining headers without exhausting the quota.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                },
+                {
+                    "name": "Trigger 429 rate limit (Contact) (Public)",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "// Send 5 rapid requests to exhaust the throttle:5,1 threshold before the main request runs",
+                                    "const sendBurst = function (remaining, callback) {",
+                                    "    if (remaining <= 0) {",
+                                    "        return callback();",
+                                    "    }",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.variables.get('base_url') + '/contact',",
+                                    "        method: 'POST',",
+                                    "        header: {",
+                                    "            'Accept': 'application/json',",
+                                    "            'Content-Type': 'application/json'",
+                                    "        },",
+                                    "        body: {",
+                                    "            mode: 'raw',",
+                                    "            raw: JSON.stringify({",
+                                    "                firstname: 'Rate',",
+                                    "                lastname: 'Limit',",
+                                    "                email: 'karlborrow.test@student.laverdad.edu.ph',",
+                                    "                message: 'Exhausting rate limit threshold.'",
+                                    "            })",
+                                    "        }",
+                                    "    }, function () {",
+                                    "        sendBurst(remaining - 1, callback);",
+                                    "    });",
+                                    "};",
+                                    "",
+                                    "sendBurst(5, function () {});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 429 Too Many Requests\", function () {",
+                                    "    pm.response.to.have.status(429);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Rate limit headers indicate quota exhaustion\", function () {",
+                                    "    pm.expect(pm.response.headers.has(\"Retry-After\")).to.be.true;",
+                                    "    pm.expect(pm.response.headers.get(\"X-RateLimit-Limit\")).to.eql(\"5\");",
+                                    "    pm.expect(pm.response.headers.get(\"X-RateLimit-Remaining\")).to.eql(\"0\");",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response body explains rate limit exceeded\", function () {",
+                                    "    const res = pm.response.json();",
+                                    "    pm.expect(res.message).to.be.a(\"string\").and.match(/too many/i);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstname\": \"Rate\",\n  \"lastname\": \"Limit\",\n  \"email\": \"karlborrow.test@student.laverdad.edu.ph\",\n  \"message\": \"Exhausting rate limit threshold.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{base_url}}/contact",
+                        "description": "Public. The Pre-request Script fires 5 rapid requests in a loop to consume the throttle:5,1 allowance. The 6th request (this main request) triggers HTTP 429 Too Many Requests, returning Retry-After, X-RateLimit-Limit: 5, and X-RateLimit-Remaining: 0.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    }
+                }
+            ],
+            "description": "Demo this folder at the end of your presentation. Triggering the 429 threshold locks the client IP for 60 seconds on public guest endpoints."
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    }
+}

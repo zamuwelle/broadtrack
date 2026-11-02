@@ -1,0 +1,9 @@
+# BroadTrack
+
+> BroadTrack is an equipment booking and inventory tracking system.
+
+## Pages
+
+- [Home](/): Features and equipment borrowing overview.
+- [Privacy Policy](/privacy): How BroadTrack handles personal information.
+- [Terms of Service](/terms): Terms for using BroadTrack.
