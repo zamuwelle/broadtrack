@@ -1,0 +1,90 @@
+name: Align Vite Plus dependencies
+
+on:
+    workflow_run:
+        workflows: [Tests]
+        types: [completed]
+
+permissions:
+    contents: read
+    pull-requests: read
+
+jobs:
+    align:
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check the Dependabot pull request
+              id: pr
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+                  HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: |
+                  pr=$(gh pr list --state open --head "$HEAD_BRANCH" --json author,baseRefName,headRefOid --jq '.[] | select(.author.login == "app/dependabot" and .baseRefName == "main")')
+                  if [ -n "$pr" ] && [ "$(echo "$pr" | jq -r .headRefOid)" = "$HEAD_SHA" ]; then
+                      echo 'valid=true' >> "$GITHUB_OUTPUT"
+                  fi
+
+            - uses: actions/create-github-app-token@v2
+              if: steps.pr.outputs.valid == 'true'
+              id: app-token
+              with:
+                  app-id: ${{ vars.VITE_SYNC_APP_ID }}
+                  private-key: ${{ secrets.VITE_SYNC_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.event.repository.name }}
+                  permission-contents: write
+
+            - uses: actions/checkout@v4
+              if: steps.pr.outputs.valid == 'true'
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha }}
+                  token: ${{ steps.app-token.outputs.token }}
+
+            - uses: oven-sh/setup-bun@v2
+              if: steps.pr.outputs.valid == 'true'
+
+            - name: Align the Vite alias and update the lockfile
+              if: steps.pr.outputs.valid == 'true'
+              id: align
+              working-directory: frontend
+              run: |
+                  python3 - <<'PY'
+                  import json
+                  import pathlib
+                  import re
+                  import os
+
+                  path = pathlib.Path('package.json')
+                  text = path.read_text()
+                  catalog = json.loads(text)['catalog']
+                  version = catalog['vite-plus']
+                  alias = catalog['vite']
+                  prefix = 'npm:@voidzero-dev/vite-plus-core@'
+                  if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', version) or not alias.startswith(prefix):
+                      raise SystemExit('Unexpected Vite Plus catalog entries')
+                  if alias == prefix + version:
+                      raise SystemExit(0)
+                  old = '"vite": "' + alias + '"'
+                  if text.count(old) != 1:
+                      raise SystemExit('Unable to locate the Vite alias exactly once')
+                  path.write_text(text.replace(old, '"vite": "' + prefix + version + '"'))
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+                      output.write('changed=true\n')
+                  PY
+                  if [ "$(git status --porcelain -- package.json)" != "" ]; then
+                      bun install --lockfile-only --ignore-scripts
+                  fi
+
+            - name: Push the alignment
+              if: steps.align.outputs.changed == 'true'
+              env:
+                  HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+              run: |
+                  git config user.name 'github-actions[bot]'
+                  git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+                  git add frontend/package.json frontend/bun.lock
+                  git commit -m 'fix: align Vite Plus dependencies [dependabot skip]'
+                  git push origin "HEAD:refs/heads/$HEAD_BRANCH"

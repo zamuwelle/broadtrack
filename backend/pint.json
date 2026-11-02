@@ -1,0 +1,83 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "use_arrow_functions": true,
+        "array_push": true,
+        "string_length_to_empty": true,
+        "is_null": true,
+        "modernize_strpos": true,
+        "modernize_types_casting": true,
+        "set_type_to_cast": true,
+        "get_class_to_class_keyword": true,
+        "pow_to_exponentiation": true,
+        "dir_constant": true,
+        "combine_nested_dirname": true,
+        "implode_call": true,
+        "long_to_shorthand_operator": true,
+        "logical_operators": true,
+        "combine_consecutive_issets": true,
+        "combine_consecutive_unsets": true,
+        "standardize_increment": true,
+        "stringable_for_to_string": true,
+        "simple_to_complex_string_variable": true,
+        "octal_notation": true,
+        "function_to_constant": true,
+        "return_assignment": true,
+        "simplified_if_return": true,
+        "no_useless_else": true,
+        "no_superfluous_elseif": true,
+        "no_useless_sprintf": true,
+        "no_useless_printf": true,
+        "no_useless_concat_operator": true,
+        "no_useless_nullsafe_operator": true,
+        "no_unneeded_curly_braces": true,
+        "no_null_property_initialization": true,
+        "no_redundant_readonly_property": true,
+        "no_empty_comment": true,
+        "no_break_comment": true,
+        "switch_continue_to_break": true,
+        "non_printable_character": true,
+        "no_homoglyph_names": true,
+        "random_api_migration": true,
+        "modern_serialization_methods": true,
+        "regular_callable_call": true,
+        "operator_linebreak": {
+            "only_booleans": true,
+            "position": "beginning"
+        },
+        "php_unit_assert_new_names": true,
+        "php_unit_construct": true,
+        "ordered_attributes": true,
+        "attribute_empty_parentheses": true,
+        "attribute_block_no_spaces": true,
+        "explicit_string_variable": true,
+        "assign_null_coalescing_to_coalesce_equal": true,
+        "ternary_to_null_coalescing": true,
+        "ternary_to_elvis_operator": true,
+        "ordered_types": {
+            "sort_algorithm": "alpha",
+            "null_adjustment": "always_last"
+        },
+        "php_unit_attributes": true,
+        "class_reference_name_casing": true,
+        "phpdoc_types_no_duplicates": true,
+        "phpdoc_param_order": true,
+        "lambda_not_used_import": true,
+        "class_attributes_separation": {
+            "elements": {
+                "property": "none"
+            }
+        },
+        "single_line_empty_body": true,
+        "concat_space": {
+            "spacing": "none"
+        },
+        "blank_line_between_import_groups": false,
+        "no_superfluous_phpdoc_tags": true,
+        "fully_qualified_strict_types": true,
+        "cast_spaces": {
+            "space": "none"
+        }
+    },
+    "exclude": ["bootstrap/cache", "storage", "vendor"]
+}
