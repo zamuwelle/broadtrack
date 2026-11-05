@@ -39,11 +39,12 @@ export const BasicFields = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2.5">
             <div>
                 <label htmlFor="model-code-input" className="block mb-1 text-xs font-semibold text-slate-800">
-                    Model / Code
+                    Model / Code <span aria-hidden="true" className="text-red-500">*</span>
                 </label>
                 <input
                     id="model-code-input"
                     type="text"
+                    aria-required="true"
                     value={modelCode}
                     onChange={onModelChange}
                     placeholder="e.g. ILCE-7M4"
@@ -57,11 +58,12 @@ export const BasicFields = ({
 
             <div>
                 <label htmlFor="serial-number-input" className="block mb-1 text-xs font-semibold text-slate-800">
-                    Serial Number
+                    Serial Number <span aria-hidden="true" className="text-red-500">*</span>
                 </label>
                 <input
                     id="serial-number-input"
                     type="text"
+                    aria-required="true"
                     value={serialNumber}
                     onChange={onSerialChange}
                     placeholder="e.g. SN-8821903"

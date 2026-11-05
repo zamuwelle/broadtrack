@@ -10,16 +10,19 @@ use App\Http\Requests\Api\V1\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
+use Database\Seeders\EquipmentSeeder;
 use GuzzleHttp\Promise\FulfilledPromise;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\BroadcastEvent;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 
 test('public booking events omit confidential booking attributes', function (): void {
     $booking = Booking::factory()->create(['purpose' => 'Private documentary', 'approval_note' => 'Private note']);
@@ -110,22 +113,18 @@ test('duplicate equipment selections do not create duplicate requests', function
     expect(Booking::count())->toBe(0);
 });
 
-test('different equipment names sharing a brand get different generated serials', function (): void {
-    $first = Equipment::factory()->create(['name' => 'Camera Alpha', 'brand' => 'Sony']);
-    $second = Equipment::factory()->create(['name' => 'Camera Beta', 'brand' => 'Sony']);
+test('seeder continues the serial counter beyond four digits', function (): void {
+    Equipment::factory()->create(['brand' => 'Behringer', 'serial_no' => 'SN-BEH-10000']);
+    $this->seed(EquipmentSeeder::class);
 
-    expect($first->serial_no)->toBe('SN-SON-0001');
-    expect($second->serial_no)->toBe('SN-SON-0002');
-});
-
-test('serial generation preserves the full unit counter after four digits', function (): void {
-    Equipment::factory()->create(['brand' => 'Sony', 'serial_no' => 'SN-SON-10000']);
-    $equipment = Equipment::factory()->create(['brand' => 'Sony']);
-
-    expect($equipment->serial_no)->toBe('SN-SON-10001');
+    $this->assertDatabaseHas('equipments', ['serial_no' => 'SN-BEH-10001']);
+    $this->assertDatabaseHas('equipments', ['serial_no' => 'SN-BEH-10002']);
 });
 
 test('equipment uploads isolate legacy duplicate serial assets', function (): void {
+    Schema::table('equipments', static function (Blueprint $table): void {
+        $table->dropUnique(['serial_no']);
+    });
     config(['services.cloudinary.cloud_name' => 'test']);
     Http::fake(['api.cloudinary.com/*' => Http::response(['secure_url' => 'https://res.cloudinary.com/test/image/upload/new.webp'])]);
     $admin = User::factory()->admin()->create();
@@ -172,6 +171,9 @@ test('deleting equipment removes only its new dedicated image', function (): voi
 });
 
 test('legacy duplicate serial equipment remains editable when serial is unchanged', function (): void {
+    Schema::table('equipments', static function (Blueprint $table): void {
+        $table->dropUnique(['serial_no']);
+    });
     $admin = User::factory()->admin()->create();
     $first = Equipment::factory()->create(['serial_no' => 'LEGACY-SHARED']);
     Equipment::factory()->create(['serial_no' => 'LEGACY-SHARED']);
@@ -260,21 +262,10 @@ test('booking store rechecks equipment maintenance after validation', function (
     expect(Booking::count())->toBe(0);
 });
 
-test('CSV report neutralizes borrower formulas and supports empty admin departments', function (): void {
-    $admin = User::factory()->admin()->create();
-    $borrower = User::factory()->create();
-    Booking::factory()->approved()->create(['user_id' => $borrower->id, 'purpose' => '=1+1']);
-
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
-    $content = $response->streamedContent();
-    expect($content)->toContain("'=1+1");
-});
-
 test('reports export bookings with no department', function (): void {
     $admin = User::factory()->admin()->create(['department' => null]);
     Booking::factory()->approved()->create(['user_id' => $admin->id]);
 
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
-    expect($response->streamedContent())->toContain('Approved');
+    $this->actingAs($admin)->get('/api/v1/bookings/reports/xlsx')->assertOk();
     $this->get('/api/v1/bookings/reports/pdf')->assertOk();
 });

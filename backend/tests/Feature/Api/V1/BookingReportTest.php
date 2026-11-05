@@ -3,6 +3,48 @@
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
+function reportRows(string $content): array
+{
+    $file = tempnam(sys_get_temp_dir(), 'xlsx');
+    try {
+        file_put_contents($file, $content);
+
+        $sheet = IOFactory::createReader('Xlsx')->load($file)->getActiveSheet();
+        $lastRow = (int)substr(strrchr($sheet->getAutoFilter()->getRange(), 'M'), 1);
+
+        return array_slice($sheet->toArray('', true, true, false), 2, max(0, $lastRow - 2));
+    } finally {
+        unlink($file);
+    }
+}
+
+test('xlsx export contains report data as safe text', function (): void {
+    $admin = User::factory()->admin()->create();
+    $booking = Booking::factory()->approved()->create(['ticket_id' => 'EXCEL-001', 'purpose' => '=1+1']);
+    $booking->equipments()->attach(Equipment::factory()->create()->id);
+    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/xlsx?search=EXCEL-001')->assertOk();
+    $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    $file = tempnam(sys_get_temp_dir(), 'xlsx');
+    try {
+        file_put_contents($file, $response->streamedContent());
+        $sheet = IOFactory::createReader('Xlsx')->load($file)->getActiveSheet();
+        expect($sheet->getCell('A1')->getValue())->toBe('BroadTrack Transactions')
+            ->and($sheet->getDrawingCollection())->toHaveCount(0)
+            ->and($sheet->getShowGridlines())->toBeTrue()
+            ->and($sheet->getCell('I2')->getValue())->toBe('Booked Date')
+            ->and($sheet->getDataValidation('F3')->getFormula1())->toContain('Camera')
+            ->and($sheet->getDataValidation('M3')->getFormula1())->toContain('Overdue')
+            ->and($sheet->getCell('A3')->getValue())->toBe('EXCEL-001')
+            ->and($sheet->getCell('L3')->getValue())->toBe('=1+1')
+            ->and($sheet->getCell('L3')->getDataType())->toBe(DataType::TYPE_STRING);
+    } finally {
+        unlink($file);
+    }
+    $this->actingAs(User::factory()->borrower()->create())->get('/api/v1/bookings/reports/xlsx')->assertForbidden();
+});
 
 test('admin can export transactions report as PDF', function () {
     $admin = User::factory()->admin()->create();
@@ -22,52 +64,6 @@ test('admin can export transactions report as PDF', function () {
     expect($response->headers->get('content-disposition'))->toContain('inline');
 });
 
-test('admin can export transactions report as CSV with UTF-8 BOM', function () {
-    $admin = User::factory()->admin()->create();
-    $borrower = User::factory()->borrower()->create([
-        'firstname' => 'Juan',
-        'lastname' => 'Dela Cruz',
-        'email' => 'juan.delacruz@student.laverdad.edu.ph',
-    ]);
-    $equipment = Equipment::factory()->available()->create([
-        'name' => 'Sony FX3 Cinema Camera',
-    ]);
-
-    $booking = Booking::factory()->approved()->create([
-        'user_id' => $borrower->id,
-        'ticket_id' => 'BK-TEST-CSV',
-        'purpose' => 'Short Film Project',
-    ]);
-    $booking->equipments()->attach($equipment->id);
-
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv');
-
-    $response->assertOk();
-    $content = $response->streamedContent();
-
-    expect(substr($content, 0, 3))->toBe(chr(0xEF).chr(0xBB).chr(0xBF));
-    expect($content)->toContain('Ticket ID');
-    expect($content)->toContain('Borrower Full Name');
-    expect($content)->not->toContain('Contact Number');
-    expect($content)->toContain('Email Address');
-    expect($content)->toContain('Department');
-    expect($content)->toContain('Equipment Name');
-    expect($content)->toContain('Category');
-    expect($content)->toContain('Model');
-    expect($content)->toContain('Serial Number');
-    expect($content)->toContain('Borrow Date');
-    expect($content)->toContain('Due Date');
-    expect($content)->toContain('Actual Return Date');
-    expect($content)->toContain('Purpose');
-    expect($content)->toContain('Status');
-    expect($content)->toContain('BK-TEST-CSV');
-    expect($content)->toContain('Juan Dela Cruz');
-    expect($content)->not->toContain('09123456789');
-    expect($content)->toContain('juan.delacruz@student.laverdad.edu.ph');
-    expect($content)->toContain('Sony FX3 Cinema Camera');
-    expect($content)->toContain('Short Film Project');
-});
-
 test('transactions report excludes pending bookings by default', function () {
     $admin = User::factory()->admin()->create();
     $borrower = User::factory()->borrower()->create();
@@ -85,11 +81,10 @@ test('transactions report excludes pending bookings by default', function () {
     ]);
     $approvedBooking->equipments()->attach($equipment->id);
 
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv');
-    $content = $response->streamedContent();
+    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/xlsx');
+    $rows = reportRows($response->streamedContent());
 
-    expect($content)->toContain('BK-APPROVED-SHOW');
-    expect($content)->not->toContain('BK-PENDING-HIDE');
+    expect(array_column($rows, 0))->toContain('BK-APPROVED-SHOW')->not->toContain('BK-PENDING-HIDE');
 });
 
 test('borrower cannot export transactions report', function () {
@@ -98,7 +93,7 @@ test('borrower cannot export transactions report', function () {
     $this->actingAs($borrower)->get('/api/v1/bookings/reports/pdf')
         ->assertForbidden();
 
-    $this->actingAs($borrower)->get('/api/v1/bookings/reports/csv')
+    $this->actingAs($borrower)->get('/api/v1/bookings/reports/xlsx')
         ->assertForbidden();
 });
 
@@ -106,7 +101,7 @@ test('unauthenticated user cannot export transactions report', function () {
     $this->getJson('/api/v1/bookings/reports/pdf')
         ->assertUnauthorized();
 
-    $this->getJson('/api/v1/bookings/reports/csv')
+    $this->getJson('/api/v1/bookings/reports/xlsx')
         ->assertUnauthorized();
 });
 
@@ -122,9 +117,8 @@ test('transaction exports preserve rows for zero one or multiple equipment', fun
         ]));
     }
 
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
-    $lines = explode("\n", trim(substr($response->streamedContent(), 3)));
-    $rows = array_map(static fn (string $line): array => str_getcsv($line, ',', '"', ''), array_slice($lines, 1));
+    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/xlsx')->assertOk();
+    $rows = reportRows($response->streamedContent());
 
     expect($rows)->toHaveCount(max(1, $count));
     foreach ($rows as $index => $row) {
@@ -133,41 +127,11 @@ test('transaction exports preserve rows for zero one or multiple equipment', fun
             ->and($row[1])->toBe('Alice Adams')
             ->and($row[3])->toBe('')
             ->and($row[4])->toBe($count ? 'Camera '.$index : 'None')
-            ->and($row[5])->toBe($count ? 'Camera' : 'N/A')
+            ->and($row[5])->toBe($count ? 'Camera' : '')
             ->and($row[6])->toBe('')
-            ->and($row[7])->toBe($count ? 'REPORT-'.$index : 'N/A')
-            ->and($row[11])->toBe("'=1+1")
+            ->and($row[7])->toBe($count ? 'REPORT-'.$index : '')
+            ->and($row[11])->toBe('=1+1')
             ->and($row[12])->toBe('Returned');
     }
     $this->get('/api/v1/bookings/reports/pdf')->assertOk()->assertHeader('content-type', 'application/pdf');
 })->with([0, 1, 2]);
-
-test('csv export does not emit php deprecation warnings', function (): void {
-    $admin = User::factory()->admin()->create();
-    $borrower = User::factory()->borrower()->create();
-    $equipment = Equipment::factory()->available()->create();
-
-    $booking = Booking::factory()->approved()->create([
-        'user_id' => $borrower->id,
-    ]);
-    $booking->equipments()->attach($equipment->id);
-
-    $deprecations = [];
-    set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
-        if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
-            $deprecations[] = $errstr;
-        }
-
-        return true;
-    });
-
-    try {
-        $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv');
-        $response->assertOk();
-        $response->streamedContent();
-    } finally {
-        restore_error_handler();
-    }
-
-    expect($deprecations)->toBeEmpty();
-});

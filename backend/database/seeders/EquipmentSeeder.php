@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class EquipmentSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $equipment = [
             [
@@ -792,7 +792,7 @@ class EquipmentSeeder extends Seeder
             ],
         ];
 
-        Equipment::withoutEvents(function () use ($equipment) {
+        Equipment::withoutEvents(function () use ($equipment): void {
             foreach ($equipment as $item) {
                 $unitsCount = $item['quantity'] ?? 1;
                 for ($unitIndex = 0; $unitIndex < $unitsCount; $unitIndex++) {
@@ -801,14 +801,26 @@ class EquipmentSeeder extends Seeder
                         'name' => $item['name'],
                         'brand' => $item['brand'],
                         'model' => $item['model'] ?? null,
+                        'serial_no' => $this->generateSerial($item),
                         'description' => $item['description'],
                         'specs' => implode("\n", $item['specs']),
                         'image' => $item['image'] ?? null,
                     ]);
-                    $itemInstance->generateSerial();
                     $itemInstance->save();
                 }
             }
         });
+    }
+
+    private function generateSerial(array $item): string
+    {
+        $source = $item['brand'] ?: $item['name'];
+        $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source), 0, 3)), 3, 'X');
+        $maxUnit = Equipment::where('serial_no', 'like', "SN-{$code}-%")
+            ->pluck('serial_no')
+            ->map(static fn (string $serial): int => (int)substr(strrchr($serial, '-'), 1))
+            ->max() ?? 0;
+
+        return sprintf('SN-%s-%04d', $code, $maxUnit + 1);
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
-            $table->string('serial_no')->nullable();
+            $table->string('serial_no')->nullable()->unique();
             $table->string('status')->default(EquipmentStatus::Available->value)->index();
             $table->text('description')->nullable();
             $table->text('specs')->nullable();

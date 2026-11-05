@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\BookingStatus;
-use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Http\Resources\Api\V1\BookingResource;
+use App\Mail\BookingRequestMail;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
@@ -79,6 +79,56 @@ test('borrower can create booking request', function () {
         'user_id' => $borrower->id,
         'purpose' => 'Final Year Project',
     ]);
+});
+
+test('a submitted request queues one summary email for each administrator', function (): void {
+    Mail::fake();
+    $borrower = User::factory()->borrower()->create();
+    $admin = User::factory()->admin()->create();
+    $sysadmin = User::factory()->sysadmin()->create();
+    $equipment = Equipment::factory()->available()->count(2)->create();
+
+    $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Film project',
+        'start_date' => now()->addDay()->format('Y-m-d H:i:s'),
+        'end_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        'equipment_ids' => $equipment->modelKeys(),
+    ])->assertCreated();
+
+    Mail::assertQueued(BookingRequestMail::class, 2);
+    Mail::assertQueued(BookingRequestMail::class, static fn (BookingRequestMail $mail): bool => $mail->hasTo($admin->email) && count($mail->items) === 2 && $mail->borrowerName === $borrower->full_name
+    );
+    Mail::assertQueued(BookingRequestMail::class, static fn (BookingRequestMail $mail): bool => $mail->hasTo($sysadmin->email));
+    Mail::assertNotQueued(BookingRequestMail::class, static fn (BookingRequestMail $mail): bool => $mail->hasTo($borrower->email));
+    Mail::assertQueued(BookingRequestMail::class, static fn (BookingRequestMail $mail): bool => str_contains($mail->render(), 'Film project') && str_contains($mail->render(), $equipment[0]->name)
+    );
+});
+
+test('an invalid booking does not send a request email', function (): void {
+    Mail::fake();
+    $borrower = User::factory()->borrower()->create();
+    User::factory()->admin()->create();
+
+    $this->actingAs($borrower)->postJson('/api/v1/bookings', [])->assertUnprocessable();
+
+    Mail::assertNothingQueued();
+});
+
+test('a mail queue failure does not undo a submitted booking', function (): void {
+    $borrower = User::factory()->borrower()->create();
+    User::factory()->admin()->create();
+    $equipment = Equipment::factory()->available()->create();
+    Mail::shouldReceive('to')->once()->andThrow(new RuntimeException('Queue unavailable'));
+    Log::shouldReceive('error')->once();
+
+    $this->actingAs($borrower)->postJson('/api/v1/bookings', [
+        'purpose' => 'Film project',
+        'start_date' => now()->addDay()->format('Y-m-d H:i:s'),
+        'end_date' => now()->addDays(2)->format('Y-m-d H:i:s'),
+        'equipment_ids' => [$equipment->id],
+    ])->assertCreated();
+
+    $this->assertDatabaseHas('bookings', ['user_id' => $borrower->id, 'purpose' => 'Film project']);
 });
 
 test('borrower cannot request a booking that already started today', function (): void {
@@ -457,27 +507,6 @@ test('approving or returning booking does not mutate equipment table status', fu
 
     $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return")->assertOk();
     expect($equipment->fresh()->getRawOriginal('status'))->toBe(EquipmentStatus::Available->value);
-});
-
-test('equipment serial number counter avoids duplicates on deletion', function () {
-    $eq1 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    $eq2 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    expect($eq2->serial_no)->toBe('SN-SON-0002');
-
-    $eq1->delete();
-
-    $eq3 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    expect($eq3->serial_no)->not->toBe($eq2->serial_no);
-    expect($eq3->serial_no)->toBe('SN-SON-0003');
 });
 
 test('borrower checking out multiple equipment items creates independent bookings per item', function () {

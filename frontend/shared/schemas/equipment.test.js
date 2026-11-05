@@ -25,17 +25,23 @@ describe('equipment schema', () => {
         const minimalPayload = {
             equipmentName: 'Wireless Lavalier Mic',
             categoryId: 'Audio',
-            shortDescription: 'Wireless microphone set'
+            shortDescription: 'Wireless microphone set',
+            modelCode: 'MODEL-1',
+            serialNumber: 'SERIAL-1'
         }
         expect(equipmentSchema.safeParse(minimalPayload).success).toBe(true)
 
         const emptyOptionals = {
             ...minimalPayload,
-            modelCode: '',
-            serialNumber: '',
             technicalSpecs: ''
         }
         expect(equipmentSchema.safeParse(emptyOptionals).success).toBe(true)
+    })
+
+    it('requires a model and serial number', () => {
+        const result = equipmentSchema.safeParse({ ...validEquipment, modelCode: '', serialNumber: '' })
+        expect(result.success).toBe(false)
+        expect(result.error.issues.map((issue) => issue.path[0])).toEqual(['modelCode', 'serialNumber'])
     })
 
     it('rejects an empty or whitespace-only equipment name', () => {

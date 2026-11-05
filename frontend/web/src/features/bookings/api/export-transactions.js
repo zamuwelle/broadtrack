@@ -38,10 +38,10 @@ export const exportTransactionsPdf = async ({ category = 'All', search = '' } = 
     await triggerDownload(data, `transactions-report-${dateStr}.pdf`, 'application/pdf')
 }
 
-export const exportTransactionsCsv = async ({ category = 'All', search = '' } = {}) => {
+export const exportTransactionsXlsx = async ({ category = 'All', search = '' } = {}) => {
     let data
     try {
-        data = await api.get('/bookings/reports/csv', {
+        data = await api.get('/bookings/reports/xlsx', {
             params: { category, search },
             responseType: 'blob'
         })
@@ -53,5 +53,5 @@ export const exportTransactionsCsv = async ({ category = 'All', search = '' } = 
         throw new Error(blobErrorMessage || error?.message || 'Failed to export transactions', { cause: error })
     }
     const dateStr = new Date().toISOString().slice(0, 10)
-    await triggerDownload(data, `transactions-report-${dateStr}.csv`, 'text/csv;charset=utf-8')
+    await triggerDownload(data, `transactions-report-${dateStr}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 }

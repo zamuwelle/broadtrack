@@ -12,8 +12,11 @@ use App\Http\Resources\Api\V1\EquipmentResource;
 use App\Models\Booking;
 use App\Models\Equipment;
 use App\Services\CloudinaryService;
+use Closure;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class EquipmentController extends ApiController
 {
@@ -39,16 +42,18 @@ class EquipmentController extends ApiController
         $validated = $request->validated();
         $validated['status'] ??= EquipmentStatus::Available->value;
 
-        $equipment = Equipment::create($validated);
+        return $this->handleSerialConflict(function () use ($validated): JsonResponse {
+            $equipment = Equipment::create($validated);
 
-        return $this->created(new EquipmentResource($equipment), 'Equipment created successfully.');
+            return $this->created(new EquipmentResource($equipment), 'Equipment created successfully.');
+        });
     }
 
     public function update(UpdateEquipmentRequest $request, Equipment $equipment): JsonResponse
     {
         $this->authorize('manage', Equipment::class);
 
-        return DB::transaction(function () use ($request, $equipment): JsonResponse {
+        return $this->handleSerialConflict(fn (): JsonResponse => DB::transaction(function () use ($request, $equipment): JsonResponse {
             $lockedEquipment = Equipment::whereKey($equipment->id)->lockForUpdate()->firstOrFail();
             $validated = $request->validated();
 
@@ -82,7 +87,22 @@ class EquipmentController extends ApiController
             $resolved = Equipment::resolveStatuses(collect([$lockedEquipment]))->first();
 
             return $this->success(new EquipmentResource($resolved), 'Equipment updated successfully.');
-        });
+        }));
+    }
+
+    private function handleSerialConflict(Closure $operation): JsonResponse
+    {
+        try {
+            return $operation();
+        } catch (UniqueConstraintViolationException $exception) {
+            if ($exception->index === 'equipments_serial_no_unique' || $exception->columns === ['serial_no']) {
+                throw ValidationException::withMessages([
+                    'serial_no' => __('validation.unique', ['attribute' => 'serial no']),
+                ]);
+            }
+
+            throw $exception;
+        }
     }
 
     public function upload(ImageRequest $request, Equipment $equipment, CloudinaryService $cloudinary): JsonResponse

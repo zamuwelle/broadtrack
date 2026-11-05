@@ -200,6 +200,8 @@ describe('EquipmentModalDialog validation and recovery', () => {
         fireEvent.change(screen.getByLabelText(/Equipment Name/iu), {
             target: { value: 'Sony A7' }
         })
+        fireEvent.change(screen.getByLabelText(/Model \/ Code/iu), { target: { value: 'A7' } })
+        fireEvent.change(screen.getByLabelText(/Serial Number/iu), { target: { value: 'SN-A7-1' } })
         fireEvent.click(screen.getByRole('button', { name: /Select a category/iu }))
         fireEvent.click(screen.getByRole('button', { name: 'Camera' }))
         fireEvent.change(screen.getByLabelText(/Short Description/iu), {
@@ -250,6 +252,8 @@ describe('EquipmentModalDialog validation and recovery', () => {
         fireEvent.change(screen.getByLabelText(/Equipment Name/iu), {
             target: { value: 'Sony FX3' }
         })
+        fireEvent.change(screen.getByLabelText(/Model \/ Code/iu), { target: { value: 'FX3' } })
+        fireEvent.change(screen.getByLabelText(/Serial Number/iu), { target: { value: 'SN-001' } })
         fireEvent.click(screen.getByRole('button', { name: /Select a category/iu }))
         fireEvent.click(screen.getByRole('button', { name: 'Camera' }))
         fireEvent.change(screen.getByLabelText(/Short Description/iu), {
@@ -300,6 +304,7 @@ describe('equipment edit validation', () => {
         name: 'Microphone',
         category: 'Audio',
         description: 'Microphone',
+        model: 'MIC-1',
         serial_no: 'SN-3'
     })
     beforeEach(() => {
@@ -308,7 +313,7 @@ describe('equipment edit validation', () => {
         globalThis.URL.revokeObjectURL = vi.fn()
     })
 
-    it('blocks invalid images before saving and sends a cleared serial number', async () => {
+    it('blocks invalid images and requires a serial number before saving', async () => {
         const queryClient = new QueryClient({
             defaultOptions: { mutations: { retry: false } }
         })
@@ -319,7 +324,7 @@ describe('equipment edit validation', () => {
                 <EquipmentModalDialog equipment={equipment} categories={categories} />
             </TestWrapper>
         )
-        fireEvent.change(screen.getByLabelText('Serial Number'), {
+        fireEvent.change(screen.getByLabelText(/Serial Number/iu), {
             target: { value: '' }
         })
         const fileInput = container.querySelector('input[type="file"]')
@@ -333,8 +338,11 @@ describe('equipment edit validation', () => {
             target: { files: [new File(['image'], 'ok.png', { type: 'image/png' })] }
         })
         fireEvent.submit(container.querySelector('form'))
+        expect(api.put).not.toHaveBeenCalled()
+        fireEvent.change(screen.getByLabelText(/Serial Number/iu), { target: { value: 'SN-3' } })
+        fireEvent.submit(container.querySelector('form'))
         await waitFor(() =>
-            expect(api.put).toHaveBeenCalledWith('/equipment/3', expect.objectContaining({ serial_no: null }))
+            expect(api.put).toHaveBeenCalledWith('/equipment/3', expect.objectContaining({ serial_no: 'SN-3' }))
         )
     })
 })

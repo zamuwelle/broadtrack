@@ -6,7 +6,7 @@ import { TransactionTable } from '@/features/admin/transactions/components/Trans
 import { TransactionDetailsModal } from '@/features/admin/transactions/components/TransactionDetailsModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useBookings } from '@/features/bookings/api/get-bookings'
-import { exportTransactionsCsv, exportTransactionsPdf } from '@/features/bookings/api/export-transactions'
+import { exportTransactionsXlsx, exportTransactionsPdf } from '@/features/bookings/api/export-transactions'
 import { useSetState } from '@shared/hooks/useSetState'
 import { flattenBookingsByEquipment, getBookingStatus, isBookingOverdue } from '@shared/util/booking'
 import { matchesBookingSearch } from '@shared/util/search'
@@ -63,26 +63,26 @@ const useTransactionExports = ({ selectedCategory, searchText, showToast }) => {
         }
     }, [exportingType, selectedCategory, searchText, showToast])
 
-    const handleExportCsv = useCallback(async () => {
+    const handleExportXlsx = useCallback(async () => {
         if (exportingType) {
             return
         }
         try {
-            setExportingType('csv')
-            await exportTransactionsCsv({
+            setExportingType('xlsx')
+            await exportTransactionsXlsx({
                 category: selectedCategory,
                 search: searchText
             })
         } catch (error) {
             if (!isCancelledError(error)) {
-                showToast((error && error.message) || 'Failed to export transactions to CSV.', 'danger')
+                showToast((error && error.message) || 'Failed to export transactions to Excel.', 'danger')
             }
         } finally {
             setExportingType(null)
         }
     }, [exportingType, selectedCategory, searchText, showToast])
 
-    return { exportingType, isExporting, handleExportPdf, handleExportCsv }
+    return { exportingType, isExporting, handleExportPdf, handleExportXlsx }
 }
 
 export const TransactionsPage = (props) => {
@@ -99,7 +99,7 @@ export const TransactionsPage = (props) => {
     const { searchText, selectedCategory, selectedTransaction } = pageState
     const { show: showToast } = useToast()
 
-    const { exportingType, isExporting, handleExportPdf, handleExportCsv } = useTransactionExports({
+    const { exportingType, isExporting, handleExportPdf, handleExportXlsx } = useTransactionExports({
         selectedCategory,
         searchText,
         showToast
@@ -182,11 +182,11 @@ export const TransactionsPage = (props) => {
                         </button>
                         <button
                             type="button"
-                            onClick={handleExportCsv}
+                            onClick={handleExportXlsx}
                             disabled={isExporting}
                             className="flex-1 min-w-0 sm:flex-none sm:w-48 h-9 px-3 sm:pl-6 sm:pr-5 py-2 bg-sky-800 rounded-xl inline-flex justify-center items-center gap-2.5 cursor-pointer hover:bg-sky-700 transition-colors sm:shrink-0 disabled:opacity-60 disabled:cursor-not-allowed">
                             <div className="justify-start text-white text-sm sm:text-lg font-semibold font-['Poppins']">
-                                {exportingType === 'csv' ? 'Exporting...' : 'Export to CSV'}
+                                {exportingType === 'xlsx' ? 'Exporting...' : 'Export to Excel'}
                             </div>
                         </button>
                     </div>

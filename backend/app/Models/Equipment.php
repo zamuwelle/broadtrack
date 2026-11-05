@@ -29,27 +29,6 @@ class Equipment extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::creating(static fn ($equipment) => $equipment->generateSerial());
-    }
-
-    public function generateSerial(): void
-    {
-        if ($this->serial_no) {
-            return;
-        }
-
-        $source = $this->brand ?: $this->name;
-        $code = str_pad(strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $source ?? ''), 0, 3)), 3, 'X');
-        $maxUnit = static::where('serial_no', 'like', "SN-{$code}-%")
-            ->pluck('serial_no')
-            ->map(static fn (string $sn): int => (int)substr(strrchr($sn, '-'), 1))
-            ->max() ?? 0;
-        $unit = $maxUnit + 1;
-        $this->serial_no = sprintf('SN-%s-%04d', $code, $unit);
-    }
-
     public function bookings(): BelongsToMany
     {
         return $this->belongsToMany(Booking::class)->withTimestamps();

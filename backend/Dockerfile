@@ -5,6 +5,7 @@ RUN install-php-extensions \
 	pdo_mysql \
 	pdo_sqlite \
 	bcmath \
+	gd \
 	zip \
 	opcache
 

@@ -62,7 +62,7 @@ Route::prefix('v1')->group(function () {
         // Bookings (admin & sysadmin)
         Route::middleware('role:admin')->group(function () {
             Route::get('/bookings/reports/pdf', [BookingReportController::class, 'exportPdf']);
-            Route::get('/bookings/reports/csv', [BookingReportController::class, 'exportCsv']);
+            Route::get('/bookings/reports/xlsx', [BookingReportController::class, 'exportXlsx']);
             Route::put('/bookings/{booking}/approve', [BookingController::class, 'approve']);
             Route::put('/bookings/{booking}/reject', [BookingController::class, 'reject']);
             Route::put('/bookings/{booking}/return', [BookingController::class, 'markAsReturned']);

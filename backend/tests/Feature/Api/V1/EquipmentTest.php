@@ -7,8 +7,12 @@ use App\Models\Booking;
 use App\Models\Equipment;
 use App\Models\User;
 use App\Services\CloudinaryService;
+use Database\Seeders\EquipmentSeeder;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 test('authenticated user can list equipment', function () {
     $user = User::factory()->borrower()->create();
@@ -37,6 +41,7 @@ test('admin can create equipment', function () {
         'name' => 'Canon EOS R5',
         'brand' => 'Canon',
         'model' => 'EOS-R5',
+        'serial_no' => 'CANON-R5-001',
         'status' => 'available',
         'description' => 'Professional 8K camera',
     ]);
@@ -50,6 +55,15 @@ test('admin can create equipment', function () {
         'name' => 'Canon EOS R5',
         'category' => EquipmentCategory::Camera->value,
     ]);
+});
+
+test('equipment creation requires a model and serial number', function (): void {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->postJson('/api/v1/equipment', [
+        'category' => EquipmentCategory::Camera->value,
+        'name' => 'Camera',
+    ])->assertUnprocessable()->assertJsonValidationErrors(['model', 'serial_no']);
 });
 
 test('borrower cannot create equipment', function () {
@@ -240,23 +254,64 @@ test('resolveStatuses keeps active approved bookings booked until they are retur
     expect($resolved->first()->status)->toBe(EquipmentStatus::Booked);
 });
 
-test('generateSerial computes unit number based on count rather than id', function () {
-    $first = Equipment::create([
+test('equipment does not generate a serial number outside the seeder', function (): void {
+    $equipment = Equipment::create([
         'name' => 'Tripod Pro',
         'category' => EquipmentCategory::Support->value,
     ]);
-    expect($first->serial_no)->toBe('SN-TRI-0001');
 
-    Equipment::create([
-        'name' => 'Studio Light',
-        'category' => EquipmentCategory::Lighting->value,
-    ]);
+    expect($equipment->fresh()->serial_no)->toBeNull();
+});
 
-    $second = Equipment::create([
+test('admin can enter a serial number and cannot reuse it', function (): void {
+    $admin = User::factory()->admin()->create();
+    $payload = [
         'name' => 'Tripod Pro',
         'category' => EquipmentCategory::Support->value,
-    ]);
-    expect($second->serial_no)->toBe('SN-TRI-0002');
+        'serial_no' => 'REAL-TRIPOD-001',
+        'model' => 'TRIPOD-PRO',
+    ];
+
+    $this->actingAs($admin)->postJson('/api/v1/equipment', $payload)
+        ->assertCreated()->assertJsonPath('data.serial_no', 'REAL-TRIPOD-001');
+    $this->postJson('/api/v1/equipment', $payload)->assertUnprocessable()->assertJsonValidationErrors('serial_no');
+});
+
+test('the database rejects duplicate equipment serial numbers', function (): void {
+    Equipment::factory()->create(['serial_no' => 'DB-UNIQUE-001']);
+
+    expect(fn () => Equipment::factory()->create(['serial_no' => 'DB-UNIQUE-001']))
+        ->toThrow(UniqueConstraintViolationException::class);
+});
+
+test('serial conflicts after validation return a field error', function (string $action): void {
+    $admin = User::factory()->admin()->create();
+    $equipment = Equipment::factory()->create(['serial_no' => 'EXISTING-001']);
+    $event = $action === 'create' ? 'creating' : 'updating';
+    $insertCompetingItem = static function (Equipment $item): void {
+        DB::table('equipments')->insert([
+            'name' => 'Concurrent item',
+            'category' => EquipmentCategory::Camera->value,
+            'serial_no' => $item->serial_no,
+        ]);
+    };
+    Equipment::{$event}($insertCompetingItem);
+
+    try {
+        $payload = ['name' => 'Camera', 'category' => EquipmentCategory::Camera->value, 'model' => 'CAM-1', 'serial_no' => 'RACE-001'];
+        $url = $action === 'create' ? '/api/v1/equipment' : "/api/v1/equipment/{$equipment->id}";
+        $this->actingAs($admin)->json($action === 'create' ? 'POST' : 'PUT', $url, $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('serial_no');
+    } finally {
+        Event::forget("eloquent.{$event}: ".Equipment::class);
+    }
+})->with(['create', 'update']);
+
+test('equipment seeder generates serial numbers for seeded units', function (): void {
+    $this->seed(EquipmentSeeder::class);
+
+    $this->assertDatabaseHas('equipments', ['name' => 'Speaker with Amplifier', 'serial_no' => 'SN-DAI-0001']);
+    $this->assertDatabaseHas('equipments', ['name' => 'Wired Microphone', 'serial_no' => 'SN-BEH-0002']);
 });
 
 test('equipment mutations succeed when the broadcast transport fails', function (string $method, string $action, int $status): void {
@@ -272,7 +327,7 @@ test('equipment mutations succeed when the broadcast transport fails', function 
     config(['broadcasting.default' => 'audit-failing', 'broadcasting.connections.audit-failing' => ['driver' => 'audit-failing']]);
     $uri = $method === 'POST' ? '/api/v1/equipment' : "/api/v1/equipment/{$equipment->id}";
 
-    $response = $this->actingAs($admin)->json($method, $uri, ['name' => 'Studio Camera', 'category' => 'Camera'])->assertStatus($status);
+    $response = $this->actingAs($admin)->json($method, $uri, ['name' => 'Studio Camera', 'category' => 'Camera', 'model' => 'CAM-1', 'serial_no' => 'CAM-001'])->assertStatus($status);
 
     $id = $method === 'POST' ? $response->json('data.id') : $equipment->id;
     expect($payloads->first())->toBe(['event' => 'equipment.changed', 'payload' => ['action' => $action, 'equipmentId' => $id]]);
