@@ -12,7 +12,10 @@ function reportRows(string $content): array
     try {
         file_put_contents($file, $content);
 
-        return array_slice(IOFactory::createReader('Xlsx')->load($file)->getActiveSheet()->toArray('', true, true, false), 1);
+        $sheet = IOFactory::createReader('Xlsx')->load($file)->getActiveSheet();
+        $lastRow = (int)substr(strrchr($sheet->getAutoFilter()->getRange(), 'M'), 1);
+
+        return array_slice($sheet->toArray('', true, true, false), 2, max(0, $lastRow - 2));
     } finally {
         unlink($file);
     }
@@ -28,9 +31,15 @@ test('xlsx export contains report data as safe text', function (): void {
     try {
         file_put_contents($file, $response->streamedContent());
         $sheet = IOFactory::createReader('Xlsx')->load($file)->getActiveSheet();
-        expect($sheet->getCell('A2')->getValue())->toBe('EXCEL-001')
-            ->and($sheet->getCell('L2')->getValue())->toBe('=1+1')
-            ->and($sheet->getCell('L2')->getDataType())->toBe(DataType::TYPE_STRING);
+        expect($sheet->getCell('A1')->getValue())->toBe('BroadTrack Transactions')
+            ->and($sheet->getDrawingCollection())->toHaveCount(0)
+            ->and($sheet->getShowGridlines())->toBeTrue()
+            ->and($sheet->getCell('I2')->getValue())->toBe('Booked Date')
+            ->and($sheet->getDataValidation('F3')->getFormula1())->toContain('Camera')
+            ->and($sheet->getDataValidation('M3')->getFormula1())->toContain('Overdue')
+            ->and($sheet->getCell('A3')->getValue())->toBe('EXCEL-001')
+            ->and($sheet->getCell('L3')->getValue())->toBe('=1+1')
+            ->and($sheet->getCell('L3')->getDataType())->toBe(DataType::TYPE_STRING);
     } finally {
         unlink($file);
     }
@@ -118,9 +127,9 @@ test('transaction exports preserve rows for zero one or multiple equipment', fun
             ->and($row[1])->toBe('Alice Adams')
             ->and($row[3])->toBe('')
             ->and($row[4])->toBe($count ? 'Camera '.$index : 'None')
-            ->and($row[5])->toBe($count ? 'Camera' : 'N/A')
+            ->and($row[5])->toBe($count ? 'Camera' : '')
             ->and($row[6])->toBe('')
-            ->and($row[7])->toBe($count ? 'REPORT-'.$index : 'N/A')
+            ->and($row[7])->toBe($count ? 'REPORT-'.$index : '')
             ->and($row[11])->toBe('=1+1')
             ->and($row[12])->toBe('Returned');
     }

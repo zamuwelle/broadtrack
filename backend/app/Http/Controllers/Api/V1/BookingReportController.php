@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Enums\EquipmentCategory;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -10,7 +11,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,13 +29,62 @@ class BookingReportController extends ApiController
 
         return response()->streamDownload(static function () use ($rows): void {
             $spreadsheet = new Spreadsheet;
+            $spreadsheet->getDefaultStyle()->getFont()->setName('Arial');
             $sheet = $spreadsheet->getActiveSheet();
-            $sheet->fromArray(['Ticket ID', 'Borrower Full Name', 'Email Address', 'Department', 'Equipment Name', 'Category', 'Model', 'Serial Number', 'Borrow Date', 'Due Date', 'Actual Return Date', 'Purpose', 'Status'], null, 'A1');
+            $sheet->setTitle('Transactions');
+            $sheet->getStyle('A1:M1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FFFFFF');
+            $sheet->getDefaultRowDimension()->setRowHeight(20);
+            $sheet->setCellValue('A1', 'BroadTrack Transactions');
+            $sheet->mergeCells('A1:M1');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setRGB('0F4C81');
+            $sheet->getStyle('A1')->getAlignment()->setVertical('center');
+            $sheet->getRowDimension(1)->setRowHeight(32);
+            $sheet->fromArray(['Ticket ID', 'Borrower Full Name', 'Email Address', 'Department', 'Equipment Name', 'Category', 'Model', 'Serial Number', 'Booked Date', 'Due Date', 'Return Date', 'Purpose', 'Status'], null, 'A2');
+            $sheet->getStyle('A2:M2')->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '0F4C81']],
+            ]);
+            $sheet->getRowDimension(2)->setRowHeight(24);
+            foreach (range('A', 'M') as $column) {
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+            }
             $keys = ['ticket_id', 'borrower', 'email', 'department', 'equipment_name', 'category', 'model', 'serial_no', 'borrow_date', 'due_date', 'actual_return_date', 'purpose', 'status_label'];
             foreach ($rows as $index => $row) {
-                foreach ($keys as $column => $key) {
-                    $sheet->setCellValueExplicit([$column + 1, $index + 2], (string)($row[$key] ?? ''), DataType::TYPE_STRING);
+                if ($index % 2 === 1) {
+                    $sheet->getStyle('A'.($index + 3).':M'.($index + 3))->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('EEF5FA');
                 }
+                foreach ($keys as $column => $key) {
+                    $value = $row[$key] ?? '';
+                    $sheet->setCellValueExplicit([$column + 1, $index + 3], $value === 'N/A' ? '' : (string)$value, DataType::TYPE_STRING);
+                }
+            }
+            $sheet->setAutoFilter('A2:M'.max(2, count($rows) + 2));
+            $sheet->calculateColumnWidths();
+            foreach (range('A', 'M') as $column) {
+                $dimension = $sheet->getColumnDimension($column);
+                $dimension->setWidth($dimension->getWidth() + 3)->setAutoSize(false);
+            }
+            foreach (['F' => 12, 'M' => 13] as $column => $minimumWidth) {
+                $dimension = $sheet->getColumnDimension($column);
+                $dimension->setWidth(max($minimumWidth, $dimension->getWidth()));
+            }
+            $purposeColumn = $sheet->getColumnDimension('L');
+            $purposeColumn->setWidth(min(40, $purposeColumn->getWidth()))->setAutoSize(false);
+            $sheet->getStyle('A2:M'.max(2, count($rows) + 2))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('000000');
+            if (count($rows)) {
+                $sheet->getStyle('L3:L'.(count($rows) + 2))->getAlignment()->setWrapText(true)->setVertical('top');
+                foreach (array_keys($rows) as $index) {
+                    $sheet->getRowDimension($index + 3)->setRowHeight(-1);
+                }
+            }
+            $firstColumn = $sheet->getColumnDimension('A');
+            $firstColumn->setWidth(max(12, $firstColumn->getWidth()))->setAutoSize(false);
+            $lastRow = max(1000, count($rows) + 2);
+            $categories = array_map(static fn (EquipmentCategory $category): string => $category->value, EquipmentCategory::cases());
+            foreach (['F' => $categories, 'M' => ['Approved', 'Returned', 'Rejected', 'Cancelled', 'Overdue']] as $column => $options) {
+                $validation = new DataValidation;
+                $validation->setType(DataValidation::TYPE_LIST)->setAllowBlank(true)->setShowDropDown(true)->setFormula1('"'.implode(',', $options).'"');
+                $sheet->setDataValidation("{$column}3:{$column}{$lastRow}", $validation);
             }
             (new Xlsx($spreadsheet))->save('php://output');
             $spreadsheet->disconnectWorksheets();
@@ -44,14 +97,11 @@ class BookingReportController extends ApiController
 
         $bookings = $this->getFilteredBookings($request);
         $rows = $this->flattenRows($bookings);
-        $generatedAt = now()->timezone('Asia/Manila')->format('F d, Y h:i A');
-
         File::ensureDirectoryExists(storage_path('fonts'));
 
         $pdf = Pdf::loadView('pdf.transactions-report', [
             'rows' => $rows,
-            'generatedAt' => $generatedAt,
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('a3', 'landscape');
 
         $timestamp = now()->timezone('Asia/Manila')->format('Ymd_His');
 
