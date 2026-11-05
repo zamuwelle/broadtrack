@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vite-plus/test'
 import { useBorrowSummaryLogic } from '@/features/borrow/request/useBorrowSummaryLogic'
 import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 
-const { submitBooking } = vi.hoisted(() => ({ submitBooking: vi.fn() }))
+const { submitBooking, showToast } = vi.hoisted(() => ({ submitBooking: vi.fn(), showToast: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ useUser: () => ({ data: { id: 1 } }) }))
 vi.mock('@/features/bookings/api/get-bookings', () => ({
     useBookings: () => ({ data: [] })
@@ -11,7 +11,7 @@ vi.mock('@/features/bookings/api/get-bookings', () => ({
 vi.mock('@/features/bookings/api/create-booking', () => ({
     useCreateBooking: () => ({ mutateAsync: submitBooking })
 }))
-vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ show: vi.fn() }) }))
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ show: showToast }) }))
 
 beforeEach(() => {
     vi.useFakeTimers()
@@ -28,14 +28,15 @@ afterEach(() => {
     vi.useRealTimers()
 })
 
-it('clears a request failure when the summary closes', async () => {
+it('leaves network notifications to the shared handler', async () => {
     submitBooking.mockRejectedValueOnce(new Error('Network Error'))
     const { result, rerender } = renderHook(({ isOpen }) => useBorrowSummaryLogic({ isOpen }), {
         initialProps: { isOpen: true }
     })
     act(() => result.current.handlePurposeChange({ target: { value: 'Testing' } }))
     await act(() => result.current.handleSubmit())
-    expect(result.current.requestError).toBe('Network Error')
+    expect(showToast).not.toHaveBeenCalled()
+    expect(result.current.requestError).toBe('')
     rerender({ isOpen: false })
     rerender({ isOpen: true })
     expect(result.current.requestError).toBe('')

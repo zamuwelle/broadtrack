@@ -38,14 +38,10 @@ export const NotificationToggle = ({ bookings = defaultBookings, onSelectNotific
     const notificationCount = unreadNotifications.length
 
     const handleClickItem = useCallback(
-        async (item) => {
+        (item) => {
             setOpen(false)
             onSelectNotification(item.filterStatus)
-            try {
-                await readMutation.mutateAsync(item.id)
-            } catch {
-                /* empty */
-            }
+            readMutation.mutate(item.id)
         },
         [onSelectNotification, readMutation, setOpen]
     )

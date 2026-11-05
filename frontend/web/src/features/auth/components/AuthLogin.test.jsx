@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it, vi } from 'vite-plus/test'
 import { AuthModal } from '@/features/auth/components/AuthModal'
+import { AppProvider } from '@/app/provider'
 import { loginUser } from '@/features/auth/api/login'
 
 vi.mock('@/features/auth/api/login', () => ({ loginUser: vi.fn() }))
@@ -11,11 +11,11 @@ vi.mock('@/features/auth/api/login', () => ({ loginUser: vi.fn() }))
 const renderLogin = (initialError = '') =>
     render(
         <StrictMode>
-            <QueryClientProvider client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}>
+            <AppProvider>
                 <MemoryRouter>
                     <AuthModal isOpen initialError={initialError} />
                 </MemoryRouter>
-            </QueryClientProvider>
+            </AppProvider>
         </StrictMode>
     )
 
@@ -50,7 +50,7 @@ it('shows a danger toast when Google returns an invalid email error', async () =
     expect(screen.getAllByText('Please use a valid La Verdad email address.')).toHaveLength(2)
 })
 
-it('shows a toast when an email is outside the La Verdad domains', async () => {
+it('shows a field error when an email is outside the La Verdad domains', async () => {
     const { container } = renderLogin()
     fireEvent.change(container.querySelector('input[type="email"]'), {
         target: { value: 'person@example.com' }
@@ -59,7 +59,7 @@ it('shows a toast when an email is outside the La Verdad domains', async () => {
         target: { value: 'password123' }
     })
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
-    expect(await screen.findByText('Please use a valid La Verdad email address.')).toBeInTheDocument()
+    expect(await screen.findByText('Only La Verdad emails allowed')).toBeInTheDocument()
     expect(loginUser).not.toHaveBeenCalled()
 })
 
@@ -80,7 +80,7 @@ it('shows field errors when credentials are rejected', async () => {
     await waitFor(() => expect(screen.getAllByText('Email or password is incorrect')).toHaveLength(2))
 })
 
-it('shows network errors above the sign-in fields', async () => {
+it('shows network errors in a toast', async () => {
     loginUser.mockRejectedValueOnce({ message: 'Network Error' })
     const { container } = renderLogin()
     const email = container.querySelector('input[type="email"]')
@@ -89,5 +89,5 @@ it('shows network errors above the sign-in fields', async () => {
         target: { value: 'password123' }
     })
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }))
-    await waitFor(() => expect(container.querySelector('form').firstElementChild).toHaveTextContent('Network Error'))
+    await waitFor(() => expect(screen.getByText('Network Error')).toBeInTheDocument())
 })

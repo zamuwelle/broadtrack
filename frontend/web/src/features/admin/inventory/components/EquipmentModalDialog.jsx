@@ -10,9 +10,12 @@ import { DetailFields } from '@/features/admin/inventory/components/DetailFields
 import { EquipmentFormActions } from '@/features/admin/inventory/components/EquipmentFormActions'
 import { EquipmentImageBanner } from '@/features/admin/inventory/components/EquipmentImageBanner'
 import { ErrorText } from '@/components/ui/form/ErrorText'
+import { useToast } from '@/hooks/ui/useToast'
+import { isCancelledError, isLocalError, isServerError } from '@/lib/errors'
 
 const defaultCategories = Object.freeze([])
 const noop = () => null
+const showEquipmentError = (error, fields) => isLocalError(error) && !Object.values(fields).some(Boolean)
 const getImageError = (file) => {
     if (file.size > 5 * 1024 * 1024) {
         return 'Image must not exceed 5MB.'
@@ -40,8 +43,7 @@ const useImageChange = (equipment, updateFormState) =>
                 updateFormState({
                     imageFile: selectedFile,
                     previewUrl: globalThis.URL.createObjectURL(selectedFile),
-                    imageError: '',
-                    errorMessage: ''
+                    imageError: ''
                 })
             }
         },
@@ -67,10 +69,8 @@ const getInitialFormState = (equipment) => {
         technicalSpecs: item.specs || '',
         imageFile: null,
         imageError: '',
-        uploadError: '',
         previewUrl: item.image || '',
         isSubmitting: false,
-        errorMessage: '',
         serverErrors: Object.freeze({}),
         touched: Object.freeze({}),
         isCategoryOpen: false
@@ -139,19 +139,17 @@ const executeSave = async ({ isEditMode, currentEquipment, payload, createMutati
     return response?.data || currentEquipment
 }
 
-const tryUploadImage = async ({ uploadMutation, equipmentId, file, onSuccess, isMounted, updateFormState }) => {
+const tryUploadImage = async ({ uploadMutation, equipmentId, file, onSuccess, isMounted, showToast }) => {
     if (!file) {
         return true
     }
     try {
         await uploadMutation.mutateAsync({ id: equipmentId, file })
         return true
-    } catch {
+    } catch (error) {
         onSuccess()
-        if (isMounted.current) {
-            updateFormState({
-                uploadError: 'Equipment details saved, but the image couldn’t be uploaded. Please try again.'
-            })
+        if (isMounted.current && !isCancelledError(error)) {
+            showToast('Equipment details saved, but the image couldn’t be uploaded. Please try again.', 'danger')
         }
         return false
     }
@@ -163,8 +161,7 @@ const useEquipmentFieldHandlers = (updateFormState) => {
             updateFormState((prev) => ({
                 [field]: value,
                 touched: { ...prev.touched, [field]: true },
-                serverErrors: serverField ? { ...prev.serverErrors, [serverField]: '' } : prev.serverErrors,
-                errorMessage: ''
+                serverErrors: serverField ? { ...prev.serverErrors, [serverField]: '' } : prev.serverErrors
             }))
         },
         [updateFormState]
@@ -200,6 +197,7 @@ const useCleanUpPreview = (imageFile, previewUrl) => {
 }
 
 const useEquipmentForm = (equipment, onClose, onSuccess) => {
+    const { show: showToast } = useToast()
     const fileInputReference = useRef(null)
     const savedEquipmentReference = useRef(equipment)
     const [savedEquipment, setSavedEquipment] = useState(equipment)
@@ -209,7 +207,7 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
 
     const createEquipmentMutation = useCreateEquipment()
     const updateEquipmentMutation = useUpdateEquipment()
-    const uploadImageMutation = useUploadEquipmentImage()
+    const uploadImageMutation = useUploadEquipmentImage({ mutationConfig: { meta: { handlesError: true } } })
     useEffect(() => {
         isMounted.current = true
         return () => {
@@ -242,8 +240,6 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
             isSubmittingReference.current = true
             updateFormState({
                 isSubmitting: true,
-                errorMessage: '',
-                uploadError: '',
                 serverErrors: {}
             })
             const currentEquipment = savedEquipmentReference.current
@@ -267,7 +263,7 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
                     file: formState.imageFile,
                     onSuccess,
                     isMounted,
-                    updateFormState
+                    showToast
                 })
 
                 if (uploadOk && isMounted.current) {
@@ -276,12 +272,12 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
                 }
             } catch (error) {
                 if (isMounted.current) {
-                    const serverErrors = extractServerErrors(error)
+                    const serverErrors = isServerError(error) ? {} : extractServerErrors(error)
                     const fallbackMessage = (error && error.message) || 'Failed to save equipment asset'
-                    updateFormState({
-                        serverErrors,
-                        errorMessage: Object.values(serverErrors).some(Boolean) ? '' : fallbackMessage
-                    })
+                    updateFormState({ serverErrors })
+                    if (showEquipmentError(error, serverErrors)) {
+                        showToast(fallbackMessage, 'danger')
+                    }
                 }
             } finally {
                 isSubmittingReference.current = false
@@ -297,7 +293,8 @@ const useEquipmentForm = (equipment, onClose, onSuccess) => {
             onSuccess,
             updateEquipmentMutation,
             updateFormState,
-            uploadImageMutation
+            uploadImageMutation,
+            showToast
         ]
     )
 
@@ -355,9 +352,7 @@ export const EquipmentModalDialog = ({
         shortDescription,
         technicalSpecs,
         previewUrl,
-        errorMessage,
         imageError,
-        uploadError,
         serverErrors,
         touched,
         isCategoryOpen
@@ -425,13 +420,6 @@ export const EquipmentModalDialog = ({
                         onDescChange={handleDescChange}
                         onSpecsChange={handleSpecsChange}
                     />
-
-                    {errorMessage && (
-                        <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">
-                            {errorMessage}
-                        </p>
-                    )}
-                    {uploadError ? <ErrorText message={uploadError} className="min-h-4 mt-1" /> : null}
 
                     <EquipmentFormActions
                         isFormValid={isFormValid}

@@ -1,8 +1,8 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useSetState } from '@shared/hooks/useSetState'
-import { useToast } from '@/hooks/ui/useToast'
 import { useApproveBooking } from '@/features/bookings/api/approve-booking'
 import { useRejectBooking } from '@/features/bookings/api/reject-booking'
 import { DecisionForm } from '@/features/admin/approvals/components/DecisionForm'
@@ -25,7 +25,6 @@ const getDecisionModalDetails = (booking) => {
 export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaultBooking, type = 'approve' }) => {
     const approveMutation = useApproveBooking()
     const rejectMutation = useRejectBooking()
-    const { show: showToast } = useToast()
     const isApprove = type === 'approve'
 
     const [modalState, updateModalState] = useSetState({
@@ -82,12 +81,9 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
                 }
             } catch (error) {
                 const message = (error && error.message) || `Failed to ${type} booking`
-                if (isMounted.current) {
-                    updateModalState({
-                        errorMessage: message
-                    })
+                if (isMounted.current && !isServerError(error)) {
+                    updateModalState({ errorMessage: message })
                 }
-                showToast(message, 'danger')
             }
         },
         [
@@ -97,7 +93,6 @@ export const DecisionModal = ({ isOpen = false, onClose = noop, booking = defaul
             isSubmitting,
             onClose,
             rejectMutation,
-            showToast,
             text,
             type,
             updateModalState

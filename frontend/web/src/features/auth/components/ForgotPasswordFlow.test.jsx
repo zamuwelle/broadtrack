@@ -1,20 +1,20 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it, vi } from 'vite-plus/test'
 import { AuthModal } from '@/features/auth/components/AuthModal'
+import { AppProvider } from '@/app/provider'
 import { api } from '@/lib/api-client'
 
-vi.mock('@/lib/api-client', () => ({ api: { post: vi.fn() } }))
+vi.mock('@/lib/api-client', () => ({ api: { post: vi.fn() }, setUnauthorizedHandler: vi.fn() }))
 
 it('returns to sign in and shows a toast after sending the reset link', async () => {
     api.post.mockResolvedValueOnce({ message: 'Reset link sent' })
     render(
-        <QueryClientProvider client={new QueryClient()}>
+        <AppProvider>
             <MemoryRouter>
                 <AuthModal isOpen mode="forgot" />
             </MemoryRouter>
-        </QueryClientProvider>
+        </AppProvider>
     )
     fireEvent.change(screen.getByRole('textbox'), {
         target: { value: 'student@student.laverdad.edu.ph' }
@@ -32,11 +32,11 @@ it('keeps the forgot password form open on a server error', async () => {
         message: 'Could not send reset link.'
     })
     render(
-        <QueryClientProvider client={new QueryClient()}>
+        <AppProvider>
             <MemoryRouter>
                 <AuthModal isOpen mode="forgot" />
             </MemoryRouter>
-        </QueryClientProvider>
+        </AppProvider>
     )
     fireEvent.change(screen.getByRole('textbox'), {
         target: { value: 'student@student.laverdad.edu.ph' }

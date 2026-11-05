@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/ui/useToast'
 import { useRemindBooking } from '@/features/bookings/api/remind-booking'
 import { ReminderSuccessView } from '@/features/admin/transactions/components/ReminderSuccessView'
 import { ReminderPromptView } from '@/features/admin/transactions/components/ReminderPromptView'
+import { isLocalError } from '@/lib/errors'
 
 const defaultBooking = Object.freeze({})
 const noop = () => null
@@ -15,14 +16,13 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
     const { show: showToast } = useToast()
     const [reminderState, updateReminderState] = useSetState({
         sent: false,
-        sentTimestamp: '',
-        errorMessage: ''
+        sentTimestamp: ''
     })
     const isSubmitting = remindMutation.isPending
-    const { sent, sentTimestamp, errorMessage } = reminderState
+    const { sent, sentTimestamp } = reminderState
 
     const handleClose = useCallback(() => {
-        updateReminderState({ sent: false, errorMessage: '' })
+        updateReminderState({ sent: false })
         onClose()
     }, [onClose, updateReminderState])
     useEscapeKey(handleClose)
@@ -31,7 +31,6 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
         if (isSubmitting || !booking || !booking.id) {
             return
         }
-        updateReminderState({ errorMessage: '' })
         try {
             await remindMutation.mutateAsync(booking.id)
             updateReminderState({
@@ -40,10 +39,9 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
             })
         } catch (error) {
             const message = (error && error.message) || 'Failed to send reminder.'
-            updateReminderState({
-                errorMessage: message
-            })
-            showToast(message, 'danger')
+            if (isLocalError(error)) {
+                showToast(message, 'danger')
+            }
         }
     }, [booking, isSubmitting, remindMutation, showToast, updateReminderState])
 
@@ -58,7 +56,6 @@ export const SendReminderModal = ({ isOpen = false, onClose = noop, booking = de
     return (
         <ReminderPromptView
             recipientEmail={booking.user?.email || ''}
-            errorMessage={errorMessage}
             isSubmitting={isSubmitting}
             onClose={handleClose}
             onSend={handleSendReminder}

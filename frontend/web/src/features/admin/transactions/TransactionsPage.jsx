@@ -13,6 +13,7 @@ import { matchesBookingSearch } from '@shared/util/search'
 import { TRANSACTION_CATEGORIES } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 import { useToast } from '@/hooks/ui/useToast'
+import { isCancelledError } from '@/lib/errors'
 
 const INITIAL_PAGE_STATE = Object.freeze({
     searchText: '',
@@ -54,7 +55,9 @@ const useTransactionExports = ({ selectedCategory, searchText, showToast }) => {
                 search: searchText
             })
         } catch (error) {
-            showToast((error && error.message) || 'Failed to export transactions to PDF.', 'danger')
+            if (!isCancelledError(error)) {
+                showToast((error && error.message) || 'Failed to export transactions to PDF.', 'danger')
+            }
         } finally {
             setExportingType(null)
         }
@@ -71,7 +74,9 @@ const useTransactionExports = ({ selectedCategory, searchText, showToast }) => {
                 search: searchText
             })
         } catch (error) {
-            showToast((error && error.message) || 'Failed to export transactions to CSV.', 'danger')
+            if (!isCancelledError(error)) {
+                showToast((error && error.message) || 'Failed to export transactions to CSV.', 'danger')
+            }
         } finally {
             setExportingType(null)
         }

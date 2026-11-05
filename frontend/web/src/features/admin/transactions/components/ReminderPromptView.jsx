@@ -18,7 +18,6 @@ const formatEmail = (email) => {
 
 export const ReminderPromptView = ({
     recipientEmail = '',
-    errorMessage = '',
     isSubmitting = false,
     onClose = noop,
     onSend = noop
@@ -44,7 +43,6 @@ export const ReminderPromptView = ({
                     You&apos;re about to send an overdue reminder to{' '}
                     <span className="text-blue-600 [overflow-wrap:anywhere]">{formatEmail(recipientEmail)}</span>.
                 </p>
-                {errorMessage ? <p className="mt-3 text-xs text-rose-700">{errorMessage}</p> : null}
             </div>
             <div className="px-6 py-4 flex justify-center">
                 <button

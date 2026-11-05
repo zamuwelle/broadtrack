@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useDeleteUser } from '@/features/users/api/delete-user'
+import { isLocalError } from '@/lib/errors'
 
 const defaultUser = Object.freeze({})
 const noop = () => null
@@ -13,10 +14,8 @@ export const RemoveUserModal = ({
     onError = noop
 }) => {
     const deleteUserMutation = useDeleteUser()
-    const [errorMessage, setErrorMessage] = useState('')
 
     const handleClose = useCallback(() => {
-        setErrorMessage('')
         onClose()
     }, [onClose])
 
@@ -24,15 +23,16 @@ export const RemoveUserModal = ({
         if (!user || !user.id) {
             return
         }
-        setErrorMessage('')
         try {
             await deleteUserMutation.mutateAsync(user.id)
             onSuccess()
             onClose()
         } catch (error) {
             const message = (error && error.message) || 'Failed to remove user'
-            setErrorMessage(message)
-            onError(message)
+            if (isLocalError(error)) {
+                onError(message)
+            }
+            onClose()
         }
     }, [deleteUserMutation, onClose, onError, onSuccess, user])
 
@@ -46,12 +46,7 @@ export const RemoveUserModal = ({
             confirmLabel="Remove"
             loadingLabel="Removing..."
             isPending={deleteUserMutation.isPending}
-            variant="danger">
-            {errorMessage ? (
-                <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5 w-full">
-                    {errorMessage}
-                </p>
-            ) : null}
-        </ConfirmModal>
+            variant="danger"
+        />
     )
 }

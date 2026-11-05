@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { cn } from 'cn'
+import { createPortal } from 'react-dom'
 import { Icon } from '@/components/ui/Icon'
+import { useToast } from '@/hooks/ui/useToast'
 
 const getBackgroundColor = (type, color) => {
     if (color) {
@@ -18,7 +20,8 @@ const getBackgroundColor = (type, color) => {
     return 'var(--color-success)'
 }
 
-export const Toast = ({ show, message, color, type = 'success' }) => {
+export const Toast = ({ color } = {}) => {
+    const { visible: show, message, type } = useToast()
     const [isPresent, setIsPresent] = useState(show)
     const [isVisible, setIsVisible] = useState(false)
     const isWarning = type === 'warning'
@@ -74,7 +77,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
         return null
     }
 
-    return (
+    return createPortal(
         <div
             onTransitionEnd={handleTransitionEnd}
             className={cn(
@@ -119,6 +122,7 @@ export const Toast = ({ show, message, color, type = 'success' }) => {
                     {message}
                 </p>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }

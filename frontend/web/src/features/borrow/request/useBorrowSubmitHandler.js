@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { isLocalError } from '@/lib/errors'
 
 export const useSummarySession = (isOpen) => {
     const session = useRef(0)
@@ -51,14 +52,12 @@ export const useBorrowSubmitHandler = ({
         } catch (submitError) {
             const message =
                 submitError?.message || 'Failed to submit booking request. Please check dates and try again.'
-            if (session === summarySession.current) {
-                if (submitError?.status === 422) {
-                    setErrorMessage(message)
-                } else {
-                    setRequestError(message)
-                }
+            if (session === summarySession.current && submitError?.status === 422) {
+                setErrorMessage(message)
             }
-            showToast(message, 'danger')
+            if (isLocalError(submitError) && submitError?.status !== 422) {
+                showToast(message, 'danger')
+            }
         }
     }, [
         createBookingMutation,

@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { useSetState } from '@shared/hooks/useSetState'
 import { useDeleteEquipment } from '@/features/equipment/api/delete-equipment'
+import { isLocalError } from '@/lib/errors'
 
 const noop = () => null
 
@@ -20,28 +20,21 @@ export const DeleteEquipmentModal = ({
     onError = noop
 }) => {
     const deleteMutation = useDeleteEquipment()
-    const [modalState, updateModalState] = useSetState({
-        errorMessage: ''
-    })
-    const { errorMessage } = modalState
-
     const handleDelete = useCallback(async () => {
         if (!equipment || !equipment.id) {
             return
         }
-        updateModalState({ errorMessage: '' })
         try {
             await deleteMutation.mutateAsync(equipment.id)
             onSuccess()
             onClose()
         } catch (error) {
             const message = (error && error.message) || 'Failed to delete equipment asset'
-            updateModalState({
-                errorMessage: message
-            })
-            onError(message)
+            if (isLocalError(error)) {
+                onError(message)
+            }
         }
-    }, [deleteMutation, equipment, onClose, onError, onSuccess, updateModalState])
+    }, [deleteMutation, equipment, onClose, onError, onSuccess])
 
     if (!isOpen || !equipment) {
         return null
@@ -62,12 +55,7 @@ export const DeleteEquipmentModal = ({
             loadingLabel="Deleting..."
             isPending={deleteMutation.isPending}
             variant="danger"
-            maxWidth="max-w-[538px]">
-            {errorMessage ? (
-                <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5 w-full">
-                    {errorMessage}
-                </p>
-            ) : null}
-        </ConfirmModal>
+            maxWidth="max-w-[538px]"
+        />
     )
 }

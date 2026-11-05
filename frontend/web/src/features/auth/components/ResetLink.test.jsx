@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it, vi } from 'vite-plus/test'
 import { AuthModal } from '@/features/auth/components/AuthModal'
+import { Toast } from '@/components/ui/Toast'
 import { api } from '@/lib/api-client'
 
 vi.mock('@/lib/api-client', () => ({ api: { post: vi.fn() } }))
@@ -15,6 +16,7 @@ const renderReset = () =>
             <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
                 <MemoryRouter>
                     <AuthModal isOpen mode="reset" initialData={data} />
+                    <Toast />
                 </MemoryRouter>
             </QueryClientProvider>
         </StrictMode>

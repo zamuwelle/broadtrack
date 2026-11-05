@@ -50,12 +50,14 @@ export const AuthModalBody = ({
         isCredentialError
     )
     const handleInvalid = useCallback(
-        (invalidErrors) => {
-            const message =
-                invalidErrors.email && invalidErrors.email.message !== VALIDATION_MESSAGES.REQUIRED
-                    ? VALIDATION_MESSAGES.LA_VERDAD_EMAIL_PROMPT
-                    : VALIDATION_MESSAGES.MISSING_FIELDS
-            showToast(message, 'warning')
+        (invalidErrors, values) => {
+            if (
+                Object.entries(invalidErrors).some(
+                    ([name, field]) => field.message === VALIDATION_MESSAGES.REQUIRED || values?.[name] === ''
+                )
+            ) {
+                showToast(VALIDATION_MESSAGES.MISSING_FIELDS, 'warning')
+            }
         },
         [showToast]
     )
@@ -64,7 +66,6 @@ export const AuthModalBody = ({
         return (
             <LoginForm
                 form={form}
-                serverError={isServerError ? error : ''}
                 emailError={emailError}
                 passwordError={passwordError}
                 showPass={showPass}
@@ -82,7 +83,6 @@ export const AuthModalBody = ({
         return (
             <RegisterForm
                 form={form}
-                serverError={isServerError ? error : ''}
                 firstnameError={firstnameError}
                 lastnameError={lastnameError}
                 emailError={emailError}
@@ -103,7 +103,6 @@ export const AuthModalBody = ({
         return (
             <ForgotForm
                 form={form}
-                serverError={isServerError ? error : ''}
                 error={emailError}
                 isPending={actions.forgotPending}
                 onSwitchTab={onSwitchTab}
@@ -118,7 +117,7 @@ export const AuthModalBody = ({
         return (
             <ResetForm
                 form={form}
-                error={error}
+                error={isServerError ? '' : error}
                 showPass={showPass}
                 isPending={actions.resetPending}
                 onToggleShowPass={onToggleShowPass}

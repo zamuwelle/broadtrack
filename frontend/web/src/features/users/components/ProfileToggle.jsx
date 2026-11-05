@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react'
 import { cn } from 'cn'
 import { Icon } from '@/components/ui/Icon'
 import { ProfileMenu } from '@/features/users/components/ProfileMenu'
-import { Toast } from '@/components/ui/Toast'
 import { useToggle } from '@/hooks/ui/useToggle'
 import { useToast } from '@/hooks/ui/useToast'
 
@@ -11,7 +10,7 @@ const noop = () => null
 
 export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
     const { open, setOpen, boxRef } = useToggle()
-    const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
+    const { show: showToast } = useToast()
 
     useEffect(() => {
         const welcomeMessage = globalThis.sessionStorage.getItem('welcome_message')
@@ -62,7 +61,6 @@ export const ProfileToggle = ({ user = defaultUser, onOpen = noop }) => {
                     <ProfileMenu user={user} />
                 </div>
             )}
-            <Toast show={toastVisible} message={toastMessage} type={toastType} />
         </div>
     )
 }
