@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
 use App\Enums\EquipmentStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ApproveBookingRequest;
 use App\Http\Requests\Api\V1\IndexBookingRequest;
 use App\Http\Requests\Api\V1\RejectBookingRequest;
 use App\Http\Requests\Api\V1\StoreBookingRequest;
 use App\Http\Resources\Api\V1\BookingResource;
+use App\Mail\BookingRequestMail;
 use App\Mail\EquipmentReturnReminderMail;
 use App\Models\Booking;
 use App\Models\Equipment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -73,6 +76,7 @@ class BookingController extends ApiController
             }
 
             $createdBookings = new Collection;
+            $items = [];
 
             foreach ($equipmentIds as $equipmentId) {
                 $booking = $request->user()->bookings()->create(
@@ -81,7 +85,15 @@ class BookingController extends ApiController
 
                 $booking->equipments()->attach([$equipmentId]);
                 $createdBookings->push($booking);
+                $item = $equipment->firstWhere('id', $equipmentId);
+                $items[] = [
+                    'ticket_id' => $booking->ticket_id,
+                    'name' => $item->name,
+                    'serial_no' => $item->serial_no,
+                ];
             }
+
+            $this->queueRequestNotifications($request->user(), $createdBookings->first(), $items);
 
             if (count($equipmentIds) === 1) {
                 return $this->created(
@@ -94,6 +106,33 @@ class BookingController extends ApiController
                 BookingResource::collection($createdBookings->load('equipments')),
                 'Bookings created successfully.'
             );
+        });
+    }
+
+    private function queueRequestNotifications(User $borrower, Booking $booking, array $items): void
+    {
+        $details = [
+            'borrowerName' => $borrower->full_name,
+            'borrowerEmail' => $borrower->email,
+            'purpose' => $booking->purpose,
+            'startDate' => $booking->start_date->copy()->timezone('Asia/Manila')->format('F j, Y, h:i A'),
+            'endDate' => $booking->end_date->copy()->timezone('Asia/Manila')->format('F j, Y, h:i A'),
+            'items' => $items,
+        ];
+
+        DB::afterCommit(static function () use ($details): void {
+            try {
+                $recipients = User::whereIn('role', [UserRole::Admin, UserRole::Sysadmin])->pluck('email');
+                foreach ($recipients as $email) {
+                    try {
+                        Mail::to($email)->queue(new BookingRequestMail(...$details));
+                    } catch (Throwable $exception) {
+                        Log::error('Failed to queue booking request email.', ['exception' => $exception]);
+                    }
+                }
+            } catch (Throwable $exception) {
+                Log::error('Failed to find booking request email recipients.', ['exception' => $exception]);
+            }
         });
     }
 
