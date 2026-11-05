@@ -2,15 +2,22 @@ import { useMemo } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { ADMIN_ROLES } from '@shared/constants'
 import { paths } from '@/config/paths'
-import { useUser } from '@/lib/auth'
+import { isAdmin, useUser } from '@/lib/auth'
 
-export const ProtectedRoute = ({ allowedRoles, children }) => {
+export const ProtectedRoute = ({ allowedRoles, guestOnly = false, children }) => {
     const { data: user, isLoading } = useUser()
     const location = useLocation()
     const redirectState = useMemo(() => ({ from: location }), [location])
 
     if (isLoading) {
         return null
+    }
+
+    if (guestOnly) {
+        if (user) {
+            return <Navigate to={isAdmin(user) ? paths.app.adminDashboard : paths.app.borrowEquipment} replace />
+        }
+        return children ?? <Outlet />
     }
 
     if (!user) {

@@ -9,6 +9,7 @@ import { TextInput } from '@/components/ui/form/TextInput'
 import { FormError } from '@/components/ui/form/FormError'
 import { Icon } from '@/components/ui/Icon'
 import { env } from '@/config/env'
+import { startSession } from '@/lib/session-storage'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
@@ -37,7 +38,7 @@ const isPopupResult = (data, nonce) => {
 
 const handlePopupResult = (result) => {
     if (result.status === 'success') {
-        globalThis.localStorage.setItem('auth_token', result.token)
+        startSession(result.token)
         globalThis.location.assign(result.path)
         return
     }

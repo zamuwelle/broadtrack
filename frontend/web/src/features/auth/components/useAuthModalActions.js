@@ -6,6 +6,7 @@ import { registerUser } from '@/features/auth/api/register'
 import { forgotPassword } from '@/features/auth/api/forgot-password'
 import { resetPassword } from '@/features/auth/api/reset-password'
 import { paths } from '@/config/paths'
+import { startSession } from '@/lib/session-storage'
 
 const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showToast, initialFormState }) => {
     const navigate = useNavigate()
@@ -14,7 +15,7 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
     const saveAuth = useCallback(
         ({ data = {} }) => {
             if (data.token) {
-                globalThis.localStorage.setItem('auth_token', data.token)
+                startSession(data.token)
             }
             if (data.user) {
                 queryClient.setQueryData(['me'], data.user)

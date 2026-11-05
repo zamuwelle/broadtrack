@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('department')->nullable();
             $table->string('profile_picture')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', static function ($table) {

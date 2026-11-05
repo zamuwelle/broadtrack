@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\StoreUserRequest;
 use App\Http\Requests\Api\V1\UpdateUserRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends ApiController
 {
@@ -55,12 +58,19 @@ class UserController extends ApiController
     {
         $this->authorize('delete', $user);
 
-        if ($user->bookings()->exists() || $user->returnedBookings()->exists()) {
-            return $this->error('Cannot delete a user with existing booking records.', 422);
-        }
+        return DB::transaction(function () use ($user): JsonResponse {
+            $bookings = $user->bookings()->whereIn('status', [BookingStatus::Pending, BookingStatus::Approved])
+                ->orderBy('id')->lockForUpdate()->get();
 
-        $user->delete();
+            if ($bookings->contains(static fn (Booking $booking): bool => $booking->status === BookingStatus::Approved)) {
+                return $this->error('Cannot delete a user with approved bookings.', 422);
+            }
 
-        return $this->noContent();
+            $bookings->each(static fn (Booking $booking): bool => $booking->cancel());
+            $user->tokens()->delete();
+            $user->delete();
+
+            return $this->noContent();
+        });
     }
 }

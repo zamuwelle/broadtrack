@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '@/lib/api-client'
 import { paths } from '@/config/paths'
 import { ROLES } from '@shared/constants'
+import { clearSessionStorage, startSession } from '@/lib/session-storage'
 
 export const isAdmin = (user) => user?.role === ROLES.ADMIN || user?.role === ROLES.SYSADMIN
 export const isSysAdmin = (user) => user?.role === ROLES.SYSADMIN
@@ -61,7 +62,7 @@ const syncTokenFromUrl = () => {
     const activeTab = searchParams.get('tab')
 
     if (token && activeTab !== 'reset') {
-        globalThis.localStorage?.setItem('auth_token', token)
+        startSession(token)
         searchParams.delete('token')
         const remainingQuery = searchParams.toString() ? `?${searchParams.toString()}` : ''
         const cleanUrl = `${globalThis.location.pathname}${remainingQuery}${globalThis.location.hash}`
@@ -74,7 +75,7 @@ export const initAuthFromUrl = () => {
 }
 
 export const clearAuthSession = (queryClient) => {
-    globalThis.localStorage?.removeItem('auth_token')
+    clearSessionStorage()
     queryClient?.setQueryData(['me'], null)
     queryClient?.removeQueries({
         predicate: (query) => query.queryKey[0] !== 'me'

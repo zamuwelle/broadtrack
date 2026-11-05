@@ -5,32 +5,38 @@ import { ProtectedRoute } from '@/app/authorization'
 import { paths } from '@/config/paths'
 
 const SYSADMIN_ROLES = Object.freeze([ROLES.SYSADMIN])
+/* oxlint-disable max-lines-per-function -- keep route definitions together */
 const createAppRouter = () =>
     createBrowserRouter([
         {
-            lazy: () => import('@/layouts/PublicLayout'),
-            HydrateFallback: () => null,
+            element: <ProtectedRoute guestOnly />,
             children: [
                 {
-                    path: paths.home,
-                    lazy: async () => {
-                        const { LandingPage } = await import('@/features/landing/LandingPage')
-                        return { Component: LandingPage }
-                    }
-                },
-                {
-                    path: paths.terms,
-                    lazy: async () => {
-                        const { TermsPage } = await import('@/features/landing/TermsPage')
-                        return { Component: TermsPage }
-                    }
-                },
-                {
-                    path: paths.privacy,
-                    lazy: async () => {
-                        const { PrivacyPage } = await import('@/features/landing/PrivacyPage')
-                        return { Component: PrivacyPage }
-                    }
+                    lazy: () => import('@/layouts/PublicLayout'),
+                    HydrateFallback: () => null,
+                    children: [
+                        {
+                            path: paths.home,
+                            lazy: async () => {
+                                const { LandingPage } = await import('@/features/landing/LandingPage')
+                                return { Component: LandingPage }
+                            }
+                        },
+                        {
+                            path: paths.terms,
+                            lazy: async () => {
+                                const { TermsPage } = await import('@/features/landing/TermsPage')
+                                return { Component: TermsPage }
+                            }
+                        },
+                        {
+                            path: paths.privacy,
+                            lazy: async () => {
+                                const { PrivacyPage } = await import('@/features/landing/PrivacyPage')
+                                return { Component: PrivacyPage }
+                            }
+                        }
+                    ]
                 }
             ]
         },

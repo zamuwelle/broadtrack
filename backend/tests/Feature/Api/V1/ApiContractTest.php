@@ -144,7 +144,7 @@ test('delete endpoints return 204 no content on successful deletion', function (
 
     $userResponse = $this->actingAs($sysadmin)->deleteJson("/api/v1/users/{$targetUser->id}");
     $userResponse->assertNoContent();
-    $this->assertDatabaseMissing('users', ['id' => $targetUser->id]);
+    $this->assertSoftDeleted('users', ['id' => $targetUser->id]);
 });
 
 test('booking borrower identity is redacted for non-owners in calendar view', function (): void {
