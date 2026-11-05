@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { api } from '@/lib/api-client'
 import { downloadBookingSlip } from '@/features/bookings/api/download-slip'
-import { exportTransactionsCsv, exportTransactionsPdf } from '@/features/bookings/api/export-transactions'
+import { exportTransactionsXlsx, exportTransactionsPdf } from '@/features/bookings/api/export-transactions'
 
 vi.mock('@/lib/api-client', () => ({ api: { get: vi.fn() } }))
 
@@ -46,10 +46,10 @@ describe('booking downloads', () => {
             'transactions-report-2026-10-28.pdf'
         ],
         [
-            'CSV',
-            () => exportTransactionsCsv({ category: 'Active', search: 'camera' }),
-            '/bookings/reports/csv',
-            'transactions-report-2026-10-28.csv'
+            'Excel',
+            () => exportTransactionsXlsx({ category: 'Active', search: 'camera' }),
+            '/bookings/reports/xlsx',
+            'transactions-report-2026-10-28.xlsx'
         ]
     ])('downloads %s and cleans up its object URL', async (_name, download, path, filename) => {
         api.get.mockResolvedValueOnce(new Blob(['data'], { type: 'application/octet-stream' }))
@@ -71,6 +71,6 @@ describe('booking downloads', () => {
             response: { data: jsonBlob('{') },
             message: 'Request failed'
         })
-        await expect(exportTransactionsCsv()).rejects.toMatchObject({ message: 'Request failed' })
+        await expect(exportTransactionsXlsx()).rejects.toMatchObject({ message: 'Request failed' })
     })
 })

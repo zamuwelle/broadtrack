@@ -262,21 +262,10 @@ test('booking store rechecks equipment maintenance after validation', function (
     expect(Booking::count())->toBe(0);
 });
 
-test('CSV report neutralizes borrower formulas and supports empty admin departments', function (): void {
-    $admin = User::factory()->admin()->create();
-    $borrower = User::factory()->create();
-    Booking::factory()->approved()->create(['user_id' => $borrower->id, 'purpose' => '=1+1']);
-
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
-    $content = $response->streamedContent();
-    expect($content)->toContain("'=1+1");
-});
-
 test('reports export bookings with no department', function (): void {
     $admin = User::factory()->admin()->create(['department' => null]);
     Booking::factory()->approved()->create(['user_id' => $admin->id]);
 
-    $response = $this->actingAs($admin)->get('/api/v1/bookings/reports/csv')->assertOk();
-    expect($response->streamedContent())->toContain('Approved');
+    $this->actingAs($admin)->get('/api/v1/bookings/reports/xlsx')->assertOk();
     $this->get('/api/v1/bookings/reports/pdf')->assertOk();
 });

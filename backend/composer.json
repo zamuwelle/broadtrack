@@ -17,6 +17,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0",
+        "phpoffice/phpspreadsheet": "^5.10",
         "symfony/brevo-mailer": "^8.1",
         "symfony/http-client": "^8.1",
         "tamtamchik/namecase": "^3.1"

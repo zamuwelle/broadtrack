@@ -9,11 +9,35 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookingReportController extends ApiController
 {
+    public function exportXlsx(Request $request): StreamedResponse
+    {
+        $this->authorize('manage', Booking::class);
+        $rows = $this->flattenRows($this->getFilteredBookings($request));
+        $filename = 'transactions_report_'.now()->timezone('Asia/Manila')->format('Ymd_His').'.xlsx';
+
+        return response()->streamDownload(static function () use ($rows): void {
+            $spreadsheet = new Spreadsheet;
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->fromArray(['Ticket ID', 'Borrower Full Name', 'Email Address', 'Department', 'Equipment Name', 'Category', 'Model', 'Serial Number', 'Borrow Date', 'Due Date', 'Actual Return Date', 'Purpose', 'Status'], null, 'A1');
+            $keys = ['ticket_id', 'borrower', 'email', 'department', 'equipment_name', 'category', 'model', 'serial_no', 'borrow_date', 'due_date', 'actual_return_date', 'purpose', 'status_label'];
+            foreach ($rows as $index => $row) {
+                foreach ($keys as $column => $key) {
+                    $sheet->setCellValueExplicit([$column + 1, $index + 2], (string)($row[$key] ?? ''), DataType::TYPE_STRING);
+                }
+            }
+            (new Xlsx($spreadsheet))->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+    }
+
     public function exportPdf(Request $request): Response
     {
         $this->authorize('manage', Booking::class);
@@ -32,63 +56,6 @@ class BookingReportController extends ApiController
         $timestamp = now()->timezone('Asia/Manila')->format('Ymd_His');
 
         return $pdf->stream("transactions_report_{$timestamp}.pdf");
-    }
-
-    public function exportCsv(Request $request): StreamedResponse
-    {
-        $this->authorize('manage', Booking::class);
-
-        $bookings = $this->getFilteredBookings($request);
-        $rows = $this->flattenRows($bookings);
-        $timestamp = now()->timezone('Asia/Manila')->format('Ymd_His');
-        $filename = "transactions_report_{$timestamp}.csv";
-
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ];
-
-        return response()->streamDownload(static function () use ($rows) {
-            $handle = fopen('php://output', 'wb');
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            fputcsv($handle, [
-                'Ticket ID',
-                'Borrower Full Name',
-                'Email Address',
-                'Department',
-                'Equipment Name',
-                'Category',
-                'Model',
-                'Serial Number',
-                'Borrow Date',
-                'Due Date',
-                'Actual Return Date',
-                'Purpose',
-                'Status',
-            ], ',', '"', '');
-
-            foreach ($rows as $row) {
-                fputcsv($handle, array_map(static fn (mixed $value): mixed => is_string($value) && preg_match('/^[\x00-\x20]*[=+@-]/', $value)
-                    ? "'".$value
-                    : $value, [
-                        $row['ticket_id'],
-                        $row['borrower'],
-                        $row['email'],
-                        $row['department'],
-                        $row['equipment_name'],
-                        $row['category'],
-                        $row['model'],
-                        $row['serial_no'],
-                        $row['borrow_date'],
-                        $row['due_date'],
-                        $row['actual_return_date'],
-                        $row['purpose'],
-                        $row['status_label'],
-                    ]), ',', '"', '');
-            }
-
-            fclose($handle);
-        }, $filename, $headers, 'inline');
     }
 
     private function getFilteredBookings(Request $request): Collection

@@ -57,7 +57,7 @@ Report exports accept `category` (`All`, `Active`, `Completed`, `Overdue`, `Canc
 | `GET`  | `/api/v1/bookings/{booking}`         | Authenticated, policy checked | View booking details.                                |
 | `GET`  | `/api/v1/bookings/{booking}/slip`    | Authenticated, policy checked | Download booking slip PDF stream (also `/slip/pdf`). |
 | `GET`  | `/api/v1/bookings/reports/pdf`       | Admin / Sysadmin              | Export booking report PDF.                           |
-| `GET`  | `/api/v1/bookings/reports/csv`       | Admin / Sysadmin              | Export booking report CSV.                           |
+| `GET`  | `/api/v1/bookings/reports/xlsx`       | Admin / Sysadmin              | Export booking report as Excel.                           |
 | `PUT`  | `/api/v1/bookings/{booking}/approve` | Admin / Sysadmin              | Approve pending booking.                             |
 | `PUT`  | `/api/v1/bookings/{booking}/reject`  | Admin / Sysadmin              | Reject pending or approved booking.                  |
 | `PUT`  | `/api/v1/bookings/{booking}/return`  | Admin / Sysadmin              | Mark booking returned.                               |
