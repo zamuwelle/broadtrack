@@ -20,8 +20,8 @@ class UpdateEquipmentRequest extends FormRequest
             'category' => ['sometimes', 'required', Rule::enum(EquipmentCategory::class)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'serial_no' => ['nullable', 'string', 'max:255', Rule::when(
+            'model' => 'sometimes|required|string|max:255',
+            'serial_no' => ['sometimes', 'required', 'string', 'max:255', Rule::when(
                 $this->input('serial_no') !== $this->route('equipment')?->serial_no,
                 [Rule::unique('equipments')->ignore($this->route('equipment'))]
             )],

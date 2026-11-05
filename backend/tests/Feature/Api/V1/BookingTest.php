@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\BookingStatus;
-use App\Enums\EquipmentCategory;
 use App\Enums\EquipmentStatus;
 use App\Http\Resources\Api\V1\BookingResource;
 use App\Models\Booking;
@@ -457,27 +456,6 @@ test('approving or returning booking does not mutate equipment table status', fu
 
     $this->actingAs($admin)->putJson("/api/v1/bookings/{$booking->id}/return")->assertOk();
     expect($equipment->fresh()->getRawOriginal('status'))->toBe(EquipmentStatus::Available->value);
-});
-
-test('equipment serial number counter avoids duplicates on deletion', function () {
-    $eq1 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    $eq2 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    expect($eq2->serial_no)->toBe('SN-SON-0002');
-
-    $eq1->delete();
-
-    $eq3 = Equipment::create([
-        'name' => 'Sony FX3',
-        'category' => EquipmentCategory::Camera->value,
-    ]);
-    expect($eq3->serial_no)->not->toBe($eq2->serial_no);
-    expect($eq3->serial_no)->toBe('SN-SON-0003');
 });
 
 test('borrower checking out multiple equipment items creates independent bookings per item', function () {

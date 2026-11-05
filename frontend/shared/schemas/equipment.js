@@ -20,15 +20,13 @@ export const equipmentSchema = z.object({
     modelCode: z
         .string()
         .trim()
-        .max(MAX_EQUIPMENT_FIELD_LENGTH, 'Must not exceed 255 characters')
-        .optional()
-        .or(z.literal('')),
+        .min(1, 'Model / Code is required')
+        .max(MAX_EQUIPMENT_FIELD_LENGTH, 'Must not exceed 255 characters'),
     serialNumber: z
         .string()
         .trim()
-        .max(MAX_EQUIPMENT_FIELD_LENGTH, 'Must not exceed 255 characters')
-        .optional()
-        .or(z.literal('')),
+        .min(1, 'Serial Number is required')
+        .max(MAX_EQUIPMENT_FIELD_LENGTH, 'Must not exceed 255 characters'),
     technicalSpecs: z.string().trim().optional().or(z.literal('')),
     status: z.enum(EQUIPMENT_STATUSES).optional()
 })
