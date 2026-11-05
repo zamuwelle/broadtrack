@@ -1,10 +1,12 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { render, renderHook } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { api, setUnauthorizedHandler } from '@/lib/api-client'
 import { clearAuthSession, fetchCurrentUser, initAuthFromUrl, useLogout } from '@/lib/auth'
 import { AppProvider } from '@/app/provider'
+import { useBookingCartStore } from '@/features/borrow/stores/useBookingCartStore'
 
 const mockNavigate = vi.fn()
 
@@ -53,23 +55,6 @@ describe('auth session and user fetching', () => {
         expect(globalThis.location.search).toContain('token=oauth-test-token')
         globalThis.history.replaceState({}, '', '/')
     })
-
-    it('clears auth token and query cache with clearAuthSession', () => {
-        globalThis.localStorage.setItem('auth_token', 'active-token')
-        const queryClient = new QueryClient()
-        queryClient.setQueryData(['me'], {
-            id: 42,
-            email: 'user@student.laverdad.edu.ph'
-        })
-        queryClient.setQueryData(['equipment'], [{ id: 1 }])
-
-        clearAuthSession(queryClient)
-
-        expect(globalThis.localStorage.getItem('auth_token')).toBeNull()
-        expect(queryClient.getQueryData(['me'])).toBeNull()
-        expect(queryClient.getQueryData(['equipment'])).toBeUndefined()
-    })
-
     it('fetchCurrentUser returns null when auth_token is missing without calling api', async () => {
         const user = await fetchCurrentUser()
 
@@ -156,20 +141,51 @@ describe('auth session and user fetching', () => {
             registeredHandler = handler
         })
 
+        let client
+        const CaptureClient = () => {
+            const queryClient = useQueryClient()
+            useEffect(() => {
+                client = queryClient
+            }, [queryClient])
+            return <div>child content</div>
+        }
         const { unmount } = render(
             <AppProvider>
-                <div>child content</div>
+                <CaptureClient />
             </AppProvider>
         )
 
         expect(setUnauthorizedHandler).toHaveBeenCalled()
         expect(typeof registeredHandler).toBe('function')
 
-        globalThis.localStorage.setItem('auth_token', 'session-token')
+        client.setQueryData(['me'], { id: 1 })
         registeredHandler()
-        expect(globalThis.localStorage.getItem('auth_token')).toBeNull()
+        expect(client.getQueryData(['me'])).toBeNull()
 
         unmount()
         expect(setUnauthorizedHandler).toHaveBeenLastCalledWith(null)
     })
+})
+
+it('clears auth token and query cache with clearAuthSession', () => {
+    globalThis.localStorage.setItem('auth_token', 'active-token')
+    useBookingCartStore.setState({ items: [{ id: 1 }] })
+    globalThis.localStorage.setItem('pusherTransportTLS', 'cached')
+    globalThis.sessionStorage.setItem('welcome_message', 'Welcome')
+    globalThis.sessionStorage.setItem('google_oauth_popup_nonce', 'nonce')
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['me'], {
+        id: 42,
+        email: 'user@student.laverdad.edu.ph'
+    })
+    queryClient.setQueryData(['equipment'], [{ id: 1 }])
+
+    clearAuthSession(queryClient)
+    expect(globalThis.localStorage.getItem('auth_token')).toBeNull()
+    expect(useBookingCartStore.getState().items).toEqual([])
+    expect(globalThis.localStorage.getItem('broadtrack-booking-cart')).toBeNull()
+    expect(globalThis.localStorage.getItem('pusherTransportTLS')).toBeNull()
+    expect(globalThis.sessionStorage.length).toBe(0)
+    expect(queryClient.getQueryData(['me'])).toBeNull()
+    expect(queryClient.getQueryData(['equipment'])).toBeUndefined()
 })

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { isCancelledError } from '@/lib/errors'
 import { SlipStatusBadge } from '@/features/borrow/slips/components/SlipStatusBadge'
 import { SlipEquipmentList } from '@/features/borrow/slips/components/SlipEquipmentList'
 import { SlipDetailsGrid } from '@/features/borrow/slips/components/SlipDetailsGrid'
@@ -37,7 +38,9 @@ export const BookingSlipCard = ({ booking = defaultBooking, currentUser, onCance
                 ticketId
             })
         } catch (error) {
-            onDownloadError((error && error.message) || 'Failed to download booking slip.')
+            if (!isCancelledError(error)) {
+                onDownloadError((error && error.message) || 'Failed to download booking slip.')
+            }
         } finally {
             setIsDownloading(false)
         }

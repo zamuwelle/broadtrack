@@ -6,9 +6,9 @@ import { loginSchema } from '@shared/schemas/auth'
 import { VALIDATION_MESSAGES } from '@shared/schemas/common'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
-import { FormError } from '@/components/ui/form/FormError'
 import { Icon } from '@/components/ui/Icon'
 import { env } from '@/config/env'
+import { startSession } from '@/lib/session-storage'
 import { inputClass, passwordClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
@@ -37,7 +37,7 @@ const isPopupResult = (data, nonce) => {
 
 const handlePopupResult = (result) => {
     if (result.status === 'success') {
-        globalThis.localStorage.setItem('auth_token', result.token)
+        startSession(result.token)
         globalThis.location.assign(result.path)
         return
     }
@@ -139,7 +139,6 @@ const useGooglePopup = () => {
 
 export const LoginForm = ({
     form,
-    serverError = '',
     emailError = '',
     passwordError = '',
     showPass = false,
@@ -207,7 +206,6 @@ export const LoginForm = ({
                 <div className="flex-1 h-[1px] bg-gray-200" />
             </div>
             <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
-                <FormError message={serverError} />
                 <TextInput
                     label="La Verdad Email"
                     type="email"
@@ -239,7 +237,7 @@ export const LoginForm = ({
                     disabled={isPending}
                     className={cn(submitClass, {
                         'hover:opacity-90': isValid,
-                        'opacity-90 cursor-not-allowed': !isValid
+                        'opacity-50 cursor-not-allowed': !isValid
                     })}>
                     {isPending ? 'Signing in...' : 'Sign In'}
                 </button>

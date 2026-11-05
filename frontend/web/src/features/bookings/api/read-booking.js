@@ -5,11 +5,11 @@ export const markBookingAsRead = (bookingId) => api.put(`/bookings/${bookingId}/
 
 export const useMarkBookingAsRead = ({ mutationConfig } = {}) => {
     const queryClient = useQueryClient()
-    const { onSuccess, onMutate, ...restConfig } = mutationConfig ?? {}
+    const { onSuccess, ...restConfig } = mutationConfig ?? {}
 
     return useMutation({
         mutationFn: markBookingAsRead,
-        onMutate: (bookingId) => {
+        onSuccess: (response, bookingId, context) => {
             queryClient.setQueriesData({ queryKey: ['bookings'] }, (current) =>
                 Array.isArray(current)
                     ? current.map((booking) =>
@@ -17,11 +17,8 @@ export const useMarkBookingAsRead = ({ mutationConfig } = {}) => {
                       )
                     : current
             )
-            return onMutate?.(bookingId)
-        },
-        onSuccess: (response, variables, context) => {
             queryClient.invalidateQueries({ queryKey: ['bookings'] })
-            onSuccess?.(response, variables, context)
+            onSuccess?.(response, bookingId, context)
         },
         ...restConfig
     })

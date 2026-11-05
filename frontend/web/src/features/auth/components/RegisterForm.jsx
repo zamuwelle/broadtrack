@@ -5,7 +5,6 @@ import { Controller, useForm } from 'react-hook-form'
 import { registerSchema } from '@shared/schemas/auth'
 import { Select } from '@/components/ui/Select'
 import { ErrorText } from '@/components/ui/form/ErrorText'
-import { FormError } from '@/components/ui/form/FormError'
 import { FormField as Field } from '@/components/ui/form/FormField'
 import { PasswordInput } from '@/components/ui/form/PasswordInput'
 import { TextInput } from '@/components/ui/form/TextInput'
@@ -20,7 +19,6 @@ const noop = () => null
 export const RegisterForm = (props) => {
     const {
         form = DEFAULT_FORM,
-        serverError = '',
         firstnameError,
         lastnameError,
         emailError,
@@ -41,11 +39,13 @@ export const RegisterForm = (props) => {
         control,
         watch,
         handleSubmit,
+        getValues,
         reset,
         formState: { errors, isValid }
     } = useForm({
         resolver: zodResolver(registerSchema),
         mode: 'onChange',
+        shouldFocusError: false,
         defaultValues: { firstname, lastname, email, department, password }
     })
     const [watchedFirstname, watchedLastname, watchedEmail, watchedDepartment, watchedPassword] = watch([
@@ -78,27 +78,29 @@ export const RegisterForm = (props) => {
                 {...field}
                 options={DEPARTMENTS}
                 placeholder="Select Department"
-                error={errors.department?.message || departmentError}
+                error={(watchedDepartment && errors.department?.message) || departmentError}
                 panelClass="right-0 left-auto! w-full bg-surface shadow-lg"
                 hoverClass="hover:bg-slate-100"
                 selectedClass="bg-border-focus"
                 className="w-full bg-surface border border-gray-300 h-[40px] px-3 gap-2 text-[14px] text-text"
             />
         ),
-        [departmentError, errors.department?.message]
+        [departmentError, errors.department?.message, watchedDepartment]
     )
 
     const submitButtonClass = cn(submitClass, isValid ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed')
 
     return (
         <>
-            <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
-                <FormError message={serverError} />
+            <form
+                noValidate
+                className="flex flex-col gap-2.5"
+                onSubmit={handleSubmit(onSubmit, (invalidErrors) => onInvalid(invalidErrors, getValues()))}>
                 <RegisterNameFields
                     firstname={firstname}
                     lastname={lastname}
-                    firstnameError={errors.firstname?.message || firstnameError}
-                    lastnameError={errors.lastname?.message || lastnameError}
+                    firstnameError={(watchedFirstname && errors.firstname?.message) || firstnameError}
+                    lastnameError={(watchedLastname && errors.lastname?.message) || lastnameError}
                     register={register}
                 />
                 <TextInput
@@ -107,26 +109,26 @@ export const RegisterForm = (props) => {
                     type="email"
                     maxLength={255}
                     autoComplete="email"
-                    error={errors.email?.message || emailError}
+                    error={(watchedEmail && errors.email?.message) || emailError}
                     {...register('email')}
                     className={inputClassSmall}
                 />
                 <Field label="Department">
                     <Controller name="department" control={control} render={renderDepartment} />
-                    <ErrorText message={errors.department?.message || departmentError} />
+                    <ErrorText message={(watchedDepartment && errors.department?.message) || departmentError} />
                 </Field>
                 <PasswordInput
                     maxLength={64}
                     label="Password"
                     name="password"
                     autoComplete="new-password"
-                    error={errors.password?.message || passwordError}
+                    error={(watchedPassword && errors.password?.message) || passwordError}
                     {...register('password')}
                     className={passwordClassSmall}
                     showPass={showPass}
                     onToggleShow={onToggleShowPass}
                 />
-                <button type="submit" disabled={isPending || !isValid} className={submitButtonClass}>
+                <button type="submit" disabled={isPending} className={submitButtonClass}>
                     {isPending ? 'Creating account...' : 'Create Account'}
                 </button>
             </form>

@@ -19,6 +19,7 @@ export const useCheckResetToken = ({ email, token, enabled }) =>
             }
         },
         enabled,
+        meta: { handlesError: true },
         retry: false,
         gcTime: 0,
         refetchOnWindowFocus: false

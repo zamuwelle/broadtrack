@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
@@ -89,17 +90,15 @@ test('borrower cannot access users management', function () {
     $response->assertForbidden();
 });
 
-test('sysadmin cannot delete user with existing booking records', function () {
+test('sysadmin can delete user with a pending booking', function (): void {
     $sysadmin = User::factory()->sysadmin()->create();
     $borrower = User::factory()->borrower()->create();
-    Booking::factory()->create(['user_id' => $borrower->id]);
+    $booking = Booking::factory()->pending()->create(['user_id' => $borrower->id]);
 
-    $response = $this->actingAs($admin = $sysadmin)->deleteJson("/api/v1/users/{$borrower->id}");
-
-    $response->assertStatus(422)
-        ->assertJsonPath('message', 'Cannot delete a user with existing booking records.');
-
-    $this->assertDatabaseHas('users', ['id' => $borrower->id]);
+    $this->actingAs($sysadmin)->deleteJson("/api/v1/users/{$borrower->id}")->assertNoContent();
+    $this->assertSoftDeleted('users', ['id' => $borrower->id]);
+    expect($booking->fresh()->user->id)->toBe($borrower->id)
+        ->and($booking->fresh()->status)->toBe(BookingStatus::Cancelled);
 });
 
 test('user mutations succeed when the broadcast transport fails', function (string $method, string $action, int $status): void {
@@ -123,7 +122,7 @@ test('user mutations succeed when the broadcast transport fails', function (stri
     $id = $method === 'POST' ? $response->json('data.id') : $user->id;
     expect($payloads->first())->toBe(['event' => 'user.changed', 'payload' => ['action' => $action, 'userId' => $id]]);
     $method === 'DELETE'
-        ? $this->assertDatabaseMissing('users', ['id' => $id])
+        ? $this->assertSoftDeleted('users', ['id' => $id])
         : $this->assertDatabaseHas('users', ['id' => $id, 'firstname' => $method === 'POST' ? 'New' : 'Updated']);
 })->with([['POST', 'created', 201], ['PUT', 'updated', 200], ['DELETE', 'deleted', 204]]);
 
@@ -153,4 +152,54 @@ test('guest cannot view single user', function () {
     $response = $this->getJson("/api/v1/users/{$user->id}");
 
     $response->assertUnauthorized();
+});
+
+test('staff email is accepted for borrower creation', function (): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $this->actingAs($sysadmin)->postJson('/api/v1/users', [
+        'firstname' => 'Test', 'lastname' => 'Borrower', 'email' => 'wrong@laverdad.edu.ph',
+        'password' => 'password123', 'role' => 'borrower', 'department' => 'BS Accountancy',
+    ])->assertCreated();
+});
+
+test('student email is accepted for admin creation', function (): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $this->actingAs($sysadmin)->postJson('/api/v1/users', [
+        'firstname' => 'Test', 'lastname' => 'Admin', 'email' => 'wrong@student.laverdad.edu.ph',
+        'password' => 'password123', 'role' => 'admin',
+    ])->assertCreated();
+});
+
+test('changing a token id cannot authenticate as another user', function (): void {
+    $borrower = User::factory()->borrower()->create();
+    $sysadmin = User::factory()->sysadmin()->create();
+    $borrowerToken = $borrower->createToken('test')->plainTextToken;
+    $adminToken = $sysadmin->createToken('test')->plainTextToken;
+    [, $secret] = explode('|', $borrowerToken, 2);
+    [$adminId] = explode('|', $adminToken, 2);
+
+    $this->withToken($adminId.'|'.$secret)->getJson('/api/v1/users')->assertUnauthorized();
+    $this->withToken($borrowerToken)->getJson('/api/v1/users')->assertForbidden();
+});
+
+test('user with returned booking can be soft deleted without losing history or retaining tokens', function (): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $borrower = User::factory()->borrower()->create();
+    $token = $borrower->createToken('test');
+    $booking = Booking::factory()->returned()->create(['user_id' => $borrower->id]);
+
+    $this->actingAs($sysadmin)->deleteJson("/api/v1/users/{$borrower->id}")->assertNoContent();
+    $this->assertSoftDeleted('users', ['id' => $borrower->id]);
+    expect($booking->fresh()->user->id)->toBe($borrower->id);
+    $this->actingAs($sysadmin)->getJson("/api/v1/bookings/{$booking->id}")
+        ->assertOk()->assertJsonPath('data.user.id', $borrower->id);
+    $this->assertDatabaseMissing('personal_access_tokens', ['id' => $token->accessToken->id]);
+});
+
+test('approved booking prevents user deletion', function (): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $borrower = User::factory()->borrower()->create();
+    Booking::factory()->approved()->create(['user_id' => $borrower->id]);
+    $this->actingAs($sysadmin)->deleteJson("/api/v1/users/{$borrower->id}")->assertUnprocessable();
+    $this->assertNotSoftDeleted('users', ['id' => $borrower->id]);
 });

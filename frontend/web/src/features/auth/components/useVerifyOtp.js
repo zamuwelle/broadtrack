@@ -1,9 +1,12 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback, useEffect } from 'react'
 import { useSetState } from '@shared/hooks/useSetState'
+import { useToast } from '@/hooks/ui/useToast'
 import { verifyEmail } from '@/features/auth/api/verify-email'
 import { resendVerification } from '@/features/auth/api/resend-verification'
 
 export const useVerifyOtp = ({ email, onSwitchTab }) => {
+    const { show: showToast } = useToast()
     const [state, setState] = useSetState({
         otp: '',
         countdown: 60,
@@ -52,12 +55,16 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
                     error_?.response?.data?.message ||
                     error_?.message ||
                     'Incorrect verification code. Please try again.'
-                setState({ error: message })
+                if (isServerError(error_)) {
+                    showToast(message, 'danger')
+                } else {
+                    setState({ error: message })
+                }
             } finally {
                 setState({ isVerifying: false })
             }
         },
-        [email, otp, isComplete, isVerifying, setState]
+        [email, otp, isComplete, isVerifying, setState, showToast]
     )
 
     const handleResend = useCallback(async () => {
@@ -73,11 +80,15 @@ export const useVerifyOtp = ({ email, onSwitchTab }) => {
         } catch (error_) {
             const message =
                 error_?.response?.data?.message || error_?.message || 'Failed to resend code. Please try again later.'
-            setState({ error: message })
+            if (isServerError(error_)) {
+                showToast(message, 'danger')
+            } else {
+                setState({ error: message })
+            }
         } finally {
             setState({ isResending: false })
         }
-    }, [countdown, email, isResending, setState])
+    }, [countdown, email, isResending, setState, showToast])
 
     const handleContinueToLogin = useCallback(() => {
         onSwitchTab('login')

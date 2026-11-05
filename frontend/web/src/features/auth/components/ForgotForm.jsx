@@ -3,14 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { forgotPasswordSchema } from '@shared/schemas/auth'
 import { TextInput } from '@/components/ui/form/TextInput'
-import { FormError } from '@/components/ui/form/FormError'
 import { inputClass, submitClass } from '@/features/auth/components/authStyles'
 
 const noop = () => null
 
 export const ForgotForm = ({
     form,
-    serverError = '',
     error = '',
     isPending = false,
     onSwitchTab = noop,
@@ -51,7 +49,6 @@ export const ForgotForm = ({
 
     return (
         <form noValidate className="flex flex-col gap-2.5" onSubmit={handleSubmit(onSubmit, onInvalid)}>
-            <FormError message={serverError} />
             <TextInput
                 label="La Verdad Email"
                 type="email"

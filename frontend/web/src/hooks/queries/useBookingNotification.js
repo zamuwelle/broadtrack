@@ -3,8 +3,16 @@ import { getNotificationConfig } from '@/features/borrow/notifications/notificat
 import { useEvents } from '@/hooks/queries/useEvents'
 import { useUser } from '@/lib/auth'
 import { api } from '@/lib/api-client'
+import { isServerError } from '@/lib/errors'
+import { useToast } from '@/hooks/ui/useToast'
 
 const noop = () => null
+
+const canNotify = (event, isAdmin) =>
+    event.bookingId &&
+    'Notification' in globalThis &&
+    globalThis.Notification.permission === 'granted' &&
+    (!isAdmin || event.action === 'created' || event.action === 'cancelled')
 
 const resolveNotificationConfig = ({ event, booking, isAdmin, userId }) => {
     if (isAdmin) {
@@ -38,6 +46,7 @@ const resolveNotificationConfig = ({ event, booking, isAdmin, userId }) => {
 
 export const useBookingNotification = (onNavigate = noop) => {
     const { data: user } = useUser()
+    const { show: showToast } = useToast()
     const navigateRef = useRef(onNavigate)
     const notificationSessionRef = useRef(null)
 
@@ -81,14 +90,7 @@ export const useBookingNotification = (onNavigate = noop) => {
 
     const handleNotification = useCallback(
         async (event = {}) => {
-            if (
-                !event.bookingId ||
-                !('Notification' in globalThis) ||
-                globalThis.Notification.permission !== 'granted'
-            ) {
-                return
-            }
-            if (isAdmin && event.action !== 'created' && event.action !== 'cancelled') {
+            if (!canNotify(event, isAdmin)) {
                 return
             }
 
@@ -97,7 +99,10 @@ export const useBookingNotification = (onNavigate = noop) => {
             try {
                 const response = await api.get(`/bookings/${event.bookingId}`)
                 booking = response?.data
-            } catch {
+            } catch (error) {
+                if (session?.active && session === notificationSessionRef.current && isServerError(error)) {
+                    showToast(error.message || 'Something went wrong.', 'danger')
+                }
                 return
             }
             if (!booking || !session?.active || session !== notificationSessionRef.current) {
@@ -128,7 +133,7 @@ export const useBookingNotification = (onNavigate = noop) => {
                 notification.close()
             })
         },
-        [isAdmin, userId]
+        [isAdmin, userId, showToast]
     )
 
     useEvents({ onBookingNotification: handleNotification })

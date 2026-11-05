@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { BOOKING_FILTER_OPTIONS } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 import { useToast } from '@/hooks/ui/useToast'
+import { isLocalError } from '@/lib/errors'
 
 const DEFAULT_BOOKINGS = Object.freeze([])
 const DEFAULT_EMPTY_USER = Object.freeze({})
@@ -63,7 +64,9 @@ const useSlipModals = (cancelMutation, showToast) => {
             showToast('Booking request cancelled.', 'success')
         } catch (error) {
             updatePageState({ cancellingBookingId: null })
-            showToast((error && error.message) || 'Failed to cancel booking request.', 'danger')
+            if (isLocalError(error)) {
+                showToast((error && error.message) || 'Failed to cancel booking request.', 'danger')
+            }
         }
     }, [cancelMutation, cancellingBookingId, showToast, updatePageState])
 

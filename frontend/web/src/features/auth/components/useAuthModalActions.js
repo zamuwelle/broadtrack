@@ -1,3 +1,4 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -6,6 +7,7 @@ import { registerUser } from '@/features/auth/api/register'
 import { forgotPassword } from '@/features/auth/api/forgot-password'
 import { resetPassword } from '@/features/auth/api/reset-password'
 import { paths } from '@/config/paths'
+import { startSession } from '@/lib/session-storage'
 
 const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showToast, initialFormState }) => {
     const navigate = useNavigate()
@@ -14,7 +16,7 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
     const saveAuth = useCallback(
         ({ data = {} }) => {
             if (data.token) {
-                globalThis.localStorage.setItem('auth_token', data.token)
+                startSession(data.token)
             }
             if (data.user) {
                 queryClient.setQueryData(['me'], data.user)
@@ -53,7 +55,7 @@ const useAuthLoginHandlers = ({ onLoginSuccess, onClose, updateAuthState, showTo
                 } else {
                     updateAuthState({
                         error: loginError.message || 'Email or password is incorrect',
-                        isServerError: !loginError.status || loginError.status >= 500
+                        isServerError: isServerError(loginError)
                     })
                 }
             },
@@ -97,7 +99,7 @@ const useAuthRegisterHandlers = ({ updateAuthState }) => {
                 const emailMsg = errors.email ? errors.email[0] : null
                 updateAuthState({
                     error: emailMsg || registerError.message || 'Registration failed',
-                    isServerError: !registerError.status || registerError.status >= 500
+                    isServerError: isServerError(registerError)
                 })
             },
             [updateAuthState]
@@ -138,7 +140,7 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
             (forgotError = {}) => {
                 updateAuthState({
                     error: forgotError.message || 'Failed to send reset link',
-                    isServerError: !forgotError.status || forgotError.status >= 500
+                    isServerError: isServerError(forgotError)
                 })
             },
             [updateAuthState]
@@ -163,7 +165,8 @@ const useAuthRecoveryHandlers = ({ updateAuthState, showToast, initialFormState 
                     return
                 }
                 updateAuthState({
-                    error: resetError.message || 'Password reset failed. Please try again.'
+                    error: resetError.message || 'Password reset failed. Please try again.',
+                    isServerError: isServerError(resetError)
                 })
             },
             [initialFormState, showToast, updateAuthState]

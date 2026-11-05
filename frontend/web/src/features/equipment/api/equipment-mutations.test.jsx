@@ -1,3 +1,4 @@
+import { useToast } from '@/hooks/ui/useToast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
@@ -16,7 +17,15 @@ vi.mock('@/lib/api-client', () => ({
     }
 }))
 
-const TestWrapper = ({ client, children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>
+const TestWrapper = ({ client, children }) => {
+    const { message, visible } = useToast()
+    return (
+        <QueryClientProvider client={client}>
+            {children}
+            {visible ? <div>{message}</div> : null}
+        </QueryClientProvider>
+    )
+}
 
 const categories = Object.freeze([
     { id: 'Camera', name: 'Camera' },
@@ -174,6 +183,7 @@ describe('EquipmentModalDialog validation and recovery', () => {
             description: ['Description is invalid.'],
             serial_no: ['The serial number has already been taken.']
         }
+        error.status = 422
         api.post.mockRejectedValueOnce(error)
 
         const { container } = render(

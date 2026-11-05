@@ -1,6 +1,6 @@
 # Scheduled tasks
 
-Laravel console commands in [`backend/routes/console.php`](../../backend/routes/console.php) automate request expiration, return reminder emails, token pruning, and unverified account cleanup.
+Laravel console commands in [`backend/routes/console.php`](../../backend/routes/console.php) automate request expiration, return reminder emails, token pruning, unverified account cleanup, and deleted-account retention.
 
 Scheduled commands run in the `Asia/Manila` timezone.
 
@@ -12,6 +12,7 @@ Scheduled commands run in the `Asia/Manila` timezone.
 | `reminders:send-return-due-emails`    | Daily        | `Asia/Manila` | Sends reminder emails for approved bookings not yet returned that are due within 24 hours or overdue. | [`SendReturnDueEmailRemindersCommand`](../../backend/app/Console/Commands/SendReturnDueEmailRemindersCommand.php)   |
 | `sanctum:prune-expired --hours=24`    | Daily        | `Asia/Manila` | Deletes personal access tokens expired for over 24 hours.                                             | Laravel Sanctum                                                                                                     |
 | `model:prune --model=App\Models\User` | Daily        | `Asia/Manila` | Deletes unverified user accounts created at least 24 hours ago.                                       | [`User::prunable`](../../backend/app/Models/User.php)                                                               |
+| `users:purge-deleted` | Daily | `Asia/Manila` | Permanently removes users deleted at least five years ago and their own bookings; clears their return-handler references on other bookings. | [`PurgeDeletedUsersCommand`](../../backend/app/Console/Commands/PurgeDeletedUsersCommand.php) |
 
 ## Pending booking expiration
 
@@ -56,6 +57,10 @@ php artisan reminders:send-return-due-emails
 
 1. **Unverified accounts**: [`User::prunable`](../../backend/app/Models/User.php) matches records where `email_verified_at` is null and `created_at <= now()->subHours(24)`. Daily `model:prune --model=App\Models\User` deletes them.
 2. **Sanctum tokens**: Daily `sanctum:prune-expired --hours=24` removes expired tokens from `personal_access_tokens`.
+
+## Deleted-account retention
+
+Accounts removed through user management are soft-deleted. Pending requests are cancelled; approved bookings block removal. After five years, the daily `users:purge-deleted` task permanently removes the user, their bookings, tokens and database sessions. Other users’ bookings remain, with the deleted user's return-handler reference cleared. This depends on the scheduler running.
 
 ## Deployment requirements
 

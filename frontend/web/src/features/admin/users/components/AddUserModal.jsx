@@ -1,7 +1,7 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useCreateUser } from '@/features/users/api/create-user'
-import { useToast } from '@/hooks/ui/useToast'
 import { MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { addUserSchema } from '@shared/schemas/users'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,7 +31,6 @@ export const AddUserModal = ({
 }) => {
     const [error, setError] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const { show: showToast } = useToast()
     const createUserMutation = useCreateUser()
     const {
         control,
@@ -94,15 +93,14 @@ export const AddUserModal = ({
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
                 const message = serverErrors.email?.[0] || submitError?.message || 'Failed to create user'
-                if (serverErrors.email?.[0]) {
+                if (serverErrors.email?.[0] && !isServerError(submitError)) {
                     setFieldError('email', { type: 'server', message })
-                } else {
+                } else if (!isServerError(submitError)) {
                     setError(message)
                 }
-                showToast(message, 'danger')
             }
         },
-        [createUserMutation, isBorrower, onClose, onSuccess, reset, role, setFieldError, showToast]
+        [createUserMutation, isBorrower, onClose, onSuccess, reset, role, setFieldError]
     )
     const renderDepartment = useCallback(
         ({ field }) => {

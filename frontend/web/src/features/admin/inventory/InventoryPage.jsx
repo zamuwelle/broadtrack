@@ -13,6 +13,7 @@ import { matchesSearch } from '@shared/util/search'
 import { EQUIPMENT_CATEGORIES, EQUIPMENT_STATUS_CONFIRMATION } from '@shared/constants'
 import { useDocumentTitle } from '@/hooks/ui/useDocumentTitle'
 import { useToast } from '@/hooks/ui/useToast'
+import { isLocalError } from '@/lib/errors'
 
 const CATEGORIES = Object.freeze(
     EQUIPMENT_CATEGORIES.map((categoryName) =>
@@ -108,7 +109,9 @@ const useInventoryStatus = (queryClient, updateEquipmentMutation, showToast) =>
                     queryClient.invalidateQueries({ queryKey: ['bookings'] })
                 ])
             } catch (error) {
-                showToast(error.message, 'danger')
+                if (isLocalError(error)) {
+                    showToast(error.message, 'danger')
+                }
                 await queryClient.invalidateQueries({ queryKey: ['equipment'] })
             }
         },

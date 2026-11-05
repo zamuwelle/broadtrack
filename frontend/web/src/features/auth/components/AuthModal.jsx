@@ -4,7 +4,6 @@ import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
 import { useSetState } from '@shared/hooks/useSetState'
 import { useAuthModalActions } from '@/features/auth/components/useAuthModalActions'
-import { Toast } from '@/components/ui/Toast'
 import { AuthModalHeader } from '@/features/auth/components/AuthModalHeader'
 import { AuthModalBody } from '@/features/auth/components/AuthModalBody'
 import { useCheckResetToken } from '@/features/auth/api/check-reset-token'
@@ -79,7 +78,7 @@ export const AuthModal = ({
         onClose
     })
     const { tab, showPass, error, isServerError, form } = authState
-    const { visible: toastVisible, message: toastMessage, type: toastType, show: showToast } = useToast()
+    const { show: showToast } = useToast()
     const handleClearError = useCallback(() => updateAuthState({ error: '' }), [updateAuthState])
     const resetLink = useCheckResetToken({
         email: initialData.email,
@@ -112,6 +111,12 @@ export const AuthModal = ({
         }
     }, [initialError, isOpen, showToast])
 
+    useEffect(() => {
+        if (isServerError && error) {
+            updateAuthState({ error: '', isServerError: false })
+        }
+    }, [error, isServerError, updateAuthState])
+
     const isVerifyTab = tab === 'verify'
     useEscapeKey(isVerifyTab ? null : onClose)
 
@@ -129,33 +134,30 @@ export const AuthModal = ({
     }
 
     return (
-        <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-['Poppins']">
-                <div aria-hidden="true" className="fixed inset-0 dim-screen border-none outline-none cursor-default" />
-                <div className="bg-surface p-5 sm:p-6 rounded-[8px] w-full max-w-[420px] max-h-[90dvh] overflow-y-scroll my-auto relative z-10 font-['Poppins']">
-                    <button
-                        type="button"
-                        aria-label="Close dialog"
-                        onClick={handleClose}
-                        className="absolute top-5 right-5 text-text/60 hover:text-text cursor-pointer">
-                        <X size={18} />
-                    </button>
-                    <AuthModalHeader tab={tab} />
-                    <AuthModalBody
-                        tab={tab}
-                        form={form}
-                        error={error}
-                        isServerError={isServerError}
-                        showPass={showPass}
-                        actions={actions}
-                        onClearError={handleClearError}
-                        showToast={showToast}
-                        onToggleShowPass={toggleShowPass}
-                        onSwitchTab={switchTab}
-                    />
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-['Poppins']">
+            <div aria-hidden="true" className="fixed inset-0 dim-screen border-none outline-none cursor-default" />
+            <div className="bg-surface p-5 sm:p-6 rounded-[8px] w-full max-w-[420px] max-h-[90dvh] overflow-y-scroll my-auto relative z-10 font-['Poppins']">
+                <button
+                    type="button"
+                    aria-label="Close dialog"
+                    onClick={handleClose}
+                    className="absolute top-5 right-5 text-text/60 hover:text-text cursor-pointer">
+                    <X size={18} />
+                </button>
+                <AuthModalHeader tab={tab} />
+                <AuthModalBody
+                    tab={tab}
+                    form={form}
+                    error={error}
+                    isServerError={isServerError}
+                    showPass={showPass}
+                    actions={actions}
+                    onClearError={handleClearError}
+                    showToast={showToast}
+                    onToggleShowPass={toggleShowPass}
+                    onSwitchTab={switchTab}
+                />
             </div>
-            <Toast show={toastVisible} message={toastMessage} type={toastType} />
-        </>
+        </div>
     )
 }

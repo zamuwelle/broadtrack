@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Check, X } from 'lucide-react'
 import { useEscapeKey } from '@/hooks/ui/useEscapeKey'
 import { useToast } from '@/hooks/ui/useToast'
 import { useReturnBooking } from '@/features/bookings/api/return-booking'
+import { isLocalError } from '@/lib/errors'
 
 const defaultBooking = Object.freeze({})
 const defaultList = Object.freeze([])
@@ -25,7 +26,6 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
     const returnMutation = useReturnBooking()
     const { show: showToast } = useToast()
     const isSubmitting = returnMutation.isPending
-    const [errorMessage, setErrorMessage] = useState('')
 
     useEscapeKey(onClose)
 
@@ -34,14 +34,14 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
             return
         }
         try {
-            setErrorMessage('')
-            await returnMutation.mutateAsync(booking.id)
+                await returnMutation.mutateAsync(booking.id)
             onSuccess()
             onClose()
         } catch (error) {
             const message = (error && error.message) || 'Failed to confirm return'
-            setErrorMessage(message)
-            showToast(message, 'danger')
+            if (isLocalError(error)) {
+                showToast(message, 'danger')
+            }
         }
     }, [booking, isSubmitting, onClose, onSuccess, returnMutation, showToast])
 
@@ -72,11 +72,6 @@ export const ConfirmReturnModal = ({ isOpen = false, onClose = noop, booking = d
                     </button>
                 </div>
 
-                {errorMessage ? (
-                    <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
-                        {errorMessage}
-                    </div>
-                ) : null}
 
                 <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mt-5 [@media(max-height:500px)]:p-3 [@media(max-height:500px)]:mt-2 flex flex-col gap-4 [@media(max-height:500px)]:gap-2">
                     <div>

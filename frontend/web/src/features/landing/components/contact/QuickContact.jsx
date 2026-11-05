@@ -1,3 +1,4 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -13,6 +14,13 @@ const initialForm = Object.freeze({
     email: '',
     message: ''
 })
+
+const useContactSubmission = (updateContactState) =>
+    useCreateContact({
+        mutationConfig: {
+            onSuccess: () => updateContactState({ sent: true })
+        }
+    })
 
 export const QuickContact = () => {
     const resetTimer = useRef(null)
@@ -33,16 +41,7 @@ export const QuickContact = () => {
         mode: 'onChange',
         defaultValues: initialForm
     })
-    const {
-        mutate: send,
-        isPending,
-        error,
-        reset
-    } = useCreateContact({
-        mutationConfig: {
-            onSuccess: () => updateContactState({ sent: true })
-        }
-    })
+    const { mutate: send, isPending, error, reset } = useContactSubmission(updateContactState)
 
     useEffect(() => () => clearTimeout(resetTimer.current), [])
 
@@ -132,7 +131,7 @@ export const QuickContact = () => {
                             onSubmit={submitForm(handleContactSubmit)}
                             isValid={isValid}
                             isPending={isPending}
-                            error={error}
+                            error={error && !isServerError(error) ? error : null}
                         />
                     )}
                 </div>

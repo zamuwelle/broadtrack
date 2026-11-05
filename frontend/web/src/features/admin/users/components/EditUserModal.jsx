@@ -1,9 +1,9 @@
+import { isServerError } from '@/lib/errors'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Select } from '@/components/ui/Select'
 import { useUpdateUser } from '@/features/users/api/update-user'
-import { useToast } from '@/hooks/ui/useToast'
 import { MAX_NAME_LENGTH } from '@shared/schemas/common'
 import { editUserSchema } from '@shared/schemas/users'
 import { DepartmentSelect } from '@/features/admin/users/components/DepartmentSelect'
@@ -28,7 +28,6 @@ const getDefaultValues = (user) => ({
 export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onSuccess = noop }) => {
     const [error, setError] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const { show: showToast } = useToast()
     const updateUserMutation = useUpdateUser()
     const {
         control,
@@ -103,15 +102,14 @@ export const EditUserModal = ({ isOpen = false, onClose = noop, user = null, onS
             } catch (submitError) {
                 const serverErrors = submitError?.errors || {}
                 const message = serverErrors.email?.[0] || submitError?.message || 'Failed to update user'
-                if (serverErrors.email?.[0]) {
+                if (serverErrors.email?.[0] && !isServerError(submitError)) {
                     setFieldError('email', { type: 'server', message })
-                } else {
+                } else if (!isServerError(submitError)) {
                     setError(message)
                 }
-                showToast(message, 'danger')
             }
         },
-        [isBorrower, onClose, onSuccess, reset, setFieldError, showToast, updateUserMutation, user]
+        [isBorrower, onClose, onSuccess, reset, setFieldError, updateUserMutation, user]
     )
     const renderRole = useCallback(({ field }) => {
         const handleRoleChange = field.onChange
