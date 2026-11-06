@@ -9,20 +9,20 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class TestSeeder extends Seeder
+class DemoSeeder extends Seeder
 {
     public function run(): void
     {
         $defaultPassword = Hash::make('broadtrack');
 
-        $testAccounts = [
-            ['email' => 'admin.test@laverdad.edu.ph', 'firstname' => 'Admin', 'lastname' => 'Test', 'role' => UserRole::Admin],
-            ['email' => 'sysadmin.test@laverdad.edu.ph', 'firstname' => 'Sysadmin', 'lastname' => 'Test', 'role' => UserRole::Sysadmin],
-            ['email' => 'borrower.test@student.laverdad.edu.ph', 'firstname' => 'Borrower', 'lastname' => 'Test', 'role' => UserRole::Borrower],
+        $demoAccounts = [
+            ['email' => 'admin.demo@laverdad.edu.ph', 'firstname' => 'Admin', 'lastname' => 'Demo', 'role' => UserRole::Admin],
+            ['email' => 'sysadmin.demo@laverdad.edu.ph', 'firstname' => 'Sysadmin', 'lastname' => 'Demo', 'role' => UserRole::Sysadmin],
+            ['email' => 'borrower.demo@student.laverdad.edu.ph', 'firstname' => 'Borrower', 'lastname' => 'Demo', 'role' => UserRole::Borrower],
         ];
 
-        User::withoutEvents(function () use ($testAccounts, $defaultPassword): void {
-            foreach ($testAccounts as $account) {
+        User::withoutEvents(function () use ($demoAccounts, $defaultPassword): void {
+            foreach ($demoAccounts as $account) {
                 User::updateOrCreate(
                     ['email' => $account['email']],
                     [

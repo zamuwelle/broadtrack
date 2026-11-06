@@ -3,31 +3,31 @@
 use App\Enums\Department;
 use App\Enums\UserRole;
 use App\Models\User;
-use Database\Seeders\TestSeeder;
+use Database\Seeders\DemoSeeder;
 use Illuminate\Support\Facades\Hash;
 
-test('test seeder creates only the three generic test accounts with password broadtrack', function (): void {
-    $this->seed(TestSeeder::class);
+test('demo seeder creates only the three generic demo accounts with password broadtrack', function (): void {
+    $this->seed(DemoSeeder::class);
 
     expect(User::count())->toBe(3);
 
     $expectedAccounts = [
         [
-            'email' => 'admin.test@laverdad.edu.ph',
+            'email' => 'admin.demo@laverdad.edu.ph',
             'firstname' => 'Admin',
-            'lastname' => 'Test',
+            'lastname' => 'Demo',
             'role' => UserRole::Admin,
         ],
         [
-            'email' => 'sysadmin.test@laverdad.edu.ph',
+            'email' => 'sysadmin.demo@laverdad.edu.ph',
             'firstname' => 'Sysadmin',
-            'lastname' => 'Test',
+            'lastname' => 'Demo',
             'role' => UserRole::Sysadmin,
         ],
         [
-            'email' => 'borrower.test@student.laverdad.edu.ph',
+            'email' => 'borrower.demo@student.laverdad.edu.ph',
             'firstname' => 'Borrower',
-            'lastname' => 'Test',
+            'lastname' => 'Demo',
             'role' => UserRole::Borrower,
         ],
     ];
@@ -48,17 +48,17 @@ test('test seeder creates only the three generic test accounts with password bro
     expect(User::pluck('profile_picture')->unique())->toHaveCount(3);
 });
 
-test('test seeder preserves existing users and respects updateOrCreate semantics on reseed', function (): void {
+test('demo seeder preserves existing users and respects updateOrCreate semantics on reseed', function (): void {
     $existingUser = User::factory()->create([
         'email' => 'custom.existing@laverdad.edu.ph',
     ]);
 
-    $this->seed(TestSeeder::class);
+    $this->seed(DemoSeeder::class);
 
     expect(User::where('email', $existingUser->email)->exists())->toBeTrue()
         ->and(User::count())->toBe(4);
 
-    $this->seed(TestSeeder::class);
+    $this->seed(DemoSeeder::class);
 
     expect(User::where('email', $existingUser->email)->exists())->toBeTrue()
         ->and(User::count())->toBe(4);
