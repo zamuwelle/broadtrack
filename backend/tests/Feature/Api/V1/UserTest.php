@@ -5,6 +5,28 @@ use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Hash;
+
+test('sysadmin can recreate a deleted account while retaining its booking history', function (): void {
+    $sysadmin = User::factory()->sysadmin()->create();
+    $user = User::factory()->borrower()->create(['email' => 'returning@student.laverdad.edu.ph']);
+    $booking = Booking::factory()->returned()->create(['user_id' => $user->id]);
+    $this->actingAs($sysadmin)->deleteJson("/api/v1/users/{$user->id}")->assertNoContent();
+
+    $this->postJson('/api/v1/users', [
+        'firstname' => 'Returning', 'lastname' => 'User', 'email' => $user->email,
+        'password' => 'newpassword123', 'role' => 'borrower', 'department' => 'BS Information Systems',
+    ])->assertCreated()->assertJsonPath('data.id', $user->id);
+
+    expect($user->fresh()->firstname)->toBe('Returning')
+        ->and(Hash::check('newpassword123', $user->fresh()->password))->toBeTrue()
+        ->and($booking->fresh()->user_id)->toBe($user->id);
+
+    $this->postJson('/api/v1/users', [
+        'firstname' => 'Another', 'lastname' => 'User', 'email' => $user->email,
+        'password' => 'password123', 'role' => 'borrower', 'department' => 'BS Information Systems',
+    ])->assertUnprocessable()->assertJsonValidationErrors('email');
+});
 
 test('sysadmin can list all users excluding sysadmins', function () {
     $sysadmin = User::factory()->sysadmin()->create();

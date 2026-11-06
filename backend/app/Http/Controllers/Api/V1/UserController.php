@@ -40,7 +40,22 @@ class UserController extends ApiController
         $validated = $request->validated();
         $validated['email_verified_at'] = now();
 
-        $user = User::create($validated);
+        $user = DB::transaction(static function () use ($validated): User {
+            $deletedUser = User::onlyTrashed()->where('email', $validated['email'])->lockForUpdate()->first();
+            if (! $deletedUser) {
+                return User::create($validated);
+            }
+
+            $deletedUser->fill(array_merge($validated, [
+                'department' => $validated['department'] ?? null,
+                'profile_picture' => null,
+                'verification_code' => null,
+                'verification_sent_at' => null,
+            ]));
+            $deletedUser->restore();
+
+            return $deletedUser;
+        });
 
         return $this->created(new UserResource($user), 'User created successfully.');
     }
