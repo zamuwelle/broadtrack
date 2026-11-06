@@ -27,7 +27,9 @@ const inputDefs = Object.freeze([
     },
     {
         name: 'email',
-        type: 'email',
+        type: 'text',
+        inputMode: 'email',
+        autoComplete: 'email',
         placeholder: '* Email'
     }
 ])
@@ -51,6 +53,8 @@ export const ContactFormView = ({ register, errors, onSubmit, isValid, isPending
                         <input
                             name={def.name}
                             type={def.type}
+                            inputMode={def.inputMode}
+                            autoComplete={def.autoComplete}
                             maxLength={def.maxLength}
                             {...register(def.name)}
                             placeholder={def.placeholder}
