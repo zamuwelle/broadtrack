@@ -49,8 +49,6 @@ class AuthController extends ApiController
             return $this->forbidden('Please verify your email first. We sent you a verification code.');
         }
 
-        $user->tokens()->delete();
-
         return $this->success([
             'user' => new UserResource($user),
             'token' => $user->createToken('auth-token')->plainTextToken,

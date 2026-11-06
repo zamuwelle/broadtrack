@@ -130,6 +130,23 @@ test('user can login with valid credentials', function () {
         ]);
 });
 
+test('multiple logins remain valid and logout revokes only the current token', function (): void {
+    $user = User::factory()->sysadmin()->create(['password' => Hash::make('secret123')]);
+    $credentials = ['email' => $user->email, 'password' => 'secret123'];
+    $first = $this->postJson('/api/v1/login', $credentials)->assertOk()->json('data.token');
+    $second = $this->postJson('/api/v1/login', $credentials)->assertOk()->json('data.token');
+
+    expect($user->fresh()->tokens()->count())->toBe(2);
+    app('auth')->guard('web')->logout();
+    app('auth')->forgetGuards();
+    $this->withToken($first)->getJson('/api/v1/me')->assertOk();
+    app('auth')->forgetGuards();
+    $this->withToken($first)->postJson('/api/v1/logout')->assertOk();
+    expect($user->fresh()->tokens()->count())->toBe(1);
+    app('auth')->forgetGuards();
+    $this->withToken($second)->getJson('/api/v1/me')->assertOk();
+});
+
 test('login fails with invalid password using translation string', function () {
     User::factory()->borrower()->create([
         'email' => 'student.test@student.laverdad.edu.ph',
@@ -174,6 +191,21 @@ test('google callback rejects missing OAuth state before exchanging a code', fun
 
     $response->assertRedirect();
     expect($response->headers->get('Location'))->toContain('error=Google+authentication+failed');
+});
+
+test('google login keeps existing sessions valid', function (): void {
+    $user = User::factory()->borrower()->create();
+    $existing = $user->createToken('existing')->plainTextToken;
+    $socialiteUser = Mockery::mock(SocialiteUser::class);
+    $socialiteUser->shouldReceive('getEmail')->andReturn($user->email);
+    $socialiteUser->shouldReceive('getAvatar')->andReturn(null);
+    $provider = Mockery::mock(GoogleProvider::class);
+    $provider->shouldReceive('user')->andReturn($socialiteUser);
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $this->get('/api/v1/auth/google/callback?code=mock-code')->assertRedirect();
+    expect($user->fresh()->tokens()->count())->toBe(2);
+    $this->withToken($existing)->getJson('/api/v1/me')->assertOk();
 });
 
 test('oauth callback redirects unverified user with error message', function () {

@@ -67,7 +67,6 @@ class OAuthController extends ApiController
             $user->update(['profile_picture' => $profilePicture]);
         }
 
-        $user->tokens()->delete();
         $target = $user->isAdmin() ? '/dashboard' : '/equipment';
 
         return redirect($frontendUrl.$target.'?token='.$user->createToken('auth-token')->plainTextToken);
