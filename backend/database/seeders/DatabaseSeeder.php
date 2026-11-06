@@ -12,6 +12,6 @@ class DatabaseSeeder extends Seeder
             EquipmentSeeder::class,
         ]);
 
-        app()->isLocal() && $this->call(TestSeeder::class);
+        app()->isLocal() && $this->call(DemoSeeder::class);
     }
 }

@@ -149,13 +149,13 @@ To start services individually:
 
 ### Default test credentials
 
-When running in local environments (`APP_ENV=local`), database seeding creates default test accounts with the password `broadtrack`:
+When running in local environments (`APP_ENV=local`), database seeding creates default demo accounts with the password `broadtrack`:
 
 | Role         | Email                                   | Name          |
 | :----------- | :-------------------------------------- | :------------ |
-| **Admin**    | `admin.test@laverdad.edu.ph`            | Admin Test    |
-| **Sysadmin** | `sysadmin.test@laverdad.edu.ph`         | Sysadmin Test |
-| **Borrower** | `borrower.test@student.laverdad.edu.ph` | Borrower Test |
+| **Admin**    | `admin.demo@laverdad.edu.ph`            | Admin Demo    |
+| **Sysadmin** | `sysadmin.demo@laverdad.edu.ph`         | Sysadmin Demo |
+| **Borrower** | `borrower.demo@student.laverdad.edu.ph` | Borrower Demo |
 
 ## Documentation
 
